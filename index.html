@@ -538,7 +538,7 @@
   function fetchLogs() {
     document.getElementById('modal-logs-title').innerText = `Stored Logs (${currentCategory})`;
     const tbody = document.getElementById('logsTableBody');
-    tbody.innerHTML = '<tr><td colspan="13">Loading logs...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14">Loading logs...</td></tr>';
 
     const oldScript = document.getElementById('jsonpScript');
     if (oldScript) oldScript.remove();
@@ -549,9 +549,10 @@
     document.body.appendChild(script);
   }
 
-  function renderLogsTable(data) {
+  function renderLogsTable(res) {
     const thead = document.getElementById('logsTableHead');
     const tbody = document.getElementById('logsTableBody');
+    const data = (res && res.data) ? res.data : (Array.isArray(res) ? res : []);
 
     if (currentCategory === "Passive") {
       thead.innerHTML = `
@@ -570,6 +571,7 @@
           <th>Slot</th>
           <th>Level</th>
           <th>HP</th>
+          <th>PR</th>
           <th>PA</th>
           <th>PD</th>
           <th>M</th>
@@ -598,7 +600,7 @@
     }
 
     if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="13">No records found.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="14">No records found.</td></tr>';
       return;
     }
 
@@ -628,6 +630,7 @@
           <td>${slotVal}</td>
           <td>${levelVal}</td>
           <td>${item.hp || item.HP || 0}</td>
+          <td>0</td>
           <td>${item.pa || item.PA || 0}</td>
           <td>${item.pd || item.PD || 0}</td>
           <td>${item.m || item.M || 0}</td>
@@ -657,15 +660,24 @@
     });
   }
 
+  function onDeleteComplete(res) {
+    if (res && res.status === "success") {
+      fetchLogs();
+    } else {
+      alert("Failed to delete row: " + (res && res.message ? res.message : "Unknown error"));
+    }
+  }
+
   function deleteLogRow(rowIndex) {
     if (!confirm("Are you sure you want to delete this row?")) return;
 
-    fetch(`${WEB_APP_URL}?action=delete&category=${currentCategory}&rowIndex=${rowIndex}`, {
-      method: 'POST',
-      mode: 'no-cors'
-    }).then(() => {
-      setTimeout(fetchLogs, 1000);
-    });
+    const oldScript = document.getElementById('deleteScript');
+    if (oldScript) oldScript.remove();
+
+    const script = document.createElement('script');
+    script.id = 'deleteScript';
+    script.src = `${WEB_APP_URL}?action=delete&category=${encodeURIComponent(currentCategory)}&rowIndex=${rowIndex}&callback=onDeleteComplete&_=${new Date().getTime()}`;
+    document.body.appendChild(script);
   }
 </script>
 

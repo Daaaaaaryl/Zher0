@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zero to Hero Logger</title>
+  <title>Zero to Hero Logger & Battle Arena</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
@@ -25,7 +25,7 @@
 
     .sheet-container {
       width: 100%;
-      max-width: 620px;
+      max-width: 650px;
       background: #fdfbf7;
       border: 2px solid #23353e;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
@@ -141,6 +141,8 @@
     button:hover { background: #3b5a68; }
     button.secondary { background: #78909c; }
     button.secondary:hover { background: #546e7a; }
+    button.play-btn { background: #2e7d32; font-size: 1.2rem; padding: 16px; margin-bottom: 12px; }
+    button.play-btn:hover { background: #388e3c; }
 
     .category-buttons {
       display: flex;
@@ -149,8 +151,8 @@
     }
 
     .btn-category {
-      padding: 16px;
-      font-size: 1.1rem;
+      padding: 14px;
+      font-size: 1.05rem;
       background: #ffffff;
       color: #23353e;
       border: 2px solid #23353e;
@@ -212,6 +214,18 @@
     th { background: #23353e; color: #fff; font-family: 'Orbitron', sans-serif; font-size: 0.75rem; }
     tr:nth-child(even) { background: #f6f3eb; }
 
+    .action-btns { display: flex; gap: 4px; justify-content: center; }
+    .btn-edit {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      width: auto;
+    }
+    .btn-edit:hover { background: #115293; }
+
     .btn-delete {
       background: #d32f2f;
       color: white;
@@ -221,6 +235,7 @@
       cursor: pointer;
       width: auto;
     }
+    .btn-delete:hover { background: #9a0007; }
 
     .profile-card {
       background: #f6f3eb;
@@ -235,6 +250,56 @@
       font-weight: 700;
       margin-bottom: 8px;
       font-size: 1.3rem;
+    }
+
+    .battle-arena {
+      background: #111a21;
+      color: #f3f0e6;
+      border: 2px solid #23353e;
+      padding: 15px;
+      font-family: 'Orbitron', sans-serif;
+    }
+    .combatants {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .combatant-card {
+      background: #1e2c36;
+      border: 1px solid #3b5a68;
+      padding: 12px;
+      text-align: center;
+    }
+    .combatant-card h3 {
+      margin: 0 0 8px 0;
+      font-size: 1rem;
+      color: #ffcc00;
+    }
+    .hp-bar-bg {
+      background: #444;
+      height: 14px;
+      border: 1px solid #222;
+      margin-top: 6px;
+      position: relative;
+    }
+    .hp-bar-fill {
+      background: #2e7d32;
+      height: 100%;
+      width: 100%;
+      transition: width 0.3s ease;
+    }
+    .battle-log {
+      background: #0d1318;
+      border: 1px solid #3b5a68;
+      height: 130px;
+      overflow-y: auto;
+      padding: 10px;
+      font-family: 'Roboto Condensed', sans-serif;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+      text-align: left;
+      color: #c5c5c5;
     }
   </style>
 </head>
@@ -256,18 +321,20 @@
     <button onclick="saveUserAndNext()">Continue</button>
   </div>
 
-  <!-- PAGE 2: SELECTION OF WORK -->
+  <!-- PAGE 2: MAIN DASHBOARD & PLAY SELECTION -->
   <div id="page-selection" style="display: none;">
     <div class="sheet-header">
-      <h2>Select Work Target</h2>
+      <h2>Adventurer Hub</h2>
       <span class="user-tag" id="display-user-1" onclick="openProfileModal()" title="Click to view contributions"></span>
     </div>
     <div class="grid-panel">
-      <label style="margin-bottom: 12px;">What would you like to work on?</label>
+      <button class="play-btn" onclick="openBattleSetup()">▶ Play (Enter Battle Arena)</button>
+
+      <label style="margin-bottom: 12px; margin-top: 15px;">Or Log Game Data Components:</label>
       <div class="category-buttons">
-        <button class="btn-category" onclick="selectWorkCategory('Equipment')">⚔️ Equipment</button>
-        <button class="btn-category" onclick="selectWorkCategory('Monster')">👾 Monster</button>
-        <button class="btn-category" onclick="selectWorkCategory('Passive')">✨ Passive</button>
+        <button class="btn-category" onclick="selectWorkCategory('Equipment')">⚔️ Equipment Logger</button>
+        <button class="btn-category" onclick="selectWorkCategory('Monster')">👾 Monster Logger</button>
+        <button class="btn-category" onclick="selectWorkCategory('Passive')">✨ Passive Logger</button>
       </div>
     </div>
     <div class="button-group">
@@ -275,7 +342,7 @@
     </div>
   </div>
 
-  <!-- PAGE 3: DATA INPUT FORM -->
+  <!-- PAGE 3: DATA INPUT FORM (LOGGER) -->
   <div id="page-form" style="display: none;">
     <div class="sheet-header">
       <h2 id="form-title">Work Logging</h2>
@@ -325,18 +392,122 @@
     <div class="total-box" id="panel-total">Total Stats: <span id="total-val">0</span></div>
 
     <div class="button-group">
-      <button class="secondary" onclick="goToPage('page-selection')">Change Work Target</button>
+      <button class="secondary" onclick="goToPage('page-selection')">Back to Hub</button>
       <button onclick="openSaveModal()">Save Record</button>
+    </div>
+  </div>
+
+  <!-- PAGE 4: BATTLE SETUP -->
+  <div id="page-battle-setup" style="display: none;">
+    <div class="sheet-header">
+      <h2>⚔️ Battle Preparation</h2>
+      <span class="user-tag" id="display-user-3" onclick="openProfileModal()"></span>
+    </div>
+    
+    <div class="grid-panel">
+      <div class="form-group" style="margin-bottom: 15px;">
+        <label for="select-monster">1. Select Monster to Fight</label>
+        <select id="select-monster">
+          <option value="">-- Choose Monster --</option>
+        </select>
+      </div>
+
+      <label style="margin-bottom: 8px;">2. Equip Gear by Slot Restrictions</label>
+      
+      <div class="grid" style="margin-bottom: 10px;">
+        <div class="form-group">
+          <label for="slot-main-hand" style="font-size: 0.75rem; color: #3b5a68;">Main Hand</label>
+          <select id="slot-main-hand" class="gear-slot-select">
+            <option value="">-- None --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="slot-off-hand" style="font-size: 0.75rem; color: #3b5a68;">Off Hand</label>
+          <select id="slot-off-hand" class="gear-slot-select">
+            <option value="">-- None --</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-bottom: 10px;">
+        <div class="form-group">
+          <label for="slot-head" style="font-size: 0.75rem; color: #3b5a68;">Head</label>
+          <select id="slot-head" class="gear-slot-select">
+            <option value="">-- None --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="slot-body" style="font-size: 0.75rem; color: #3b5a68;">Body</label>
+          <select id="slot-body" class="gear-slot-select">
+            <option value="">-- None --</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="form-group">
+          <label for="slot-boots" style="font-size: 0.75rem; color: #3b5a68;">Boots</label>
+          <select id="slot-boots" class="gear-slot-select">
+            <option value="">-- None --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="slot-accessory" style="font-size: 0.75rem; color: #3b5a68;">Accessory</label>
+          <select id="slot-accessory" class="gear-slot-select">
+            <option value="">-- None --</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button class="secondary" onclick="goToPage('page-selection')">Back to Hub</button>
+      <button onclick="startBattleSimulation()">Proceed to Fight!</button>
+    </div>
+  </div>
+
+  <!-- PAGE 5: TURN-BASED BATTLE ARENA -->
+  <div id="page-battle-arena" style="display: none;">
+    <div class="sheet-header">
+      <h2>🔥 Arena Combat</h2>
+      <span class="user-tag" id="display-user-4"></span>
+    </div>
+
+    <div class="battle-arena">
+      <div class="combatants">
+        <div class="combatant-card">
+          <h3 id="player-battle-name">Adventurer</h3>
+          <div>HP: <span id="player-current-hp">0</span> / <span id="player-max-hp">0</span></div>
+          <div class="hp-bar-bg"><div class="hp-bar-fill" id="player-hp-bar"></div></div>
+          <div style="font-size: 0.8rem; margin-top: 6px; color: #a0c4df;">PA: <span id="p-stat-pa">0</span> | PD: <span id="p-stat-pd">0</span> | MA: <span id="p-stat-ma">0</span> | MD: <span id="p-stat-md">0</span> | SP: <span id="p-stat-sp">0</span></div>
+        </div>
+
+        <div class="combatant-card">
+          <h3 id="monster-battle-name">Monster</h3>
+          <div>HP: <span id="monster-current-hp">0</span> / <span id="monster-max-hp">0</span></div>
+          <div class="hp-bar-bg"><div class="hp-bar-fill" id="monster-hp-bar" style="background: #c62828;"></div></div>
+          <div style="font-size: 0.8rem; margin-top: 6px; color: #ff8a80;">PA: <span id="m-stat-pa">0</span> | PD: <span id="m-stat-pd">0</span> | MA: <span id="m-stat-ma">0</span> | MD: <span id="m-stat-md">0</span> | SP: <span id="m-stat-sp">0</span></div>
+        </div>
+      </div>
+
+      <div class="battle-log" id="battle-log-box">
+        Battle initialized. Prepare for combat!
+      </div>
+
+      <div class="button-group" style="margin-top: 0;">
+        <button id="btn-attack" onclick="executePlayerTurn()">Attack</button>
+        <button class="secondary" onclick="goToPage('page-battle-setup')">Retreat</button>
+      </div>
     </div>
   </div>
 
 </div>
 
-<!-- SCREEN POP-UP MODAL (SAVE & OPTIONAL DESCRIPTION) -->
+<!-- SCREEN POP-UP MODAL (SAVE) -->
 <div class="modal-overlay" id="saveModal">
   <div class="modal-content">
     <div class="modal-header">
-      <h2>Entry Saved Successfully!</h2>
+      <h2 id="save-modal-title">Entry Saved Successfully!</h2>
       <button class="close-btn" onclick="closeSaveModal()">&times;</button>
     </div>
     <p style="margin-top: 0;">Add an optional item description to finalize this sheet row:</p>
@@ -388,16 +559,24 @@
 </div>
 
 <script>
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzAQv23qdQ2wxHlQX3v9XmEN5DrRVSQn4_lEGr5py0UOGN1G3OQ4BBhmIR3ZKtI_j6p6A/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzDAmgbmNt0duc5cYxri1mbq5nCSNf5YD6D7yyBlqONcTD00lGPeX6dmkgU5vbkPNph/exec";
   
   let currentUser = "";
   let currentCategory = "Equipment";
+  let editingRowIndex = null; // Track if we are editing an existing row
+
+  let battleData = {
+    playerHP: 0, playerMaxHP: 0, playerPA: 0, playerPD: 0, playerMA: 0, playerMD: 0, playerSP: 0,
+    monsterHP: 0, monsterMaxHP: 0, monsterPA: 0, monsterPD: 0, monsterMA: 0, monsterMD: 0, monsterSP: 0,
+    monsterName: "Wild Monster"
+  };
 
   function goToPage(pageId) {
     document.getElementById('page-username').style.display = 'none';
     document.getElementById('page-selection').style.display = 'none';
     document.getElementById('page-form').style.display = 'none';
-    
+    document.getElementById('page-battle-setup').style.display = 'none';
+    document.getElementById('page-battle-arena').style.display = 'none';
     document.getElementById(pageId).style.display = 'block';
   }
 
@@ -410,7 +589,19 @@
     currentUser = val;
     document.getElementById('display-user-1').innerText = "👤 " + currentUser;
     document.getElementById('display-user-2').innerText = "👤 " + currentUser;
+    document.getElementById('display-user-3').innerText = "👤 " + currentUser;
+    document.getElementById('display-user-4').innerText = "👤 " + currentUser;
     goToPage('page-selection');
+  }
+
+  function jsonpRequest(url, callbackName) {
+    const oldScript = document.getElementById('jsonp_temp_script');
+    if (oldScript) oldScript.remove();
+
+    const script = document.createElement('script');
+    script.id = 'jsonp_temp_script';
+    script.src = `${url}&callback=${callbackName}&_=${new Date().getTime()}`;
+    document.body.appendChild(script);
   }
 
   function openProfileModal() {
@@ -418,30 +609,23 @@
     document.getElementById('profile-contrib-count').innerText = "Loading...";
     document.getElementById('profileModal').style.display = 'flex';
 
-    const oldScript = document.getElementById('contribScript');
-    if (oldScript) oldScript.remove();
+    window.renderProfileData = function(res) {
+      document.getElementById('profile-contrib-count').innerText = `${res.contributions || 0} entries`;
+    };
 
-    const script = document.createElement('script');
-    script.id = 'contribScript';
-    script.src = `${WEB_APP_URL}?action=getUserStats&user=${encodeURIComponent(currentUser)}&callback=renderProfileData&_=${new Date().getTime()}`;
-    document.body.appendChild(script);
-  }
-
-  function renderProfileData(data) {
-    if (data && data.contributions !== undefined) {
-      document.getElementById('profile-contrib-count').innerText = `${data.contributions} entries`;
-    } else {
-      document.getElementById('profile-contrib-count').innerText = "0 entries";
-    }
+    jsonpRequest(`${WEB_APP_URL}?action=getUserStats&user=${encodeURIComponent(currentUser)}`, 'renderProfileData');
   }
 
   function closeProfileModal() {
     document.getElementById('profileModal').style.display = 'none';
   }
 
-  function selectWorkCategory(category) {
+  function selectWorkCategory(category, editData = null) {
     currentCategory = category;
-    document.getElementById('form-title').innerText = currentCategory + " Entry";
+    
+    // Reset form fields or populate with editData
+    editingRowIndex = editData ? editData.rowIndex : null;
+    document.getElementById('form-title').innerText = editData ? `Edit ${currentCategory} Entry` : `${currentCategory} Entry`;
     
     const labelItemName = document.getElementById('label-itemName');
     const groupSlot = document.getElementById('group-slot');
@@ -457,22 +641,36 @@
       groupEffect.style.display = 'block';
       panelStats.style.display = 'none';
       panelTotal.style.display = 'none';
-    } else if (currentCategory === 'Equipment') {
-      labelItemName.innerText = "Equipment Name";
-      groupSlot.style.display = 'block';
-      groupLevel.style.display = 'block';
-      groupEffect.style.display = 'none';
-      panelStats.style.display = 'block';
-      panelTotal.style.display = 'block';
+
+      document.getElementById('itemName').value = editData ? editData.name || '' : '';
+      document.getElementById('effect').value = editData ? editData.description || '' : ''; // In passive, desc is column 3, effect is column 4
     } else {
-      labelItemName.innerText = "Monster Name";
-      groupSlot.style.display = 'none';
+      if (currentCategory === 'Equipment') {
+        labelItemName.innerText = "Equipment Name";
+        groupSlot.style.display = 'block';
+        document.getElementById('equipSlot').value = editData ? editData.slot || 'Main Hand' : 'Main Hand';
+      } else {
+        labelItemName.innerText = "Monster Name";
+        groupSlot.style.display = 'none';
+      }
       groupLevel.style.display = 'block';
       groupEffect.style.display = 'none';
       panelStats.style.display = 'block';
       panelTotal.style.display = 'block';
+
+      document.getElementById('itemName').value = editData ? editData.name || '' : '';
+      document.getElementById('level').value = editData ? editData.level || 1 : 1;
+      document.getElementById('hp').value = editData ? editData.hp || 0 : 0;
+      document.getElementById('pa').value = editData ? editData.pa || 0 : 0;
+      document.getElementById('pd').value = editData ? editData.pd || 0 : 0;
+      document.getElementById('m').value = editData ? editData.m || 0 : 0;
+      document.getElementById('md').value = editData ? editData.md || 0 : 0;
+      document.getElementById('sp').value = editData ? editData.sp || 0 : 0;
+      calcTotal();
     }
 
+    // Store description temporarily for modal
+    window.tempEditDescription = editData ? (editData.description || '') : '';
     goToPage('page-form');
   }
 
@@ -486,7 +684,7 @@
   }
 
   function openSaveModal() {
-    document.getElementById('modal-description').value = '';
+    document.getElementById('modal-description').value = window.tempEditDescription || '';
     document.getElementById('saveModal').style.display = 'flex';
   }
 
@@ -496,6 +694,7 @@
 
   function confirmFinalSave() {
     const payload = {
+      rowIndex: editingRowIndex,
       category: currentCategory,
       user: currentUser,
       name: document.getElementById('itemName').value,
@@ -518,10 +717,13 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     }).then(() => {
+      editingRowIndex = null; // Clear edit mode
       closeSaveModal();
       openLogsModal();
     }).catch(err => alert("Error saving: " + err));
   }
+
+  let cachedLogsData = [];
 
   function openLogsModal() {
     closeSaveModal();
@@ -538,62 +740,24 @@
     const tbody = document.getElementById('logsTableBody');
     tbody.innerHTML = '<tr><td colspan="13">Loading logs...</td></tr>';
 
-    const oldScript = document.getElementById('jsonpScript');
-    if (oldScript) oldScript.remove();
+    window.renderLogsTableCallback = function(res) {
+      cachedLogsData = (res && res.data) ? res.data : [];
+      renderLogsTable(cachedLogsData);
+    };
 
-    const script = document.createElement('script');
-    script.id = 'jsonpScript';
-    script.src = `${WEB_APP_URL}?category=${encodeURIComponent(currentCategory)}&callback=renderLogsTable&_=${new Date().getTime()}`;
-    document.body.appendChild(script);
+    jsonpRequest(`${WEB_APP_URL}?category=${encodeURIComponent(currentCategory)}`, 'renderLogsTableCallback');
   }
 
-  function renderLogsTable(res) {
+  function renderLogsTable(data) {
     const thead = document.getElementById('logsTableHead');
     const tbody = document.getElementById('logsTableBody');
-    const data = (res && res.data) ? res.data : (Array.isArray(res) ? res : []);
 
     if (currentCategory === "Passive") {
-      thead.innerHTML = `
-        <tr>
-          <th>User Name</th>
-          <th>Passive</th>
-          <th>Description</th>
-          <th>Passive Effect</th>
-          <th>Action</th>
-        </tr>`;
+      thead.innerHTML = `<tr><th>User Name</th><th>Passive</th><th>Description</th><th>Passive Effect</th><th>Actions</th></tr>`;
     } else if (currentCategory === "Equipment") {
-      thead.innerHTML = `
-        <tr>
-          <th>User Name</th>
-          <th>Equipment</th>
-          <th>Slot</th>
-          <th>Level</th>
-          <th>HP</th>
-          <th>PA</th>
-          <th>PD</th>
-          <th>M</th>
-          <th>MD</th>
-          <th>SP</th>
-          <th>Total</th>
-          <th>Description</th>
-          <th>Action</th>
-        </tr>`;
+      thead.innerHTML = `<tr><th>User Name</th><th>Equipment</th><th>Slot</th><th>Level</th><th>HP</th><th>PA</th><th>PD</th><th>M</th><th>MD</th><th>SP</th><th>Total</th><th>Description</th><th>Actions</th></tr>`;
     } else {
-      thead.innerHTML = `
-        <tr>
-          <th>User Name</th>
-          <th>Monster</th>
-          <th>Level</th>
-          <th>HP</th>
-          <th>PA</th>
-          <th>PD</th>
-          <th>M</th>
-          <th>MD</th>
-          <th>SP</th>
-          <th>Total</th>
-          <th>Description</th>
-          <th>Action</th>
-        </tr>`;
+      thead.innerHTML = `<tr><th>User Name</th><th>Monster</th><th>Level</th><th>HP</th><th>PA</th><th>PD</th><th>M</th><th>MD</th><th>SP</th><th>Total</th><th>Description</th><th>Actions</th></tr>`;
     }
 
     if (!data || data.length === 0) {
@@ -604,76 +768,217 @@
     tbody.innerHTML = '';
     data.forEach(item => {
       const row = document.createElement('tr');
-      const userVal = item.user || item.User || '-';
-      const nameVal = item.name || item.Name || '-';
-      const slotVal = item.slot || item.Slot || '-';
-      const descVal = item.description || item.Description || '-';
-      const effectVal = item.effect || item.Effect || '-';
-      const levelVal = item.level !== undefined ? item.level : (item.Level || 0);
-      const totalVal = item.total !== undefined ? item.total : (item.Total || 0);
+      const userVal = item.user || '-';
+      const nameVal = item.name || '-';
+      const slotVal = item.slot || '-';
+      const descVal = item.description || '-';
+      const effectVal = item.effect || '-';
+      const levelVal = item.level !== undefined ? item.level : 0;
+      const totalVal = item.total !== undefined ? item.total : 0;
+
+      const actionButtons = `
+        <div class="action-btns">
+          <button class="btn-edit" onclick="editLogRow(${item.rowIndex})">Edit</button>
+          <button class="btn-delete" onclick="deleteLogRow(${item.rowIndex})">Delete</button>
+        </div>
+      `;
 
       if (currentCategory === "Passive") {
-        row.innerHTML = `
-          <td><strong>${userVal}</strong></td>
-          <td>${nameVal}</td>
-          <td>${descVal}</td>
-          <td>${effectVal}</td>
-          <td><button class="btn-delete" onclick="deleteLogRow(${item.rowIndex || item.rowindex})">Delete</button></td>
-        `;
+        row.innerHTML = `<td><strong>${userVal}</strong></td><td>${nameVal}</td><td>${descVal}</td><td>${effectVal}</td><td>${actionButtons}</td>`;
       } else if (currentCategory === "Equipment") {
-        row.innerHTML = `
-          <td><strong>${userVal}</strong></td>
-          <td>${nameVal}</td>
-          <td>${slotVal}</td>
-          <td>${levelVal}</td>
-          <td>${item.hp || item.HP || 0}</td>
-          <td>${item.pa || item.PA || 0}</td>
-          <td>${item.pd || item.PD || 0}</td>
-          <td>${item.m || item.M || 0}</td>
-          <td>${item.md || item.MD || 0}</td>
-          <td>${item.sp || item.SP || 0}</td>
-          <td><strong>${totalVal}</strong></td>
-          <td>${descVal}</td>
-          <td><button class="btn-delete" onclick="deleteLogRow(${item.rowIndex || item.rowindex})">Delete</button></td>
-        `;
+        row.innerHTML = `<td><strong>${userVal}</strong></td><td>${nameVal}</td><td>${slotVal}</td><td>${levelVal}</td><td>${item.hp || 0}</td><td>${item.pa || 0}</td><td>${item.pd || 0}</td><td>${item.m || 0}</td><td>${item.md || 0}</td><td>${item.sp || 0}</td><td><strong>${totalVal}</strong></td><td>${descVal}</td><td>${actionButtons}</td>`;
       } else {
-        row.innerHTML = `
-          <td><strong>${userVal}</strong></td>
-          <td>${nameVal}</td>
-          <td>${levelVal}</td>
-          <td>${item.hp || item.HP || 0}</td>
-          <td>${item.pa || item.PA || 0}</td>
-          <td>${item.pd || item.PD || 0}</td>
-          <td>${item.m || item.M || 0}</td>
-          <td>${item.md || item.MD || 0}</td>
-          <td>${item.sp || item.SP || 0}</td>
-          <td><strong>${totalVal}</strong></td>
-          <td>${descVal}</td>
-          <td><button class="btn-delete" onclick="deleteLogRow(${item.rowIndex || item.rowindex})">Delete</button></td>
-        `;
+        row.innerHTML = `<td><strong>${userVal}</strong></td><td>${nameVal}</td><td>${levelVal}</td><td>${item.hp || 0}</td><td>${item.pa || 0}</td><td>${item.pd || 0}</td><td>${item.m || 0}</td><td>${item.md || 0}</td><td>${item.sp || 0}</td><td><strong>${totalVal}</strong></td><td>${descVal}</td><td>${actionButtons}</td>`;
       }
       tbody.appendChild(row);
     });
   }
 
-  function onDeleteComplete(res) {
-    if (res && res.status === "success") {
-      fetchLogs();
-    } else {
-      alert("Failed to delete row: " + (res && res.message ? res.message : "Unknown error"));
+  function editLogRow(rowIndex) {
+    const item = cachedLogsData.find(d => d.rowIndex === rowIndex);
+    if (!item) {
+      alert("Could not find record to edit.");
+      return;
     }
+    closeLogsModal();
+    selectWorkCategory(currentCategory, item);
   }
 
   function deleteLogRow(rowIndex) {
     if (!confirm("Are you sure you want to delete this row?")) return;
 
-    const oldScript = document.getElementById('deleteScript');
-    if (oldScript) oldScript.remove();
+    window.onDeleteComplete = function(res) {
+      if (res && res.status === "success") fetchLogs();
+      else alert("Failed to delete row.");
+    };
 
-    const script = document.createElement('script');
-    script.id = 'deleteScript';
-    script.src = `${WEB_APP_URL}?action=delete&category=${encodeURIComponent(currentCategory)}&rowIndex=${rowIndex}&callback=onDeleteComplete&_=${new Date().getTime()}`;
-    document.body.appendChild(script);
+    jsonpRequest(`${WEB_APP_URL}?action=delete&category=${encodeURIComponent(currentCategory)}&rowIndex=${rowIndex}`, 'onDeleteComplete');
+  }
+
+  let fetchedMonstersList = [];
+  let fetchedEquipmentList = [];
+
+  function openBattleSetup() {
+    goToPage('page-battle-setup');
+    loadMonsterDropdown();
+    loadEquipmentDropdowns();
+  }
+
+  function loadMonsterDropdown() {
+    const selectElem = document.getElementById('select-monster');
+    selectElem.innerHTML = `<option value="">Loading Monsters...</option>`;
+
+    window.populateDropdown_Monster = function(res) {
+      const data = res.data || [];
+      fetchedMonstersList = data;
+      selectElem.innerHTML = '<option value="">-- Choose Monster --</option>';
+      data.forEach((item, index) => {
+        selectElem.innerHTML += `<option value="${index}">${item.name || 'Unknown'} (HP: ${item.hp || 0}, PA: ${item.pa || 0}, PD: ${item.pd || 0})</option>`;
+      });
+    };
+
+    jsonpRequest(`${WEB_APP_URL}?category=Monster`, 'populateDropdown_Monster');
+  }
+
+  function loadEquipmentDropdowns() {
+    const slotIds = ['slot-main-hand', 'slot-off-hand', 'slot-head', 'slot-body', 'slot-boots', 'slot-accessory'];
+    slotIds.forEach(id => {
+      document.getElementById(id).innerHTML = `<option value="">Loading...</option>`;
+    });
+
+    window.populateEquipmentSlots = function(res) {
+      const data = res.data || [];
+      fetchedEquipmentList = data;
+
+      const slotsMap = {
+        "Main Hand": document.getElementById('slot-main-hand'),
+        "Off Hand": document.getElementById('slot-off-hand'),
+        "Head": document.getElementById('slot-head'),
+        "Body": document.getElementById('slot-body'),
+        "Boots": document.getElementById('slot-boots'),
+        "Accessory": document.getElementById('slot-accessory')
+      };
+
+      for (let key in slotsMap) {
+        slotsMap[key].innerHTML = '<option value="">-- None --</option>';
+      }
+
+      data.forEach((item, index) => {
+        const slotName = item.slot ? item.slot.trim() : "";
+        if (slotsMap[slotName]) {
+          const labelText = `${item.name} [HP:${item.hp||0}, PA:${item.pa||0}, PD:${item.pd||0}, M:${item.m||0}, MD:${item.md||0}, SP:${item.sp||0}]`;
+          slotsMap[slotName].innerHTML += `<option value="${index}">${labelText}</option>`;
+        }
+      });
+    };
+
+    jsonpRequest(`${WEB_APP_URL}?category=Equipment`, 'populateEquipmentSlots');
+  }
+
+  function startBattleSimulation() {
+    const mIndex = document.getElementById('select-monster').value;
+    if (mIndex === "") {
+      alert("Please select a monster to fight!");
+      return;
+    }
+
+    const monster = fetchedMonstersList[mIndex];
+    battleData.monsterName = monster.name || "Monster";
+    battleData.monsterMaxHP = parseFloat(monster.hp) || 0;
+    battleData.monsterHP = battleData.monsterMaxHP;
+    battleData.monsterPA = parseFloat(monster.pa) || 0;
+    battleData.monsterPD = parseFloat(monster.pd) || 0;
+    battleData.monsterMA = parseFloat(monster.m) || 0;
+    battleData.monsterMD = parseFloat(monster.md) || 0;
+    battleData.monsterSP = parseFloat(monster.sp) || 0;
+
+    const selectedSlotIds = ['slot-main-hand', 'slot-off-hand', 'slot-head', 'slot-body', 'slot-boots', 'slot-accessory'];
+    let baseHP = 0, basePA = 0, basePD = 0, baseMA = 0, baseMD = 0, baseSP = 0;
+
+    selectedSlotIds.forEach(id => {
+      const eqIndex = document.getElementById(id).value;
+      if (eqIndex !== "") {
+        const gear = fetchedEquipmentList[eqIndex];
+        baseHP += parseFloat(gear.hp) || 0;
+        basePA += parseFloat(gear.pa) || 0;
+        basePD += parseFloat(gear.pd) || 0;
+        baseMA += parseFloat(gear.m) || 0;
+        baseMD += parseFloat(gear.md) || 0;
+        baseSP += parseFloat(gear.sp) || 0;
+      }
+    });
+
+    battleData.playerMaxHP = baseHP;
+    battleData.playerHP = baseHP;
+    battleData.playerPA = basePA;
+    battleData.playerPD = basePD;
+    battleData.playerMA = baseMA;
+    battleData.playerMD = baseMD;
+    battleData.playerSP = baseSP;
+
+    document.getElementById('player-battle-name').innerText = currentUser || "Adventurer";
+    document.getElementById('monster-battle-name').innerText = battleData.monsterName;
+    
+    document.getElementById('p-stat-pa').innerText = battleData.playerPA;
+    document.getElementById('p-stat-pd').innerText = battleData.playerPD;
+    document.getElementById('p-stat-ma').innerText = battleData.playerMA;
+    document.getElementById('p-stat-md').innerText = battleData.playerMD;
+    document.getElementById('p-stat-sp').innerText = battleData.playerSP;
+
+    document.getElementById('m-stat-pa').innerText = battleData.monsterPA;
+    document.getElementById('m-stat-pd').innerText = battleData.monsterPD;
+    document.getElementById('m-stat-ma').innerText = battleData.monsterMA;
+    document.getElementById('m-stat-md').innerText = battleData.monsterMD;
+    document.getElementById('m-stat-sp').innerText = battleData.monsterSP;
+
+    updateBattleUI();
+    document.getElementById('battle-log-box').innerHTML = `Battle started against <strong>${battleData.monsterName}</strong>!<br>`;
+    document.getElementById('btn-attack').disabled = false;
+
+    goToPage('page-battle-arena');
+  }
+
+  function updateBattleUI() {
+    document.getElementById('player-current-hp').innerText = Math.max(0, battleData.playerHP);
+    document.getElementById('player-max-hp').innerText = battleData.playerMaxHP;
+    const pPercent = battleData.playerMaxHP > 0 ? Math.max(0, (battleData.playerHP / battleData.playerMaxHP) * 100) : 0;
+    document.getElementById('player-hp-bar').style.width = pPercent + '%';
+
+    document.getElementById('monster-current-hp').innerText = Math.max(0, battleData.monsterHP);
+    document.getElementById('monster-max-hp').innerText = battleData.monsterMaxHP;
+    const mPercent = battleData.monsterMaxHP > 0 ? Math.max(0, (battleData.monsterHP / battleData.monsterMaxHP) * 100) : 0;
+    document.getElementById('monster-hp-bar').style.width = mPercent + '%';
+  }
+
+  function executePlayerTurn() {
+    const logBox = document.getElementById('battle-log-box');
+
+    let pDmg = Math.max(1, Math.round(battleData.playerPA - (battleData.monsterPD / 2)));
+    battleData.monsterHP -= pDmg;
+    logBox.innerHTML += `<div>You attack <strong>${battleData.monsterName}</strong> for <strong>${pDmg}</strong> damage!</div>`;
+
+    if (battleData.monsterHP <= 0) {
+      battleData.monsterHP = 0;
+      updateBattleUI();
+      logBox.innerHTML += `<div style="color: #66bb6a; font-weight: bold;">🎉 Victory! You defeated ${battleData.monsterName}!</div>`;
+      document.getElementById('btn-attack').disabled = true;
+      return;
+    }
+
+    let mDmg = Math.max(1, Math.round(battleData.monsterPA - (battleData.playerPD / 2)));
+    battleData.playerHP -= mDmg;
+    logBox.innerHTML += `<div><strong>${battleData.monsterName}</strong> strikes back for <strong>${mDmg}</strong> damage!</div>`;
+
+    if (battleData.playerHP <= 0) {
+      battleData.playerHP = 0;
+      updateBattleUI();
+      logBox.innerHTML += `<div style="color: #ef5350; font-weight: bold;">💀 Defeat! You were overwhelmed by ${battleData.monsterName}.</div>`;
+      document.getElementById('btn-attack').disabled = true;
+      return;
+    }
+
+    updateBattleUI();
+    logBox.scrollTop = logBox.scrollHeight;
   }
 </script>
 

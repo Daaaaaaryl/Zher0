@@ -142,7 +142,6 @@
     button.secondary { background: #78909c; }
     button.secondary:hover { background: #546e7a; }
 
-    /* Category Select Buttons */
     .category-buttons {
       display: flex;
       flex-direction: column;
@@ -164,7 +163,6 @@
       color: #ffffff;
     }
 
-    /* Modals */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -252,13 +250,13 @@
     <div class="grid-panel">
       <div class="form-group">
         <label for="username-input">Enter User Name</label>
-        <input type="text" id="username-input" placeholder="e.g., Dar's Devs?">
+        <input type="text" id="username-input" placeholder="e.g., Dar">
       </div>
     </div>
     <button onclick="saveUserAndNext()">Continue</button>
   </div>
 
-  <!-- PAGE 2: SELECTION OF WORK (BUTTONS) -->
+  <!-- PAGE 2: SELECTION OF WORK -->
   <div id="page-selection" style="display: none;">
     <div class="sheet-header">
       <h2>Select Work Target</h2>
@@ -374,7 +372,7 @@
   </div>
 </div>
 
-<!-- USER PROFILE / CONTRIBUTIONS MODAL -->
+<!-- USER PROFILE MODAL -->
 <div class="modal-overlay" id="profileModal">
   <div class="modal-content" style="max-width: 400px;">
     <div class="modal-header">
@@ -538,14 +536,14 @@
   function fetchLogs() {
     document.getElementById('modal-logs-title').innerText = `Stored Logs (${currentCategory})`;
     const tbody = document.getElementById('logsTableBody');
-    tbody.innerHTML = '<tr><td colspan="14">Loading logs...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13">Loading logs...</td></tr>';
 
     const oldScript = document.getElementById('jsonpScript');
     if (oldScript) oldScript.remove();
 
     const script = document.createElement('script');
     script.id = 'jsonpScript';
-    script.src = `${WEB_APP_URL}?category=${currentCategory}&callback=renderLogsTable&_=${new Date().getTime()}`;
+    script.src = `${WEB_APP_URL}?category=${encodeURIComponent(currentCategory)}&callback=renderLogsTable&_=${new Date().getTime()}`;
     document.body.appendChild(script);
   }
 
@@ -571,7 +569,6 @@
           <th>Slot</th>
           <th>Level</th>
           <th>HP</th>
-          <th>PR</th>
           <th>PA</th>
           <th>PD</th>
           <th>M</th>
@@ -600,7 +597,7 @@
     }
 
     if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="14">No records found.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="13">No records found.</td></tr>';
       return;
     }
 
@@ -630,7 +627,6 @@
           <td>${slotVal}</td>
           <td>${levelVal}</td>
           <td>${item.hp || item.HP || 0}</td>
-          <td>0</td>
           <td>${item.pa || item.PA || 0}</td>
           <td>${item.pd || item.PD || 0}</td>
           <td>${item.m || item.M || 0}</td>

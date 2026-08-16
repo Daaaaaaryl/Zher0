@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zero to Hero Logger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Roboto Condensed', sans-serif;
+      background-color: #f3f0e6;
+      color: #1a1a1a;
+      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sheet-container {
+      width: 100%;
+      max-width: 620px;
+      background: #fdfbf7;
+      border: 2px solid #23353e;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      padding: 24px;
+      position: relative;
+    }
+
+    .sheet-header {
+      border-bottom: 2px solid #23353e;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin: 0;
+    }
+
+    .user-tag {
+      font-size: 0.85rem;
+      background: #23353e;
+      color: #fff;
+      padding: 4px 10px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: background 0.2s ease;
+    }
+
+    .user-tag:hover {
+      background: #3b5a68;
+      text-decoration: underline;
+    }
+
+    .grid-panel {
+      background-color: #f6f3eb;
+      background-image: 
+        linear-gradient(to right, #e2ded4 1px, transparent 1px),
+        linear-gradient(to bottom, #e2ded4 1px, transparent 1px);
+      background-size: 16px 16px;
+      border: 1px solid #b8c4c7;
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+
+    .form-group { margin-bottom: 12px; }
+    .form-group:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      background: #ffffff;
+      border: 1px solid #23353e;
+      color: #0d0d0d;
+      font-family: 'Roboto Condensed', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 0;
+      outline: none;
+    }
+
+    textarea { resize: vertical; min-height: 60px; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .total-box {
+      background: #eef2f3;
+      border: 1px solid #23353e;
+      padding: 10px;
+      text-align: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+      margin-bottom: 15px;
+    }
+
+    #total-val { font-size: 1.2rem; font-weight: 700; }
+
+    .button-group { display: flex; gap: 10px; margin-top: 15px; }
+
+    button {
+      width: 100%;
+      background: #23353e;
+      color: #ffffff;
+      border: none;
+      padding: 12px;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover { background: #3b5a68; }
+    button.secondary { background: #78909c; }
+    button.secondary:hover { background: #546e7a; }
+
+    /* Category Select Buttons */
+    .category-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-category {
+      padding: 16px;
+      font-size: 1.1rem;
+      background: #ffffff;
+      color: #23353e;
+      border: 2px solid #23353e;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .btn-category:hover {
+      background: #23353e;
+      color: #ffffff;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 15px;
+    }
+
+    .modal-content {
+      background: #fdfbf7;
+      border: 2px solid #23353e;
+      width: 100%;
+      max-width: 700px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      padding: 20px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #23353e;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+
+    .close-btn {
+      background: transparent;
+      color: #23353e;
+      border: none;
+      font-size: 1.5rem;
+      width: auto;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .table-container { overflow-x: auto; overflow-y: auto; flex-grow: 1; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { border: 1px solid #b8c4c7; padding: 8px; text-align: center; }
+    th { background: #23353e; color: #fff; font-family: 'Orbitron', sans-serif; font-size: 0.75rem; }
+    tr:nth-child(even) { background: #f6f3eb; }
+
+    .btn-delete {
+      background: #d32f2f;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      width: auto;
+    }
+
+    .profile-card {
+      background: #f6f3eb;
+      border: 1px solid #23353e;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    #profile-user-name {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 1.3rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="sheet-container">
+  
+  <!-- PAGE 1: USERNAME ENTRY -->
+  <div id="page-username">
+    <div class="sheet-header">
+      <h2>Welcome Adventurer</h2>
+    </div>
+    <div class="grid-panel">
+      <div class="form-group">
+        <label for="username-input">Enter User Name</label>
+        <input type="text" id="username-input" placeholder="e.g., Dar's Devs?">
+      </div>
+    </div>
+    <button onclick="saveUserAndNext()">Continue</button>
+  </div>
+
+  <!-- PAGE 2: SELECTION OF WORK (BUTTONS) -->
+  <div id="page-selection" style="display: none;">
+    <div class="sheet-header">
+      <h2>Select Work Target</h2>
+      <span class="user-tag" id="display-user-1" onclick="openProfileModal()" title="Click to view contributions"></span>
+    </div>
+    <div class="grid-panel">
+      <label style="margin-bottom: 12px;">What would you like to work on?</label>
+      <div class="category-buttons">
+        <button class="btn-category" onclick="selectWorkCategory('Equipment')">⚔️ Equipment</button>
+        <button class="btn-category" onclick="selectWorkCategory('Monster')">👾 Monster</button>
+        <button class="btn-category" onclick="selectWorkCategory('Passive')">✨ Passive</button>
+      </div>
+    </div>
+    <div class="button-group">
+      <button class="secondary" onclick="goToPage('page-username')">Back to Change User</button>
+    </div>
+  </div>
+
+  <!-- PAGE 3: DATA INPUT FORM -->
+  <div id="page-form" style="display: none;">
+    <div class="sheet-header">
+      <h2 id="form-title">Work Logging</h2>
+      <span class="user-tag" id="display-user-2" onclick="openProfileModal()" title="Click to view contributions"></span>
+    </div>
+
+    <div class="grid-panel">
+      <div class="form-group">
+        <label for="itemName" id="label-itemName">Name</label>
+        <input type="text" id="itemName" placeholder="Name entry...">
+      </div>
+
+      <div class="form-group" id="group-slot" style="margin-top: 10px;">
+        <label for="equipSlot">Equipment Slot</label>
+        <select id="equipSlot">
+          <option value="Main Hand">Main Hand</option>
+          <option value="Off Hand">Off Hand</option>
+          <option value="Head">Head</option>
+          <option value="Body">Body</option>
+          <option value="Boots">Boots</option>
+          <option value="Accessory">Accessory</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="group-level" style="margin-top: 10px;">
+        <label for="level">Level</label>
+        <input type="number" id="level" value="1">
+      </div>
+
+      <div class="form-group" id="group-effect" style="margin-top: 10px; display: none;">
+        <label for="effect">Passive Effect</label>
+        <textarea id="effect" placeholder="e.g., +10% Crit Chance"></textarea>
+      </div>
+    </div>
+
+    <div class="grid-panel" id="panel-stats">
+      <div class="grid">
+        <div class="form-group"><label for="hp">HP</label><input type="number" id="hp" value="0" oninput="calcTotal()"></div>
+        <div class="form-group"><label for="pa">PA</label><input type="number" id="pa" value="0" oninput="calcTotal()"></div>
+        <div class="form-group"><label for="pd">PD</label><input type="number" id="pd" value="0" oninput="calcTotal()"></div>
+        <div class="form-group"><label for="m">M</label><input type="number" id="m" value="0" oninput="calcTotal()"></div>
+        <div class="form-group"><label for="md">MD</label><input type="number" id="md" value="0" oninput="calcTotal()"></div>
+        <div class="form-group"><label for="sp">SP</label><input type="number" id="sp" value="0" oninput="calcTotal()"></div>
+      </div>
+    </div>
+
+    <div class="total-box" id="panel-total">Total Stats: <span id="total-val">0</span></div>
+
+    <div class="button-group">
+      <button class="secondary" onclick="goToPage('page-selection')">Change Work Target</button>
+      <button onclick="openSaveModal()">Save Record</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- SCREEN POP-UP MODAL (SAVE & OPTIONAL DESCRIPTION) -->
+<div class="modal-overlay" id="saveModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Entry Saved Successfully!</h2>
+      <button class="close-btn" onclick="closeSaveModal()">&times;</button>
+    </div>
+    <p style="margin-top: 0;">Add an optional item description to finalize this sheet row:</p>
+    
+    <div class="form-group">
+      <label for="modal-description">Item Description (Optional)</label>
+      <textarea id="modal-description" placeholder="e.g., Rare drop, +5 Fire Enchantment"></textarea>
+    </div>
+
+    <div class="button-group">
+      <button onclick="confirmFinalSave()">Complete & Sync Sheet</button>
+      <button class="secondary" onclick="openLogsModal()">View All Logs</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGS VIEW MODAL -->
+<div class="modal-overlay" id="logsModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modal-logs-title">Stored Logs</h2>
+      <button class="close-btn" onclick="closeLogsModal()">&times;</button>
+    </div>
+    
+    <div class="table-container">
+      <table>
+        <thead id="logsTableHead"></thead>
+        <tbody id="logsTableBody">
+          <tr><td>Loading logs...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- USER PROFILE / CONTRIBUTIONS MODAL -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-header">
+      <h2>Adventurer Profile</h2>
+      <button class="close-btn" onclick="closeProfileModal()">&times;</button>
+    </div>
+    <div class="profile-card">
+      <h3 id="profile-user-name"></h3>
+      <p style="font-size: 1.1rem; margin: 0;">Total Contributions: <strong id="profile-contrib-count">Loading...</strong></p>
+    </div>
+    <button class="secondary" onclick="closeProfileModal()">Close</button>
+  </div>
+</div>
+
+<script>
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzNrAFvdqlGYgdd4fZsbA15tWJY2mzvYqyC475EBq6hi2SPtONG-4ThN3eqhrtNQ_Tzbg/exec";
+  
+  let currentUser = "";
+  let currentCategory = "Equipment";
+
+  function goToPage(pageId) {
+    document.getElementById('page-username').style.display = 'none';
+    document.getElementById('page-selection').style.display = 'none';
+    document.getElementById('page-form').style.display = 'none';
+    
+    document.getElementById(pageId).style.display = 'block';
+  }
+
+  function saveUserAndNext() {
+    const val = document.getElementById('username-input').value.trim();
+    if (!val) {
+      alert("Please enter a username.");
+      return;
+    }
+    currentUser = val;
+    document.getElementById('display-user-1').innerText = "👤 " + currentUser;
+    document.getElementById('display-user-2').innerText = "👤 " + currentUser;
+    goToPage('page-selection');
+  }
+
+  function openProfileModal() {
+    document.getElementById('profile-user-name').innerText = currentUser;
+    document.getElementById('profile-contrib-count').innerText = "Loading...";
+    document.getElementById('profileModal').style.display = 'flex';
+
+    const oldScript = document.getElementById('contribScript');
+    if (oldScript) oldScript.remove();
+
+    const script = document.createElement('script');
+    script.id = 'contribScript';
+    script.src = `${WEB_APP_URL}?action=getUserStats&user=${encodeURIComponent(currentUser)}&callback=renderProfileData&_=${new Date().getTime()}`;
+    document.body.appendChild(script);
+  }
+
+  function renderProfileData(data) {
+    if (data && data.contributions !== undefined) {
+      document.getElementById('profile-contrib-count').innerText = `${data.contributions} entries`;
+    } else {
+      document.getElementById('profile-contrib-count').innerText = "0 entries";
+    }
+  }
+
+  function closeProfileModal() {
+    document.getElementById('profileModal').style.display = 'none';
+  }
+
+  function selectWorkCategory(category) {
+    currentCategory = category;
+    document.getElementById('form-title').innerText = currentCategory + " Entry";
+    
+    const labelItemName = document.getElementById('label-itemName');
+    const groupSlot = document.getElementById('group-slot');
+    const groupLevel = document.getElementById('group-level');
+    const groupEffect = document.getElementById('group-effect');
+    const panelStats = document.getElementById('panel-stats');
+    const panelTotal = document.getElementById('panel-total');
+
+    if (currentCategory === 'Passive') {
+      labelItemName.innerText = "Passive Name";
+      groupSlot.style.display = 'none';
+      groupLevel.style.display = 'none';
+      groupEffect.style.display = 'block';
+      panelStats.style.display = 'none';
+      panelTotal.style.display = 'none';
+    } else if (currentCategory === 'Equipment') {
+      labelItemName.innerText = "Equipment Name";
+      groupSlot.style.display = 'block';
+      groupLevel.style.display = 'block';
+      groupEffect.style.display = 'none';
+      panelStats.style.display = 'block';
+      panelTotal.style.display = 'block';
+    } else {
+      labelItemName.innerText = "Monster Name";
+      groupSlot.style.display = 'none';
+      groupLevel.style.display = 'block';
+      groupEffect.style.display = 'none';
+      panelStats.style.display = 'block';
+      panelTotal.style.display = 'block';
+    }
+
+    goToPage('page-form');
+  }
+
+  function calcTotal() {
+    const fields = ['hp', 'pa', 'pd', 'm', 'md', 'sp'];
+    let sum = 0;
+    fields.forEach(id => {
+      sum += parseFloat(document.getElementById(id).value) || 0;
+    });
+    document.getElementById('total-val').innerText = sum;
+  }
+
+  function openSaveModal() {
+    document.getElementById('modal-description').value = '';
+    document.getElementById('saveModal').style.display = 'flex';
+  }
+
+  function closeSaveModal() {
+    document.getElementById('saveModal').style.display = 'none';
+  }
+
+  function confirmFinalSave() {
+    const payload = {
+      category: currentCategory,
+      user: currentUser,
+      name: document.getElementById('itemName').value,
+      slot: currentCategory === 'Equipment' ? document.getElementById('equipSlot').value : '-',
+      level: document.getElementById('level').value,
+      description: document.getElementById('modal-description').value,
+      effect: document.getElementById('effect').value,
+      hp: document.getElementById('hp').value,
+      pa: document.getElementById('pa').value,
+      pd: document.getElementById('pd').value,
+      m: document.getElementById('m').value,
+      md: document.getElementById('md').value,
+      sp: document.getElementById('sp').value,
+      total: document.getElementById('total-val').innerText
+    };
+
+    fetch(WEB_APP_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(() => {
+      closeSaveModal();
+      openLogsModal();
+    }).catch(err => alert("Error saving: " + err));
+  }
+
+  function openLogsModal() {
+    closeSaveModal();
+    document.getElementById('logsModal').style.display = 'flex';
+    fetchLogs();
+  }
+
+  function closeLogsModal() {
+    document.getElementById('logsModal').style.display = 'none';
+  }
+
+  function fetchLogs() {
+    document.getElementById('modal-logs-title').innerText = `Stored Logs (${currentCategory})`;
+    const tbody = document.getElementById('logsTableBody');
+    tbody.innerHTML = '<tr><td colspan="13">Loading logs...</td></tr>';
+
+    const oldScript = document.getElementById('jsonpScript');
+    if (oldScript) oldScript.remove();
+
+    const script = document.createElement('script');
+    script.id = 'jsonpScript';
+    script.src = `${WEB_APP_URL}?category=${currentCategory}&callback=renderLogsTable&_=${new Date().getTime()}`;
+    document.body.appendChild(script);
+  }
+
+  function renderLogsTable(data) {
+    const thead = document.getElementById('logsTableHead');
+    const tbody = document.getElementById('logsTableBody');
+
+    if (currentCategory === "Passive") {
+      thead.innerHTML = `
+        <tr>
+          <th>User Name</th>
+          <th>Passive</th>
+          <th>Description</th>
+          <th>Passive Effect</th>
+          <th>Action</th>
+        </tr>`;
+    } else if (currentCategory === "Equipment") {
+      thead.innerHTML = `
+        <tr>
+          <th>User Name</th>
+          <th>Equipment</th>
+          <th>Slot</th>
+          <th>Level</th>
+          <th>HP</th>
+          <th>PA</th>
+          <th>PD</th>
+          <th>M</th>
+          <th>MD</th>
+          <th>SP</th>
+          <th>Total</th>
+          <th>Description</th>
+          <th>Action</th>
+        </tr>`;
+    } else {
+      thead.innerHTML = `
+        <tr>
+          <th>User Name</th>
+          <th>Monster</th>
+          <th>Level</th>
+          <th>HP</th>
+          <th>PA</th>
+          <th>PD</th>
+          <th>M</th>
+          <th>MD</th>
+          <th>SP</th>
+          <th>Total</th>
+          <th>Description</th>
+          <th>Action</th>
+        </tr>`;
+    }
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="13">No records found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = '';
+    data.forEach(item => {
+      const row = document.createElement('tr');
+      const userVal = item.user || item.User || '-';
+      const nameVal = item.name || item.Name || '-';
+      const slotVal = item.slot || item.Slot || '-';
+      const descVal = item.description || item.Description || '-';
+      const effectVal = item.effect || item.Effect || '-';
+      const levelVal = item.level !== undefined ? item.level : (item.Level || 0);
+      const totalVal = item.total !== undefined ? item.total : (item.Total || 0);
+
+      if (currentCategory === "Passive") {
+        row.innerHTML = `
+          <td><strong>${userVal}</strong></td>
+          <td>${nameVal}</td>
+          <td>${descVal}</td>
+          <td>${effectVal}</td>
+          <td><button class="btn-delete" onclick="deleteLogRow(${item.rowIndex || item.rowindex})">Delete</button></td>
+        `;
+      } else if (currentCategory === "Equipment") {
+        row.innerHTML = `
+          <td><strong>${userVal}</strong></td>
+          <td>${nameVal}</td>
+          <td>${slotVal}</td>
+          <td>${levelVal}</td>
+          <td>${item.hp || item.HP || 0}</td>
+          <td>${item.pa || item.PA || 0}</td>
+          <td>${item.pd || item.PD || 0}</td>
+          <td>${item.m || item.M || 0}</td>
+          <td>${item.md || item.MD || 0}</td>
+          <td>${item.sp || item.SP || 0}</td>
+          <td><strong>${totalVal}</strong></td>
+          <td>${descVal}</td>
+          <td><button class="btn-delete" onclick="deleteLogRow(${item.rowIndex || item.rowindex})">Delete</button></td>
+        `;
+      } else {
+        row.innerHTML = `
+          <td><strong>${userVal}</strong></td>
+          <td>${nameVal}</td>
+          <td>${levelVal}</td>
+          <td>${item.hp || item.HP || 0}</td>
+          <td>${item.pa || item.PA || 0}</td>
+          <td>${item.pd || item.PD || 0}</td>
+          <td>${item.m || item.M || 0}</td>
+          <td>${item.md || item.MD || 0}</td>
+          <td>${item.sp || item.SP || 0}</td>
+          <td><strong>${totalVal}</strong></td>
+          <td>${descVal}</td>
+          <td><button class="btn-delete" onclick="deleteLogRow(${item.rowIndex || item.rowindex})">Delete</button></td>
+        `;
+      }
+      tbody.appendChild(row);
+    });
+  }
+
+  function deleteLogRow(rowIndex) {
+    if (!confirm("Are you sure you want to delete this row?")) return;
+
+    fetch(`${WEB_APP_URL}?action=delete&category=${currentCategory}&rowIndex=${rowIndex}`, {
+      method: 'POST',
+      mode: 'no-cors'
+    }).then(() => {
+      setTimeout(fetchLogs, 1000);
+    });
+  }
+</script>
+
+</body>
+</html>

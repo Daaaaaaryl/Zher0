@@ -1,0 +1,1433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Equipment Stat Destribution v 0.7.12</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f5f7;color:#202124}
+.wrap{max-width:1500px;margin:18px auto;padding:0 14px}
+h1{font-size:24px;margin:0 0 5px}
+h2{font-size:18px;margin:0 0 10px}
+p{margin:5px 0 12px;color:#555}
+.panel{background:#fff;border:1px solid #c9cdd2;border-radius:10px;padding:14px;margin-bottom:14px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{border:1px solid #9aa0a6;background:#fff;border-radius:7px;padding:8px 12px;cursor:pointer;font-weight:600}
+button:hover{background:#eef1f4}
+button.primary{background:#263238;color:#fff;border-color:#263238}
+button.danger{color:#9b1c1c}
+input[type=number]{width:72px;padding:7px;border:1px solid #b8bec5;border-radius:5px;text-align:center}
+input.basis{background:#fff8dc}
+input.neg{background:#fff0f0}
+.small{font-size:12px;color:#666}
+.storage-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}.storage-status{font-size:12px;color:#777}.storage-status.good{color:#177245;font-weight:600}.storage-status:not(.good){color:#9a5b00}.status{font-weight:700;padding:8px 10px;border-radius:6px;background:#eef5ee}
+.status.bad{background:#fbeaea;color:#9b1c1c}
+.status.good{color:#176b25}
+.table-wrap{overflow:auto;border:1px solid #d1d5da;border-radius:8px}
+table{border-collapse:collapse;width:max-content;min-width:100%}
+th,td{border:1px solid #d5d8dc;padding:6px 7px;text-align:center;white-space:nowrap}
+th{background:#e9edf1;font-weight:700}
+td.name,th.name{text-align:left;position:sticky;left:0;background:#fff;z-index:2}
+th.name{background:#e9edf1}
+.basis-total{font-weight:700;background:#eaf5e7}
+.priority-cell{padding:3px}
+.priority-cell input{width:58px}
+.priority-cell input:focus{outline:2px solid #90caf9}
+.priority-zero{background:#f7f7f7}
+.negcell input{width:58px}
+.result{font-weight:700;background:#f8fbf5}
+.total{font-weight:800;background:#e6f2df}
+.cardgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.card{border:1px solid #d1d5da;border-radius:8px;padding:10px;background:#fff}
+.card b{display:block;margin-bottom:4px}
+.big{font-size:20px;font-weight:800}
+.diff-pos{color:#176b25}.diff-neg{color:#a32222}
+details summary{cursor:pointer;font-weight:700}
+.note{font-size:13px;line-height:1.5}
+.hidden{display:none}
+
+.visual-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.visual-card{border:1px solid #cfd4d9;border-radius:10px;padding:12px;background:#fff}
+.visual-card h3{margin:0 0 8px;font-size:16px}
+.bar-row{display:grid;grid-template-columns:48px 1fr 52px;gap:7px;align-items:center;margin:7px 0}
+.bar-label{font-weight:700}
+.bar-track{height:18px;background:#edf0f2;border-radius:5px;overflow:hidden;border:1px solid #d5d9dd}
+.bar-fill{height:100%;border-radius:4px;transition:width .25s}
+.bar-fill.set1{background:#5b8def}
+.bar-fill.set2{background:#e39b45}
+.bar-value{text-align:right;font-weight:700}
+.equip-bars{display:grid;gap:9px}
+.equip-row{display:grid;grid-template-columns:88px 1fr 42px;gap:8px;align-items:center}
+.stack{height:24px;display:flex;border:1px solid #cfd4d9;border-radius:5px;overflow:hidden;background:#f3f4f5}
+.seg{height:100%;min-width:0;position:relative}
+.seg span{display:none}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px;font-size:11px}
+.legend-item{display:flex;align-items:center;gap:4px}
+.swatch{width:11px;height:11px;border-radius:2px;border:1px solid #bbb}
+.heatmap td{min-width:64px;font-weight:700}
+.heatmap .rowname{min-width:100px;text-align:left;background:#fff}
+.comparison-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.compare-stat{display:grid;grid-template-columns:45px 1fr 1fr 48px;gap:6px;align-items:center;margin:6px 0}
+.compare-mini{height:15px;background:#edf0f2;border-radius:4px;overflow:hidden}
+.compare-mini>div{height:100%}
+.compare-mini.a>div{background:#5b8def}
+.compare-mini.b>div{background:#e39b45}
+.compare-num{text-align:right;font-size:12px;font-weight:700}
+.callout{display:flex;gap:10px;align-items:center;padding:10px;border-radius:8px;background:#f2f6fb;border:1px solid #d4e0ef;margin-bottom:10px}
+.callout strong{font-size:18px}
+@media(max-width:900px){.visual-grid,.comparison-wrap{grid-template-columns:1fr}}
+
+
+/* v0.6.04 compact explorer */
+details.panel{padding:0;overflow:hidden}
+details.panel>summary{list-style:none;cursor:pointer;padding:14px;font-weight:700;font-size:18px;background:#fff}
+details.panel>summary::-webkit-details-marker{display:none}
+details.panel>summary:before{content:"▸";display:inline-block;width:20px;color:#666}
+details.panel[open]>summary:before{content:"▾"}
+details.panel>.panel-body{padding:0 14px 14px}
+.quickfill{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:10px;background:#f7f8fa;border:1px solid #d9dde1;border-radius:8px;margin:10px 0}
+.quickfill input,.quickfill select{padding:6px 7px;border:1px solid #b8bec5;border-radius:5px;background:#fff}
+.quickfill input[type=number]{width:58px}
+.results-nav{position:sticky;top:0;z-index:20;background:#f4f5f7;padding:7px 0;margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap}
+.results-nav button{font-size:12px;padding:7px 10px}
+.results-nav button.active{background:#263238;color:#fff;border-color:#263238}
+.result-pane{display:none}
+.result-pane.active{display:block}
+.compact-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.compact-grid.four{grid-template-columns:repeat(2,minmax(0,1fr))}
+.compact-card{background:#fff;border:1px solid #cfd4d9;border-radius:9px;padding:10px}
+.compact-card h3{margin:0 0 7px;font-size:15px}
+.compact-card .small{margin-bottom:5px}
+.compact-table{font-size:12px}
+.compact-table th,.compact-table td{padding:5px 6px}
+.heat-quad{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.heat-box{border:1px solid #d2d6da;border-radius:8px;padding:8px;background:#fff}
+.heat-box h4{margin:0 0 6px}
+.heat-box .table-wrap{max-height:270px}
+.set-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px}
+.set-chip{border:1px solid #d1d5da;border-radius:7px;padding:8px;background:#fff;text-align:center}
+.set-chip b{display:block;font-size:13px}
+.set-chip span{font-size:18px;font-weight:800}
+@media(max-width:900px){.compact-grid,.heat-quad{grid-template-columns:1fr}.set-strip{grid-template-columns:repeat(2,1fr)}}
+
+
+:root{
+  --hp:#43a047;
+  --pa:#e53935;
+  --pd:#607d8b;
+  --ma:#1e88e5;
+  --md:#8e44ad;
+  --sp:#f2c94c;
+}
+.stat-legend{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0}
+.stat-pill{display:inline-flex;align-items:center;gap:5px;border:1px solid #d2d6da;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:700;background:#fff}
+.stat-dot{width:11px;height:11px;border-radius:50%;border:1px solid rgba(0,0,0,.18)}
+.stat-pill.hp .stat-dot,.stat-color.hp{background:var(--hp)}
+.stat-pill.pa .stat-dot,.stat-color.pa{background:var(--pa)}
+.stat-pill.pd .stat-dot,.stat-color.pd{background:var(--pd)}
+.stat-pill.ma .stat-dot,.stat-color.ma{background:var(--ma)}
+.stat-pill.md .stat-dot,.stat-color.md{background:var(--md)}
+.stat-pill.sp .stat-dot,.stat-color.sp{background:var(--sp)}
+.stat-head.hp{background:#dff1df!important;color:#1b5e20}
+.stat-head.pa{background:#fde0df!important;color:#9b1c1c}
+.stat-head.pd{background:#e3eaed!important;color:#37474f}
+.stat-head.ma{background:#dcecff!important;color:#0d47a1}
+.stat-head.md{background:#eee1f4!important;color:#5e2a73}
+.stat-head.sp{background:#fff3c4!important;color:#6b5600}
+.explorer-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 12px}
+.explorer-controls label{font-size:12px;font-weight:700;color:#555}
+.switch-group{display:flex;gap:4px;flex-wrap:wrap}
+.switch-group button.active{background:#263238;color:#fff;border-color:#263238}
+.explorer-main{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:14px;align-items:start}
+.explorer-card{border:1px solid #d1d5da;border-radius:9px;padding:12px;background:#fff}
+.explorer-title{font-size:17px;font-weight:800;margin-bottom:3px}
+.explorer-sub{font-size:12px;color:#666;margin-bottom:10px}
+.explorer-bars{display:grid;gap:10px}
+.explorer-bar-row{display:grid;grid-template-columns:90px 1fr 58px;gap:8px;align-items:center}
+.explorer-bar-label{font-weight:700}
+.explorer-track{height:24px;background:#edf0f2;border:1px solid #d5d9dd;border-radius:5px;overflow:hidden}
+.explorer-fill{height:100%;border-radius:4px;min-width:0}
+.explorer-value{text-align:right;font-weight:800}
+.explorer-stack{height:34px;display:flex;border:1px solid #cfd4d9;border-radius:6px;overflow:hidden;background:#f3f4f5}
+.explorer-stack .seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800;min-width:0}
+.explorer-stack .seg.sp{color:#5a4a00}
+.explorer-note{font-size:12px;color:#666;margin-top:9px;line-height:1.4}
+.quick-nav{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}
+.quick-nav button{padding:6px 10px;font-size:12px}
+.color-table th{font-weight:800}
+.color-table th.hp{background:#dff1df}.color-table th.pa{background:#fde0df}
+.color-table th.pd{background:#e3eaed}.color-table th.ma{background:#dcecff}
+.color-table th.md{background:#eee1f4}.color-table th.sp{background:#fff3c4}
+@media(max-width:850px){.explorer-main{grid-template-columns:1fr}.explorer-bar-row{grid-template-columns:75px 1fr 52px}}
+
+/* v0.7.01: consistent stat colors everywhere */
+.result-table th.hp,.result-table td.hp{background:#dff1df!important}
+.result-table th.pa,.result-table td.pa{background:#fde0df!important}
+.result-table th.pd,.result-table td.pd{background:#e3eaed!important}
+.result-table th.ma,.result-table td.ma{background:#dcecff!important}
+.result-table th.md,.result-table td.md{background:#eee1f4!important}
+.result-table th.sp,.result-table td.sp{background:#fff3c4!important}
+.result-table td.stat-value{font-weight:800}
+.explorer-equipment-table th.hp,.explorer-equipment-table td.hp{background:#dff1df}
+.explorer-equipment-table th.pa,.explorer-equipment-table td.pa{background:#fde0df}
+.explorer-equipment-table th.pd,.explorer-equipment-table td.pd{background:#e3eaed}
+.explorer-equipment-table th.ma,.explorer-equipment-table td.ma{background:#dcecff}
+.explorer-equipment-table th.md,.explorer-equipment-table td.md{background:#eee1f4}
+.explorer-equipment-table th.sp,.explorer-equipment-table td.sp{background:#fff3c4}
+
+/* v0.7.02 comparison redesign */
+.compare4{width:100%;border:1px solid #d2d6da;border-radius:8px;overflow:auto;background:#fff}
+.compare4 table{width:100%;min-width:760px;border-collapse:collapse}
+.compare4 th,.compare4 td{border:1px solid #d5d8dc;padding:7px 8px}
+.compare4 .set-name{width:76px;text-align:left;background:#eef1f4;font-weight:800}
+.compare4 .set-name.focus{background:#263238;color:#fff}
+.compare4 .stat-cell{min-width:95px;vertical-align:middle;padding:5px 7px}
+.compare4 .stat-name{font-size:11px;font-weight:800;margin-bottom:3px}
+.compare4 .mini-track{height:9px;border-radius:5px;background:#edf0f2;overflow:hidden;border:1px solid rgba(0,0,0,.08)}
+.compare4 .mini-fill{height:100%;border-radius:4px}
+.compare4 .mini-value{font-size:13px;font-weight:800;margin-top:3px;text-align:right}
+.compare4 .total-cell{font-size:16px;font-weight:900;background:#eaf5e7;min-width:70px}
+.compare4 .compare-equipment-head{font-size:15px;font-weight:900;padding:9px 10px;background:#f5f6f7}
+.compare4 .compare-equipment-head small{display:block;color:#666;font-weight:500;font-size:11px;margin-top:2px}
+.compare4 .stat-row-label{font-weight:800;text-align:left;background:#f7f8f9;min-width:125px}
+.compare4 .stat-compare-value{font-size:16px;font-weight:900;text-align:center}
+.compare4 tr.focus-row td,.compare4 tr.focus-row th{box-shadow:inset 0 2px 0 #263238,inset 0 -2px 0 #263238}
+.compare4 td.hp,.compare4 th.hp{background:#dff1df}
+.compare4 td.pa,.compare4 th.pa{background:#fde0df}
+.compare4 td.pd,.compare4 th.pd{background:#e3eaed}
+.compare4 td.ma,.compare4 th.ma{background:#dcecff}
+.compare4 td.md,.compare4 th.md{background:#eee1f4}
+.compare4 td.sp,.compare4 th.sp{background:#fff3c4}
+.compare4 .set-total-head{background:#e9edf1;font-weight:800}
+.compare-help{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 10px}
+.compare-help .small{margin:0}
+
+/* v0.7.03 — horizontal equipment comparison, matching the user's visual reference */
+.explorer-horizontal{width:100%;overflow-x:auto;padding:4px 2px 8px}
+.explorer-equip-row{display:grid;grid-template-columns:repeat(6,minmax(118px,1fr));gap:8px;min-width:760px}
+.equip-visual-card{border:1px solid #cfd4d9;border-radius:8px;background:#fff;padding:7px 6px 8px;min-width:0}
+.equip-visual-title{font-size:14px;font-weight:800;text-align:center;margin:0 0 5px;white-space:nowrap}
+.equip-bars-vertical{height:178px;display:flex;align-items:flex-end;justify-content:center;gap:5px;padding:5px 2px 0;border-top:1px solid #e1e4e7}
+.equip-stat-col{height:100%;width:14px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative}
+.equip-stat-value{font-size:12px;font-weight:900;line-height:1.05;margin-bottom:4px;min-height:12px;transform:none;transform-origin:center;white-space:nowrap}
+.equip-stat-track{width:14px;height:145px;background:#edf0f2;border:1px solid #d5d9dd;border-radius:3px 3px 0 0;display:flex;align-items:flex-end;overflow:hidden}
+.equip-stat-fill{width:100%;border-radius:2px 2px 0 0;min-height:0}
+.equip-stat-value.negative{color:#d32f2f}.equip-stat-label{font-size:9px;font-weight:800;margin-top:4px;line-height:1}
+.equip-visual-total{margin-top:7px;border-top:1px solid #d9dde1;padding-top:5px;text-align:center;font-size:13px;font-weight:900}
+.equip-visual-total span{font-size:10px;color:#666;font-weight:600}
+.equip-scale-note{font-size:11px;color:#666;margin:5px 0 0;text-align:center}
+@media(max-width:900px){.explorer-equip-row{grid-template-columns:repeat(6,118px)}}
+
+/* v0.7.04 — stat colors now carry into Starting Variables */
+.basis-stat.hp,.basis-stat input.hp{background:#dff1df!important;color:#1b5e20}
+.basis-stat.pa,.basis-stat input.pa{background:#fde0df!important;color:#9b1c1c}
+.basis-stat.pd,.basis-stat input.pd{background:#e3eaed!important;color:#37474f}
+.basis-stat.ma,.basis-stat input.ma{background:#dcecff!important;color:#0d47a1}
+.basis-stat.md,.basis-stat input.md{background:#eee1f4!important;color:#5e2a73}
+.basis-stat.sp,.basis-stat input.sp{background:#fff3c4!important;color:#6b5600}
+.starting-basis-table th.basis-stat{font-weight:800}
+.starting-basis-table td.basis-stat{padding:4px}
+.starting-basis-table input.basis{width:72px;border-color:rgba(0,0,0,.18);font-weight:800}
+.hidden-overview-tool{display:none!important}
+
+/* v0.7.07 — keep the larger v0.7.05 graph; negatives are shown as colored values only */
+.equip-bars-vertical{height:178px;display:flex;align-items:flex-end;justify-content:center;gap:5px;padding:5px 2px 0;border-top:1px solid #e1e4e7}
+.equip-stat-col{height:100%;width:14px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative}
+.equip-stat-value{font-size:10px;font-weight:900;line-height:1;min-height:12px;white-space:nowrap;text-align:center;margin-bottom:3px}
+.equip-stat-value.negative{color:#c0392b}
+.equip-stat-track{width:14px;height:145px;background:#edf0f2;border:1px solid #d5d9dd;border-radius:3px 3px 0 0;display:flex;align-items:flex-end;overflow:hidden}
+.equip-stat-fill{width:100%;border-radius:2px 2px 0 0;min-height:0}
+.equip-stat-fill.neg{display:none}
+.equip-stat-value.negative{color:#d32f2f}.equip-stat-label{font-size:9px;font-weight:800;margin-top:4px;line-height:1;text-align:center;white-space:nowrap}
+.equip-visual-total{margin-top:7px;border-top:1px solid #d9dde1;padding-top:5px;text-align:center;font-size:13px;font-weight:900}
+.equip-visual-total span{font-size:10px;color:#666;font-weight:600}
+.equip-scale-note{font-size:11px;color:#666;margin:5px 0 0;text-align:center}
+
+.priority-panel table{border:1px solid #cfd4d9!important;border-collapse:separate!important;border-spacing:0!important;border-radius:7px;overflow:hidden}
+.priority-panel th,.priority-panel td{border:1px solid #dfe3e7!important}
+.priority-panel th:first-child,.priority-panel td:first-child{border-left:0!important}
+.priority-panel th:last-child,.priority-panel td:last-child{border-right:0!important}
+.priority-panel tr:first-child th{border-top:0!important}
+.priority-panel tr:last-child td{border-bottom:0!important}
+.priority-panel{border:1px solid #d1d5da;border-radius:9px;padding:12px;background:#fff}
+.explorer-number{font-size:12px!important;font-weight:900!important;transform:none!important;writing-mode:horizontal-tb!important;white-space:nowrap!important}
+
+.equipment-weight-table{width:100%;border-collapse:collapse}.equipment-weight-table th,.equipment-weight-table td{border:1px solid #dfe3e7;padding:7px 9px}.equipment-weight-table th{background:#f4f6f7}.equipment-weight-table input{width:90px}.set5-note{font-size:12px;color:#666}
+
+/* v0.7.10 — visual 0–10 level sliders */
+.level-slider-wrap{display:flex;align-items:center;gap:7px;min-width:145px}
+.level-slider{width:105px;accent-color:#455a64;cursor:pointer}
+.level-value{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:24px;padding:0 5px;border:1px solid #cfd4d9;border-radius:5px;background:#f6f7f8;font-weight:900;font-size:12px}
+.level-value.zero{color:#999;background:#fafafa}
+.level-value.high{background:#e8f0ff}
+.priority-cell{padding:5px!important}
+.priority-cell .level-slider-wrap{justify-content:center}
+.priority-cell .level-slider{width:88px}
+.equipment-weight-table .level-slider{width:135px}
+.equipment-weight-table td:nth-child(2){min-width:190px}
+.level-legend{display:flex;align-items:center;gap:7px;margin:4px 0 8px;font-size:11px;color:#666}
+.level-legend-bar{height:7px;width:130px;border-radius:5px;background:linear-gradient(to right,#eceff1,#90a4ae,#455a64)}
+
+.record-panel{display:grid;grid-template-columns:minmax(220px,1fr) minmax(180px,1fr);gap:10px;align-items:end}
+.record-field label{display:block;font-size:12px;font-weight:800;color:#555;margin-bottom:4px}
+.record-field input{width:100%;padding:8px;border:1px solid #b8bec5;border-radius:6px}
+.cloud-controls{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:9px}
+.cloud-status{font-size:12px;color:#666}
+.cloud-status.good{color:#1b5e20;font-weight:700}
+.cloud-status.bad{color:#9b1c1c;font-weight:700}
+.equipment-name-input{width:100%;padding:6px;border:1px solid #c5cbd1;border-radius:5px;font-weight:600}
+.equipment-weight-table th,.equipment-weight-table td{vertical-align:middle}
+@media(max-width:700px){.record-panel{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Equipment Stat Destribution v 0.7.12</h1>
+  <p>Start with your own variables. Enter the six stat basis values, then set the Priority Level (0–10) for every equipment/stat combination. Set 5 also uses an Equipment Level / Weight. Blank/0 priority means that cell receives no positive allocation.</p>
+
+  <details class="panel" open>
+    <summary>Stat Basis</summary>
+    <div class="panel-body">
+    <div class="table-wrap">
+      <table class="starting-basis-table">
+        <tr><th class="name">Variable</th><th class="basis-stat hp">HP</th><th class="basis-stat pa">PA</th><th class="basis-stat pd">PD</th><th class="basis-stat ma">MA</th><th class="basis-stat md">MD</th><th class="basis-stat sp">SP</th><th>Total Basis</th></tr>
+        <tr>
+          <td class="name"><b>Basis Budget</b></td>
+          <td class="basis-stat hp"><input class="basis hp" id="bHP" type="number" min="0" step="0.01" placeholder="Enter"></td>
+          <td class="basis-stat pa"><input class="basis pa" id="bPA" type="number" min="0" step="0.01" placeholder="Enter"></td>
+          <td class="basis-stat pd"><input class="basis pd" id="bPD" type="number" min="0" step="0.01" placeholder="Enter"></td>
+          <td class="basis-stat ma"><input class="basis ma" id="bMA" type="number" min="0" step="0.01" placeholder="Enter"></td>
+          <td class="basis-stat md"><input class="basis md" id="bMD" type="number" min="0" step="0.01" placeholder="Enter"></td>
+          <td class="basis-stat sp"><input class="basis sp" id="bSP" type="number" min="0" step="0.01" placeholder="Enter"></td>
+          <td id="basisTotal" class="basis-total">0</td>
+        </tr>
+      </table>
+    </div>
+    </div>
+  </details>
+
+  <details class="panel" open>
+    <summary>Priority Level</summary>
+    <p class="small">Set each stat with the 0–10 slider. Higher level = stronger weighting. 0 (—) means no allocation.</p>
+    <div class="table-wrap">
+      <table id="priorityTable"></table>
+    </div>
+    </div>
+  </details>
+
+  <details class="panel" open>
+    <summary>Equipment Level / Weight</summary>
+    <p class="small">Set 5 first gives each equipment a 0–10 Level / Weight. Higher level = larger share of the equipment budget.</p>
+    <div class="table-wrap">
+      <table class="equipment-weight-table">
+        <tr><th>Slot</th><th>Equipment Name</th><th>Level / Weight</th></tr>
+        <tbody id="equipmentWeightTable"></tbody>
+      </table>
+    </div>
+  </details>
+
+  <details class="panel">
+    <summary>Negative Values</summary>
+    <div class="panel-body">
+    <p class="small">Enter only negative values (−1 to −10). The prototype tracks them separately so we can test the rule that negative value returns its magnitude to the distributable budget.</p>
+    <div class="table-wrap">
+      <table id="negativeTable"></table>
+    </div>
+    </div>
+  </details>
+
+  <div class="panel">
+    <h3 style="margin:0 0 10px">Record</h3>
+    <div class="record-panel">
+      <div class="record-field">
+        <label for="recordName">Record / Test Name</label>
+        <input id="recordName" type="text" placeholder="e.g. Glass Cannon Test 01">
+      </div>
+      <div class="record-field">
+        <label for="equipmentSetName">Equipment Set Name</label>
+        <input id="equipmentSetName" type="text" placeholder="e.g. Flame Set">
+      </div>
+    </div>
+    <div class="cloud-controls">
+      <button type="button" class="primary" onclick="saveToGoogleSheet()">Save Record to Google Sheet</button>
+      <button type="button" onclick="loadFromGoogleSheet()">Load Latest Record</button>
+      <span id="cloudStatus" class="cloud-status">Google Sheet: not connected yet</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="toolbar">
+      <button class="primary" id="runButton">RUN ALL 5 SETS</button>
+      <button onclick="clearPriorities()">Clear Priorities</button>
+      <button onclick="clearNegatives()">Clear Negatives</button>
+      <button onclick="clearAll()">Clear Everything</button>
+      <div class="storage-controls">
+      <button type="button" onclick="saveNow()">Save Inputs</button>
+      <button type="button" onclick="loadNow()">Load Saved Inputs</button>
+      <span id="storageStatus" class="storage-status">Checking local memory…</span>
+    </div>
+    <span id="inputStatus" class="status">Waiting for variables</span><span class="small">Tip: open this file in Chrome/Edge, enter basis + priorities, then click RUN ALL 5 SETS.</span>
+    </div>
+  </div>
+
+  
+  <details class="panel">
+    <summary>Experimental Distribution Models</summary>
+    <div class="panel-body">
+      <div class="compact-grid">
+        <div class="compact-card"><b>Set 1</b><br><span class="small">Separate stat budgets + rollover.</span></div>
+        <div class="compact-card"><b>Set 2</b><br><span class="small">One global priority-weighted pool.</span></div>
+        <div class="compact-card"><b>Set 3</b><br><span class="small">Average of stat-preserving and global allocation.</span></div>
+        <div class="compact-card"><b>Set 4</b><br><span class="small">Global pool anchored by original stat budgets.</span></div>
+        <div class="compact-card"><b>Set 5</b><br><span class="small">Equipment Level/Weight first, then Priority distributes that equipment budget among its stats.</span></div>
+      </div>
+    </div>
+  </details>  </div>
+
+<div id="errorBox" class="panel hidden" style="background:#fff0f0;border-color:#d66;color:#8a1111"><b>Prototype error:</b><pre id="errorText" style="white-space:pre-wrap"></pre></div>
+
+
+  <div id="results" class="hidden">
+    <div class="results-nav" id="resultsNav">
+      <button class="active" data-pane="overview">Overview</button>
+      <button data-pane="set1">Set 1</button>
+      <button data-pane="set2">Set 2</button>
+      <button data-pane="set3">Set 3</button>
+      <button data-pane="set4">Set 4</button>
+      <button data-pane="set5">Set 5</button>
+      <button data-pane="compare">Compare All 5</button>
+      <button data-pane="audit">Rounding Audit</button>
+    </div>
+
+    <div id="pane-overview" class="result-pane active">
+      <div class="panel">
+        <h2>Stat Color Key</h2>
+        <div class="stat-legend">
+          <span class="stat-pill hp"><span class="stat-dot"></span>HP</span>
+          <span class="stat-pill pa"><span class="stat-dot"></span>PA</span>
+          <span class="stat-pill pd"><span class="stat-dot"></span>PD</span>
+          <span class="stat-pill ma"><span class="stat-dot"></span>MA</span>
+          <span class="stat-pill md"><span class="stat-dot"></span>MD</span>
+          <span class="stat-pill sp"><span class="stat-dot"></span>SP</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Comparison Viewer</h2>
+        <p class="small"></p>
+
+        <div class="explorer-controls">
+          <label>VIEW</label>
+          <div class="switch-group" id="explorerModeButtons">
+            <button type="button" data-mode="equipment">Equipment</button>
+            <button type="button" data-mode="stat">Stat</button>
+          </div>
+          <label id="explorerItemLabel">EQUIPMENT</label>
+          <select id="explorerItem"></select>
+        </div>
+
+        <div class="compare-help">
+          <b id="explorerTitle">Comparison</b>
+          <span class="small" id="explorerSub"></span>
+          <div class="switch-group" id="explorerSetButtons">
+            <button type="button" data-set="0" class="active">Set 1</button>
+            <button type="button" data-set="1">Set 2</button>
+            <button type="button" data-set="2">Set 3</button>
+            <button type="button" data-set="3">Set 4</button>
+            <button type="button" data-set="4">Set 5</button>
+          </div>
+        </div>
+
+        <div id="explorerComparison" class="compare4"></div>
+        <div id="explorerNote" class="explorer-note"></div>
+      </div>
+
+      <div class="panel hidden-overview-tool">
+        <h2>Quick Comparison</h2>
+        <div id="budgetCheck" class="callout"></div>
+        <div id="setStrip" class="set-strip"></div>
+        <div class="compact-grid">
+          <div class="compact-card"><h3>Stat Distribution — All 4</h3><div class="small">Rows in each bar = Set 1, Set 2, Set 3, Set 4, Set 5.</div><div id="overviewStatBars"></div></div>
+          <div class="compact-card"><h3>Equipment Distribution — All 4</h3><div class="small">Rows in each bar = Set 1, Set 2, Set 3, Set 4, Set 5.</div><div id="overviewEquipBars"></div></div>
+        </div>
+      </div>
+      <div class="panel hidden-overview-tool">
+        <h2>Heatmap — All 4 Sets</h2>
+        <p class="small">This is the visual comparison. Each heatmap is the same 6×6 Equipment × Stat grid, so differences are easy to spot.</p>
+        <div class="heat-quad">
+          <div class="heat-box"><h4>Set 1</h4><table id="heat1" class="heatmap"></table></div>
+          <div class="heat-box"><h4>Set 2</h4><table id="heat2" class="heatmap"></table></div>
+          <div class="heat-box"><h4>Set 3</h4><table id="heat3" class="heatmap"></table></div>
+          <div class="heat-box"><h4>Set 4</h4><table id="heat4" class="heatmap"></table></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="pane-set1" class="result-pane">
+      <div class="panel"><h2>Set 1 — Separate Stat Budgets + Rollover</h2><div id="set1Summary" class="cardgrid"></div><div class="compact-grid"><div class="compact-card"><h3>Stat</h3><div id="statBars1"></div></div><div class="compact-card"><h3>Equipment</h3><div id="equipBars1" class="equip-bars"></div></div></div><div class="table-wrap" style="margin-top:10px"><table id="set1Table"></table></div></div>
+    </div>
+
+    <div id="pane-set2" class="result-pane">
+      <div class="panel"><h2>Set 2 — One Global Budget</h2><div id="set2Summary" class="cardgrid"></div><div class="compact-grid"><div class="compact-card"><h3>Stat</h3><div id="statBars2"></div></div><div class="compact-card"><h3>Equipment</h3><div id="equipBars2" class="equip-bars"></div></div></div><div class="table-wrap" style="margin-top:10px"><table id="set2Table"></table></div></div>
+    </div>
+
+    <div id="pane-set3" class="result-pane">
+      <div class="panel"><h2>Set 3 — Stat Allocation + Rollover Average</h2><div id="set3Summary" class="cardgrid"></div><div class="compact-grid"><div class="compact-card"><h3>Stat</h3><div id="statBars3"></div></div><div class="compact-card"><h3>Equipment</h3><div id="equipBars3" class="equip-bars"></div></div></div><div class="table-wrap" style="margin-top:10px"><table id="set3Table"></table></div></div>
+    </div>
+
+    <div id="pane-set5" class="result-pane">
+      <div class="panel"><h2>Set 5 — Equipment Weight → Priority</h2><div id="set5Summary" class="cardgrid"></div><div class="compact-grid"><div class="compact-card"><h3>Stat</h3><div id="statBars5"></div></div><div class="compact-card"><h3>Equipment</h3><div id="equipBars5" class="equip-bars"></div></div></div><div class="table-wrap" style="margin-top:10px"><table id="set5Table"></table></div></div>
+    </div>
+
+    <div id="pane-set4" class="result-pane">
+      <div class="panel"><h2>Set 4 — Constrained Weighted Pool</h2><div id="set4Summary" class="cardgrid"></div><div class="compact-grid"><div class="compact-card"><h3>Stat</h3><div id="statBars4"></div></div><div class="compact-card"><h3>Equipment</h3><div id="equipBars4" class="equip-bars"></div></div></div><div class="table-wrap" style="margin-top:10px"><table id="set4Table"></table></div></div>
+    </div>
+
+    <div id="pane-compare" class="result-pane">
+      <div class="panel">
+        <h2>All 5 Sets — Side-by-Side</h2><p class="small">Set 1–5 are compared here. The separate Set tabs contain their full visual/heatmap views.</p>
+        <div class="table-wrap"><table id="allSetsTable"></table></div>
+      </div>
+      <div class="panel">
+        <h2>Stat Totals — Side-by-Side</h2>
+        <div class="table-wrap"><table id="statCompareAll"></table></div>
+      </div>
+    </div>
+
+    <div id="pane-audit" class="result-pane">
+      <div class="panel"><details><summary>Rounding / Decimal Audit</summary><p class="small">Ideal decimal allocation is shown before whole-number rounding. Largest remainder is used so the required pool is preserved exactly.</p><div class="table-wrap"><table id="auditTable"></table></div></details></div>
+    </div>
+  </div>
+
+  <div class="panel note">
+    <b>Prototype rule currently being tested:</b><br>
+    1. Priority is a strength/use level, not a ranking order.<br>
+    2. Priority 10 is a stronger allocation weight than Priority 8, which is stronger than Priority 4, etc.<br>
+    3. Blank/0 means no allocation.<br>
+    4. Whole-number rounding uses largest remainder so the required positive pool is not lost.<br>
+    5. Negative values are returned to the positive allocation pool, then applied as deductions; this keeps the final total equal to the original Total Basis.
+  </div>
+</div>
+
+<script>
+window.addEventListener("error", function(e){
+  const box=document.getElementById("errorBox");
+  const txt=document.getElementById("errorText");
+  if(box && txt){
+    box.classList.remove("hidden");
+    txt.textContent=(e.message||"Unknown JavaScript error")+
+      (e.filename?("\nFile: "+e.filename):"")+
+      (e.lineno?("\nLine: "+e.lineno):"");
+  }
+});
+
+const slots = ["Main Hand","Off Hand","Body","Head","Boots","Accessory"];
+const stats = ["HP","PA","PD","MA","MD","SP"];
+
+function n(id){
+  const v = parseFloat(document.getElementById(id).value);
+  return Number.isFinite(v) ? v : 0;
+}
+function basis(){
+  return Object.fromEntries(stats.map(s=>[s,n("b"+s)]));
+}
+function priority(slot,stat){
+  const v=parseFloat(document.getElementById("p_"+slot+"_"+stat).value);
+  return Number.isFinite(v) ? Math.max(0,Math.min(10,Math.round(v))) : 0;
+}
+function negative(slot,stat){
+  const v=parseFloat(document.getElementById("n_"+slot+"_"+stat).value);
+  return Number.isFinite(v) ? Math.min(0,Math.max(-10,Math.round(v))) : 0;
+}
+
+function levelSlider(id, value, extraClass=""){
+  const v=Number.isFinite(Number(value))?Math.max(0,Math.min(10,Math.round(Number(value)))):0;
+  return `<div class="level-slider-wrap ${extraClass}">
+    <input class="level-slider" id="${id}" type="range" min="0" max="10" step="1" value="${v}">
+    <span class="level-value ${v===0?"zero":""}">${v===0?"—":v}</span>
+  </div>`;
+}
+function syncLevelSlider(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const v=Math.max(0,Math.min(10,Math.round(Number(el.value)||0)));
+  el.value=v;
+  const out=el.parentElement.querySelector(".level-value");
+  if(out){out.textContent=v===0?"—":v;out.classList.toggle("zero",v===0);out.classList.toggle("high",v>=8);}
+}
+function makeEquipmentWeightTable(){
+  const body=document.getElementById("equipmentWeightTable");
+  if(!body) return;
+  body.innerHTML=slots.map(sl=>`<tr>
+    <td><b>${sl}</b></td>
+    <td><input class="equipment-name-input" id="ename_${sl}" type="text" placeholder="${sl}"></td>
+    <td>${levelSlider("ew_"+sl,0,"equipment-level")}</td>
+  </tr>`).join("");
+  slots.forEach(sl=>{
+    document.getElementById("ew_"+sl)?.addEventListener("input",()=>{syncLevelSlider("ew_"+sl);saveInputs()});
+    document.getElementById("ename_"+sl)?.addEventListener("input",()=>saveInputs());
+  });
+}
+
+function equipmentDisplayName(slot){
+  return document.getElementById("ename_"+slot)?.value.trim() || slot;
+}
+
+function equipmentWeight(slot){
+  const v=parseFloat(document.getElementById("ew_"+slot)?.value);
+  return Number.isFinite(v)&&v>0?v:0;
+}
+
+function makeInputTables(){
+  let h='<tr><th class="name">Equipment</th>'+stats.map(s=>`<th class="stat-head ${statClass(s)}">${s}</th>`).join('')+'<th>Priority Total</th></tr>';
+  slots.forEach(slot=>{
+    h+='<tr><td class="name"><b>'+slot+'</b></td>';
+    stats.forEach(st=>{
+      h+='<td class="priority-cell priority-zero">'+levelSlider("p_"+slot+"_"+st,0)+'</td>';
+    });
+    h+='<td id="pt_'+slot+'">0</td></tr>';
+  });
+  document.getElementById('priorityTable').innerHTML=h;
+
+  let g='<tr><th class="name">Equipment</th>'+stats.map(s=>'<th>'+s+'</th>').join('')+'<th>Negative Total</th></tr>';
+  slots.forEach(slot=>{
+    g+='<tr><td class="name"><b>'+slot+'</b></td>';
+    stats.forEach(st=>{
+      g+='<td class="negcell"><input id="n_'+slot+'_'+st+'" type="number" min="-10" max="0" step="1" placeholder="0"></td>';
+    });
+    g+='<td id="nt_'+slot+'">0</td></tr>';
+  });
+  document.getElementById('negativeTable').innerHTML=g;
+
+  slots.forEach(slot=>stats.forEach(st=>{
+    document.getElementById("p_"+slot+"_"+st).addEventListener("input", ()=>{syncLevelSlider("p_"+slot+"_"+st);updateLiveTotals();saveInputs()});
+    document.getElementById("n_"+slot+"_"+st).addEventListener("input", ()=>{updateLiveTotals();saveInputs()});
+  }));
+  stats.forEach(st=>document.getElementById("b"+st).addEventListener("input", ()=>{updateLiveTotals();saveInputs();}));
+  document.getElementById("recordName")?.addEventListener("input",saveInputs);
+  document.getElementById("equipmentSetName")?.addEventListener("input",saveInputs);
+}
+function syncAllLevelSliders(){
+  document.querySelectorAll(".level-slider").forEach(el=>syncLevelSlider(el.id));
+}
+function updateLiveTotals(){
+  let bt=stats.reduce((a,s)=>a+basis()[s],0);
+  document.getElementById("basisTotal").textContent=fmt(bt);
+  slots.forEach(slot=>{
+    document.getElementById("pt_"+slot).textContent=stats.reduce((a,st)=>a+priority(slot,st),0);
+    document.getElementById("nt_"+slot).textContent=fmt(stats.reduce((a,st)=>a+negative(slot,st),0));
+  });
+  const anyBasis=bt>0, anyP=slots.some(x=>stats.some(s=>priority(x,s)>0));
+  const el=document.getElementById("inputStatus");
+  if(!anyBasis) {el.textContent="Enter the stat basis first";el.className="status";}
+  else if(!anyP){el.textContent="Basis entered — now set some priorities";el.className="status";}
+  else {el.textContent="Ready to run";el.className="status good";}
+}
+function fmt(x){return Math.abs(x-Math.round(x))<1e-9?String(Math.round(x)):x.toFixed(2)}
+
+function allocate(items,total){
+  total=Math.max(0,total);
+  const sum=items.reduce((a,x)=>a+x.weight,0);
+  if(sum<=0) return items.map(x=>({...x,ideal:0,base:0,rem:0,final:0}));
+  const raw=items.map(x=>total*x.weight/sum);
+  const base=raw.map(Math.floor);
+  let remaining=Math.round(total-base.reduce((a,b)=>a+b,0));
+  const order=raw.map((v,i)=>({i,rem:v-base[i],weight:items[i].weight}))
+    .sort((a,b)=>b.rem-a.rem || b.weight-a.weight || a.i-b.i);
+  for(let i=0;i<remaining;i++) base[order[i%order.length].i]++;
+  return items.map((x,i)=>({...x,ideal:raw[i],base:Math.floor(raw[i]),rem:raw[i]-Math.floor(raw[i]),final:base[i]}));
+}
+
+function calculate(){
+  const B=basis();
+  const negByStat=Object.fromEntries(stats.map(s=>[s,0]));
+  let totalNeg=0;
+  slots.forEach(sl=>stats.forEach(st=>{
+    const v=negative(sl,st);
+    negByStat[st]+=v;
+    totalNeg+=v;
+  }));
+
+  // A negative value is a deduction from the final cell, so its magnitude
+  // is returned to the positive pool. Thus positive pool = basis - negative total.
+  const positiveBudget=Object.fromEntries(stats.map(s=>[s,B[s]-negByStat[s]]));
+
+  // SET 1: each stat first receives its own budget. If a stat has no active
+  // priorities, that stat's unused budget becomes a rollover pool and is
+  // redistributed across active cells using their priority weights. This keeps
+  // the final total equal to the original total basis.
+  let set1=[];
+  let rollover=0;
+  stats.forEach(st=>{
+    const items=slots.map(sl=>({slot:sl,stat:st,weight:priority(sl,st)}));
+    const active=items.some(x=>x.weight>0);
+    if(active) set1.push(...allocate(items,positiveBudget[st]));
+    else {
+      set1.push(...items.map(x=>({...x,ideal:0,base:0,rem:0,final:0})));
+      rollover+=positiveBudget[st];
+    }
+  });
+
+  // Redistribute any stat budget with no active cells across all active cells.
+  if(rollover>0){
+    const activeKeys=new Set(set1.filter(x=>x.weight>0).map(x=>x.slot+'|'+x.stat));
+    const active=slots.flatMap(sl=>stats.map(st=>({slot:sl,stat:st,weight:priority(sl,st)})))
+      .filter(x=>x.weight>0);
+    const extra=allocate(active,rollover);
+    const extraMap=new Map(extra.map(x=>[x.slot+'|'+x.stat,x]));
+    set1=set1.map(x=>{
+      const e=extraMap.get(x.slot+'|'+x.stat);
+      if(!e) return x;
+      return {...x,ideal:x.ideal+e.ideal,final:x.final+e.final};
+    });
+  }
+
+  const totalBasis=stats.reduce((a,s)=>a+B[s],0);
+  const globalItems=slots.flatMap(sl=>stats.map(st=>({slot:sl,stat:st,weight:priority(sl,st)})))
+    .filter(x=>x.weight>0);
+  const set2Active=allocate(globalItems,totalBasis-totalNeg);
+  const set2=slots.flatMap(sl=>stats.map(st=>{
+    const x=set2Active.find(r=>r.slot===sl && r.stat===st);
+    return x || {slot:sl,stat:st,weight:priority(sl,st),ideal:0,base:0,rem:0,final:0};
+  }));
+
+  // Apply the actual negative modifier after the positive pool has been allocated.
+  // This makes the final total remain exactly equal to the original Total Basis.
+  const applyNegatives = arr => arr.map(x => ({...x, final: x.final + negative(x.slot,x.stat)}));
+  set1 = applyNegatives(set1);
+  const set2Final = applyNegatives(set2);
+
+  return {B,set1,set2:set2Final,totalBasis,totalNeg,negByStat,positiveBudget,rollover};
+}
+
+function matrix(results){
+  const m={};
+  slots.forEach(sl=>{
+    m[sl]={};
+    stats.forEach(st=>{
+      m[sl][st]={
+        slot:sl, stat:st, weight:0, ideal:0, base:0, rem:0, final:0
+      };
+    });
+  });
+  (results||[]).forEach(r=>{
+    if(m[r.slot] && m[r.slot][r.stat]){
+      m[r.slot][r.stat]={
+        slot:r.slot, stat:r.stat, weight:Number(r.weight)||0,
+        ideal:Number(r.ideal)||0, base:Number(r.base)||0,
+        rem:Number(r.rem)||0, final:Number(r.final)||0
+      };
+    }
+  });
+  return m;
+}
+function renderResultTable(id,results,showIdeal=false){
+  const m=matrix(results);
+  let h='<tr><th class="name">Equipment</th>'+stats.map(s=>'<th>'+s+'</th>').join('')+'<th>Total</th></tr>';
+  slots.forEach(sl=>{
+    let total=0;
+    h+='<tr><td class="name"><b>'+sl+'</b></td>';
+    stats.forEach(st=>{
+      const r=m[sl][st] || {weight:0,ideal:0,final:0}; total+=Number(r.final)||0;
+      const neg=negative(sl,st);
+      const title=r.weight?`Priority ${r.weight} | Ideal positive ${r.ideal.toFixed(4)} | Negative ${neg} | Final ${r.final}`:(neg?`No positive priority | Negative ${neg} | Final ${r.final}`:'No allocation');
+      const display=(r.weight||neg)?fmt(r.final):"—";
+      h+=`<td class="result" title="${title}">${display}</td>`;
+    });
+    h+=`<td class="total">${fmt(total)}</td></tr>`;
+  });
+  h+='<tr class="total"><td class="name">TOTAL</td>';
+  stats.forEach(st=>h+='<td>'+fmt(results.filter(r=>r.stat===st).reduce((a,r)=>a+r.final,0))+'</td>');
+  h+='<td>'+fmt(results.reduce((a,r)=>a+r.final,0))+'</td></tr>';
+  document.getElementById(id).innerHTML=h;
+}
+function renderSummary(id,results,totalPositive,totalNeg){
+  const byStat=Object.fromEntries(stats.map(s=>[s,results.filter(r=>r.stat===s).reduce((a,r)=>a+r.final,0)]));
+  let h='';
+  stats.forEach(s=>{
+    const active=slots.some(sl=>priority(sl,s)>0);
+    const note=active?`Basis ${fmt(basis()[s])}`:`Basis ${fmt(basis()[s])} · no active priority`;
+    h+=`<div class="card"><b>${s}</b><span class="big">${fmt(byStat[s])}</span><div class="small">${note}</div></div>`;
+  });
+  h+=`<div class="card"><b>Positive Pool Used</b><span class="big">${fmt(totalPositive)}</span><div class="small">Basis plus returned negatives</div></div>`;
+  h+=`<div class="card"><b>Negative Input</b><span class="big">${fmt(totalNeg)}</span><div class="small">Returned to allocation pool</div></div>`;
+  const finalTotal=results.reduce((a,r)=>a+r.final,0);
+  h+=`<div class="card"><b>Final Total</b><span class="big">${fmt(finalTotal)}</span><div class="small">Target Basis ${fmt(stats.reduce((a,s)=>a+basis()[s],0))}</div></div>`;
+  document.getElementById(id).innerHTML=h;
+}
+function renderCompare(a,b){
+  const target=document.getElementById("compareTable");
+  if(!target) return;
+  const ma=matrix(a),mb=matrix(b);
+  let h='<tr><th class="name">Equipment</th>'+stats.map(s=>'<th>'+s+'</th>').join('')+'<th>Equipment Difference</th></tr>';
+  slots.forEach(sl=>{
+    let d=0; h+=`<tr><td class="name"><b>${sl}</b></td>`;
+    stats.forEach(st=>{
+      const x=mb[sl][st].final-ma[sl][st].final; d+=x;
+      h+=`<td class="${x>0?'diff-pos':x<0?'diff-neg':''}">${x>0?'+':''}${x}</td>`;
+    });
+    h+=`<td>${d>0?'+':''}${d}</td></tr>`;
+  });
+  h+='<tr class="total"><td class="name">SET 2 − SET 1</td>';
+  stats.forEach(st=>{
+    const x=b.filter(r=>r.stat===st).reduce((a,r)=>a+r.final,0)-a.filter(r=>r.stat===st).reduce((a,r)=>a+r.final,0);
+    h+=`<td class="${x>0?'diff-pos':x<0?'diff-neg':''}">${x>0?'+':''}${x}</td>`;
+  });
+  h+='<td>'+ (b.reduce((a,r)=>a+r.final,0)-a.reduce((a,r)=>a+r.final,0))+'</td></tr>';
+  document.getElementById("compareTable").innerHTML=h;
+}
+function renderAudit(a,b){
+  let h='<tr><th>Set</th><th>Equipment</th><th>Stat</th><th>Priority</th><th>Ideal Decimal</th><th>Fraction</th><th>Final</th></tr>';
+  [...a.map(r=>({...r,set:"Set 1"})),...b.map(r=>({...r,set:"Set 2"}))]
+    .filter(r=>r.weight>0)
+    .forEach(r=>h+=`<tr><td>${r.set}</td><td>${r.slot}</td><td>${r.stat}</td><td>${r.weight}</td><td>${r.ideal.toFixed(4)}</td><td>${r.rem.toFixed(4)}</td><td><b>${r.final}</b></td></tr>`);
+  document.getElementById("auditTable").innerHTML=h;
+}
+
+function statClass(st){return String(st).toLowerCase();}
+function statColor(st){
+  return ({HP:"#43a047",PA:"#e53935",PD:"#607d8b",MA:"#1e88e5",MD:"#8e44ad",SP:"#f2c94c"})[st]||"#607d8b";
+}
+function colorForValue(value,max,st){
+  if(value<=0) return "rgba(220,224,228,.35)";
+  const hex=statColor(st);
+  const m=hex.match(/[0-9a-f]{2}/gi)||["96","96","96"];
+  const rgb=m.map(x=>parseInt(x,16)).join(",");
+  const a=Math.max(.12,Math.min(.78,value/(max||1)));
+  return `rgba(${rgb},${a})`;
+}
+function statTotals(results){
+  return Object.fromEntries(stats.map(st=>[st,results.filter(r=>r.stat===st).reduce((a,r)=>a+r.final,0)]));
+}
+function equipTotals(results){
+  return Object.fromEntries(slots.map(sl=>[sl,results.filter(r=>r.slot===sl).reduce((a,r)=>a+r.final,0)]));
+}
+function renderStatBars(id,results,kind){
+  const totals=statTotals(results), max=Math.max(...Object.values(totals),1);
+  let h="";
+  stats.forEach(st=>{
+    const v=totals[st];
+    h+=`<div class="bar-row"><div class="bar-label">${st}</div><div class="bar-track"><div class="bar-fill stat-color ${statClass(st)}" style="width:${(v/max)*100}%"></div></div><div class="bar-value">${fmt(v)}</div></div>`;
+  });
+  document.getElementById(id).innerHTML=h;
+}
+function renderEquipBars(id,results,kind){
+  const totals=equipTotals(results), max=Math.max(...Object.values(totals),1);
+  let h="";
+  slots.forEach(sl=>{
+    const v=totals[sl];
+    h+=`<div class="equip-row"><div class="bar-label">${sl}</div><div class="bar-track"><div class="bar-fill ${kind}" style="width:${(v/max)*100}%"></div></div><div class="bar-value">${fmt(v)}</div></div>`;
+  });
+  document.getElementById(id).innerHTML=h;
+}
+function renderHeatmap(id,results){
+  const m=matrix(results);
+  const max=Math.max(...(results||[]).map(r=>Math.max(0,Number(r.final)||0)),1);
+  let h='<tr><th class="rowname">Equipment</th>'+stats.map(st=>`<th class="stat-head ${statClass(st)}">${st}</th>`).join('')+'</tr>';
+  slots.forEach(sl=>{
+    h+=`<tr><td class="rowname"><b>${sl}</b></td>`;
+    stats.forEach(st=>{
+      const r=m[sl][st], v=Math.max(0,r.final);
+      const bg=colorForValue(v,max,st);
+      const pr=r.weight?`P${r.weight}`:"—";
+      h+=`<td style="background:${bg}" title="Priority ${r.weight||0} | Final ${fmt(r.final)}">${r.weight||r.final?fmt(r.final):"—"}<div class="small">${pr}</div></td>`;
+    });
+    h+='</tr>';
+  });
+  document.getElementById(id).innerHTML=h;
+}
+function renderSideBySide(a,b){
+  const target=document.getElementById("sideBySideTable");
+  if(!target) return;
+  const ma=matrix(a),mb=matrix(b);
+  let h='<tr><th class="name">Equipment / Stat</th><th>Set 1</th><th>Set 2</th><th>Δ</th></tr>';
+  slots.forEach(sl=>{
+    stats.forEach(st=>{
+      const x=ma[sl][st].final, y=mb[sl][st].final, d=y-x;
+      h+=`<tr><td class="name">${sl} — ${st}</td><td>${fmt(x)}</td><td>${fmt(y)}</td><td class="${d>0?'diff-pos':d<0?'diff-neg':''}">${d>0?'+':''}${fmt(d)}</td></tr>`;
+    });
+  });
+  const ta=a.reduce((q,r)=>q+r.final,0), tb=b.reduce((q,r)=>q+r.final,0);
+  h+=`<tr class="total"><td class="name">TOTAL</td><td>${fmt(ta)}</td><td>${fmt(tb)}</td><td>${tb-ta>0?'+':''}${fmt(tb-ta)}</td></tr>`;
+  document.getElementById("sideBySideTable").innerHTML=h;
+}
+function renderBudgetCheck(c){
+  const target=c.totalBasis;
+  const posTarget=target-c.totalNeg;
+  const vals=[c.set1,c.set2];
+  const s1=vals[0].reduce((a,r)=>a+r.final,0);
+  const s2=vals[1].reduce((a,r)=>a+r.final,0);
+  const ok3=true;
+  document.getElementById("budgetCheck").innerHTML =
+    `<strong>✓</strong><div><b>Budget target: ${fmt(target)}</b><br><span class="small">Positive pool after returned negatives: ${fmt(posTarget)} · Set 1 positive ${fmt(s1)} · Set 2 positive ${fmt(s2)} · Negative input ${fmt(c.totalNeg)}. Set 3/4/5 are designed around the returned-negative positive pool.</span></div>`;
+}
+
+
+function allocateExact(items,total){
+  total=Math.max(0,total);
+  const sum=items.reduce((a,x)=>a+x.weight,0);
+  if(sum<=0) return items.map(x=>({...x,ideal:0,base:0,rem:0,final:0}));
+  const raw=items.map(x=>total*x.weight/sum);
+  const floors=raw.map(Math.floor);
+  let left=Math.round(total-floors.reduce((a,b)=>a+b,0));
+  const order=raw.map((v,i)=>({i,rem:v-floors[i],weight:items[i].weight}))
+    .sort((a,b)=>b.rem-a.rem || b.weight-a.weight || a.i-b.i);
+  for(let i=0;i<left;i++) floors[order[i].i]++;
+  return items.map((x,i)=>({...x,ideal:raw[i],base:floors[i],rem:raw[i]-Math.floor(raw[i]),final:floors[i]}));
+}
+
+/*
+ SET 3:
+ 1) Do Set 1 separately for every stat.
+ 2) If a stat has no active priority, its full basis becomes rollover.
+ 3) Also, because negatives return to the pool, their magnitude becomes rollover.
+ 4) Spread rollover by each equipment's total priority strength.
+ 5) Add rollover to the Set 1 result, using each equipment's normalized stat-priority profile
+    so rollover does not create completely arbitrary stat values.
+ 6) Normalize exactly to the total budget.
+*/
+function calculateSet3(c){
+  /*
+   SET 3 — Anchored Average:
+   A = Set 1-style distribution. Each stat tries to keep its own basis.
+       If a stat has no active priority, its basis is temporarily unallocated.
+   R = pure priority-weighted global distribution.
+   Both are normalized to the same target positive pool, then averaged.
+   This gives us a true middle ground rather than simply adding rollover
+   to Set 1.
+  */
+  const B=c.B;
+  const positiveTarget=c.totalBasis - c.totalNeg; // negative values return to the positive pool
+
+  // A: Set 1-style allocation, with unavailable stat budgets becoming rollover.
+  const a=[];
+  let available=0;
+  stats.forEach(st=>{
+    const items=slots.map(sl=>({slot:sl,stat:st,weight:priority(sl,st)}));
+    if(items.reduce((q,x)=>q+x.weight,0)>0){
+      available += B[st];
+      allocateExact(items,B[st]).forEach(r=>a.push({
+        slot:r.slot,stat:r.stat,raw:r.final
+      }));
+    }
+  });
+  const missingBudget=positiveTarget-available;
+
+  // R: global priority distribution across every active cell.
+  const active=slots.flatMap(sl=>stats
+    .filter(st=>priority(sl,st)>0)
+    .map(st=>({slot:sl,stat:st,weight:priority(sl,st)})));
+  const r=allocateExact(active,positiveTarget);
+
+  // Convert A to a complete matrix. Its available part is scaled so that
+  // it also represents the same positive target before averaging.
+  const aMap={}; slots.forEach(sl=>{aMap[sl]={};stats.forEach(st=>aMap[sl][st]=0)});
+  a.forEach(x=>aMap[x.slot][x.stat]=x.raw);
+  const aAvailable=a.reduce((q,x)=>q+x.raw,0);
+  if(aAvailable>0 && aAvailable!==positiveTarget){
+    const scaled=[];
+    const items=a.map(x=>({slot:x.slot,stat:x.stat,weight:x.raw}));
+    const aa=allocateExact(items,positiveTarget);
+    aa.forEach(x=>aMap[x.slot][x.stat]=x.final);
+  }
+
+  const rMap={}; slots.forEach(sl=>{rMap[sl]={};stats.forEach(st=>rMap[sl][st]=0)});
+  r.forEach(x=>rMap[x.slot][x.stat]=x.final);
+
+  // Average the two complete distributions, then use largest remainder to
+  // restore the exact positive target.
+  const combined=slots.flatMap(sl=>stats.map(st=>({
+    slot:sl,stat:st,weight:Math.max(0,(aMap[sl][st]+rMap[sl][st])/2)
+  })));
+  const positiveRows=allocateExact(combined,positiveTarget);
+  return positiveRows.map(x=>({
+    ...x,
+    final:x.final + negative(x.slot,x.stat)
+  }));
+}
+
+/*
+ SET 4:
+ Preserve the original stat basis as an anchor.
+ Each active cell receives a weighted share of a global budget, but the
+ weight is softened by the stat's basis share. This prevents a large
+ priority concentration from completely erasing the original stat identity.
+ weight = priority * (basis/stat-active-count anchor)
+ Then normalize to exact total.
+*/
+function calculateSet4(c){
+  const B=c.B;
+  const totalBasis=c.totalBasis - c.totalNeg;
+  const activeCount=Object.fromEntries(stats.map(st=>[
+    st,slots.filter(sl=>priority(sl,st)>0).length
+  ]));
+  const items=[];
+  slots.forEach(sl=>stats.forEach(st=>{
+    const p=priority(sl,st);
+    if(p>0){
+      const anchor=B[st]/Math.max(1,activeCount[st]);
+      items.push({slot:sl,stat:st,weight:p*anchor});
+    }
+  }));
+  let rows=allocateExact(items,totalBasis);
+
+  // If no active priorities, nothing can be meaningfully allocated.
+  // If some stat has no active cells, redistribute its basis through active cells
+  // using their weighted shares; this is intentionally controlled, not arbitrary.
+  const activeStats=new Set(rows.map(r=>r.stat));
+  const missing=stats.filter(st=>B[st]>0 && !activeStats.has(st));
+  if(missing.length && rows.length){
+    const missingBudget=missing.reduce((a,st)=>a+B[st],0);
+    // rows already sum to totalBasis, so this branch is informational only.
+  }
+  // The weighted pool above is the positive pool. Apply cell negatives
+  // afterward so the final result returns exactly to the original basis.
+  return rows.map(x=>({
+    ...x,
+    final:x.final + negative(x.slot,x.stat)
+  }));
+}
+
+/*
+ SET 5 — Equipment Level / Weight -> Priority
+ Stage 1: split the positive budget among equipment by Equipment Weight.
+ Stage 2: each equipment's budget is split among its active stats by Priority.
+ This makes equipment weight define the overall strength of the item, while
+ priority defines what that item's strength is used for.
+ If an equipment piece has no active priorities, its equipment budget rolls
+ back into the pool and is redistributed by equipment weight among active items.
+*/
+function calculateSet5(c){
+  const total=c.totalBasis-c.totalNeg;
+  const weights=Object.fromEntries(slots.map(sl=>[sl,equipmentWeight(sl)]));
+  const activeSlots=slots.filter(sl=>weights[sl]>0 && stats.some(st=>priority(sl,st)>0));
+  if(!activeSlots.length) return slots.flatMap(sl=>stats.map(st=>({slot:sl,stat:st,weight:priority(sl,st),ideal:0,base:0,rem:0,final:0})))
+    .map(x=>({...x,final:x.final+negative(x.slot,x.stat)}));
+
+  // First distribute the equipment-level budget.
+  const eqAlloc=allocateExact(activeSlots.map(sl=>({slot:sl,stat:"",weight:weights[sl]})),total);
+  const rows=[];
+  eqAlloc.forEach(eq=>{
+    const activeStats=stats.filter(st=>priority(eq.slot,st)>0);
+    const pRows=allocateExact(activeStats.map(st=>({slot:eq.slot,stat:st,weight:priority(eq.slot,st)})),eq.final);
+    pRows.forEach(r=>rows.push(r));
+    stats.filter(st=>priority(eq.slot,st)<=0).forEach(st=>rows.push({slot:eq.slot,stat:st,weight:0,ideal:0,base:0,rem:0,final:0}));
+  });
+
+  // Include equipment that has no usable allocation as zero rows.
+  slots.forEach(sl=>stats.forEach(st=>{
+    if(!rows.some(r=>r.slot===sl&&r.stat===st)) rows.push({slot:sl,stat:st,weight:priority(sl,st),ideal:0,base:0,rem:0,final:0});
+  }));
+
+  return rows.map(x=>({...x,final:x.final+negative(x.slot,x.stat)}));
+}
+
+function renderAllSets(a,b,c,d,e){
+  const mats=[matrix(a),matrix(b),matrix(c),matrix(d),matrix(e)];
+  let h='<tr><th class="name">Equipment / Stat</th><th>Set 1</th><th>Set 2</th><th>Set 3</th><th>Set 4</th><th>Set 5</th></tr>';
+  slots.forEach(sl=>stats.forEach(st=>{
+    h+=`<tr><td class="name">${sl} — ${st}</td>${mats.map(m=>`<td>${fmt(m[sl][st]?.final||0)}</td>`).join('')}</tr>`;
+  }));
+  const totals=[a,b,c,d,e].map(x=>x.reduce((q,r)=>q+r.final,0));
+  h+=`<tr class="total"><td class="name">TOTAL</td>${totals.map(x=>`<td>${fmt(x)}</td>`).join('')}</tr>`;
+  document.getElementById("allSetsTable").innerHTML=h;
+}
+
+
+function initQuickFill(){
+  const fs=document.getElementById("fillSlot"), fstat=document.getElementById("fillStat");
+  const cf=document.getElementById("copyFromSlot"), ct=document.getElementById("copyToSlot");
+  if(!fs||!fstat) return;
+  fs.innerHTML=slots.map(x=>`<option>${x}</option>`).join("");
+  fstat.innerHTML=stats.map(x=>`<option>${x}</option>`).join("");
+  cf.innerHTML=slots.map(x=>`<option>${x}</option>`).join("");
+  ct.innerHTML=slots.map(x=>`<option>${x}</option>`).join("");
+}
+function clampPriority(v){return Math.max(0,Math.min(10,Math.round(Number(v)||0)))}
+function setPriority(slot,stat,val){
+  const el=document.getElementById("p_"+slot+"_"+stat);
+  if(el){el.value=clampPriority(val); el.dispatchEvent(new Event("input",{bubbles:true}));}
+}
+const STORAGE_KEY="equipStatPrototype_v1";
+function storageStatus(text, good=false){
+  const el=document.getElementById("storageStatus");
+  if(el){el.textContent=text;el.className=good?"storage-status good":"storage-status";}
+}
+function saveInputs(){
+  try{
+    const data={version:3,recordName:document.getElementById("recordName")?.value||"",equipmentSetName:document.getElementById("equipmentSetName")?.value||"",equipmentNames:{},basis:{},p:{},n:{},ew:{}};
+    stats.forEach(st=>data.basis[st]=document.getElementById("b"+st)?.value||"");
+    slots.forEach(sl=>{data.ew[sl]=document.getElementById("ew_"+sl)?.value||"";data.equipmentNames[sl]=document.getElementById("ename_"+sl)?.value||"";});
+    slots.forEach(sl=>stats.forEach(st=>{
+      data.p[sl+"|"+st]=document.getElementById("p_"+sl+"_"+st)?.value||"";
+      data.n[sl+"|"+st]=document.getElementById("n_"+sl+"_"+st)?.value||"";
+    }));
+    const text=JSON.stringify(data);
+    localStorage.setItem(STORAGE_KEY,text);
+    // Read it back immediately. This catches blocked/private storage instead of silently failing.
+    if(localStorage.getItem(STORAGE_KEY)!==text) throw new Error("Storage write could not be verified.");
+    storageStatus("Saved locally",true);
+    return true;
+  }catch(e){
+    storageStatus("Local memory unavailable — use Save File",false);
+    console.warn("Local storage unavailable:",e);
+    return false;
+  }
+}
+function loadInputs(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw){
+      storageStatus("No saved input yet");
+      return false;
+    }
+    const data=JSON.parse(raw);
+    const rn=document.getElementById("recordName"), esn=document.getElementById("equipmentSetName");
+    if(rn)rn.value=data.recordName||"";
+    if(esn)esn.value=data.equipmentSetName||"";
+    stats.forEach(st=>{
+      const e=document.getElementById("b"+st);
+      if(e&&data.basis&&data.basis[st]!==undefined)e.value=data.basis[st];
+    });
+    slots.forEach(sl=>{
+      const ew=document.getElementById("ew_"+sl), en=document.getElementById("ename_"+sl);
+      if(ew&&data.ew&&data.ew[sl]!==undefined) ew.value=data.ew[sl];
+      if(en&&data.equipmentNames&&data.equipmentNames[sl]!==undefined) en.value=data.equipmentNames[sl];
+    });
+    slots.forEach(sl=>stats.forEach(st=>{
+      const p=document.getElementById("p_"+sl+"_"+st), n=document.getElementById("n_"+sl+"_"+st);
+      if(p&&data.p&&data.p[sl+"|"+st]!==undefined)p.value=data.p[sl+"|"+st];
+      if(n&&data.n&&data.n[sl+"|"+st]!==undefined)n.value=data.n[sl+"|"+st];
+    }));
+    storageStatus("Loaded saved inputs",true);
+    return true;
+  }catch(e){
+    storageStatus("Could not load local memory — use Save File",false);
+    console.warn("Local storage load failed:",e);
+    return false;
+  }
+}
+
+const GOOGLE_SHEET_API="https://script.google.com/macros/s/AKfycbze5ntvJ3EG6RZtKm7ZGiyaNogkMgHtIL_KiZptUYymV5WshjftE1BsDtt47qXwJjvv/exec";
+
+function currentRecordPayload(){
+  const data={version:3,
+    recordName:document.getElementById("recordName")?.value||"Unnamed Record",
+    equipmentSetName:document.getElementById("equipmentSetName")?.value||"",
+    savedAt:new Date().toISOString(),
+    basis:{},equipment:{},priority:{},negative:{}
+  };
+  stats.forEach(st=>data.basis[st]=document.getElementById("b"+st)?.value||"");
+  data.results=(typeof explorerSets!=="undefined" && Array.isArray(explorerSets) && explorerSets.length)
+    ? explorerSets.map((set,i)=>({set:"Set "+(i+1),rows:set})) : [];
+  slots.forEach(sl=>{
+    data.equipment[sl]={
+      name:document.getElementById("ename_"+sl)?.value||sl,
+      weight:document.getElementById("ew_"+sl)?.value||"0"
+    };
+    stats.forEach(st=>{
+      data.priority[sl+"|"+st]=document.getElementById("p_"+sl+"_"+st)?.value||"0";
+      data.negative[sl+"|"+st]=document.getElementById("n_"+sl+"_"+st)?.value||"0";
+    });
+  });
+  return data;
+}
+function cloudStatus(text,good=false){
+  const el=document.getElementById("cloudStatus");
+  if(el){el.textContent=text;el.className=good?"cloud-status good":"cloud-status";}
+}
+async function saveToGoogleSheet(){
+  const data=currentRecordPayload();
+  if(!data.recordName.trim()){cloudStatus("Enter a Record / Test Name first.");document.getElementById("recordName")?.focus();return;}
+  cloudStatus("Saving to Google Sheet…");
+  try{
+    const res=await fetch(GOOGLE_SHEET_API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"saveRecord",record:data})});
+    const text=await res.text();
+    let out={}; try{out=JSON.parse(text)}catch(_){}
+    if(out.ok===false)throw new Error(out.error||"Google Apps Script rejected the record.");
+    cloudStatus("Saved to Google Sheet",true);
+  }catch(e){
+    console.error(e);
+    cloudStatus("Could not save. Check the Apps Script web app deployment.");
+  }
+}
+async function loadFromGoogleSheet(){
+  cloudStatus("Loading latest record…");
+  try{
+    const res=await fetch(GOOGLE_SHEET_API+"?action=loadLatestRecord");
+    const text=await res.text();
+    const out=JSON.parse(text);
+    if(!out.ok)throw new Error(out.error||"No record returned.");
+    applyCloudRecord(out.record);
+    cloudStatus("Loaded latest record from Google Sheet",true);
+    updateLiveTotals();
+    syncAllLevelSliders();
+  }catch(e){
+    console.error(e);
+    cloudStatus("Could not load. Check the Apps Script web app deployment.");
+  }
+}
+function applyCloudRecord(data){
+  const rn=document.getElementById("recordName"), es=document.getElementById("equipmentSetName");
+  if(rn)rn.value=data.recordName||"";
+  if(es)es.value=data.equipmentSetName||"";
+  stats.forEach(st=>{const e=document.getElementById("b"+st);if(e)e.value=data.basis?.[st]??"";});
+  slots.forEach(sl=>{
+    const e=data.equipment?.[sl]||{};
+    const en=document.getElementById("ename_"+sl), ew=document.getElementById("ew_"+sl);
+    if(en)en.value=e.name||"";
+    if(ew)ew.value=e.weight??"0";
+    stats.forEach(st=>{
+      const p=document.getElementById("p_"+sl+"_"+st), n=document.getElementById("n_"+sl+"_"+st);
+      if(p)p.value=data.priority?.[sl+"|"+st]??"0";
+      if(n)n.value=data.negative?.[sl+"|"+st]??"0";
+    });
+  });
+  saveInputs();
+}
+function saveNow(){ saveInputs(); }
+function loadNow(){ loadInputs(); updateLiveTotals(); }
+function setupResultsTabs(){
+  document.querySelectorAll("#resultsNav button").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      document.querySelectorAll("#resultsNav button").forEach(x=>x.classList.remove("active"));
+      document.querySelectorAll(".result-pane").forEach(x=>x.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("pane-"+btn.dataset.pane)?.classList.add("active");
+    });
+  });
+}
+function renderSetStrip(results){
+  const names=["Set 1","Set 2","Set 3","Set 4","Set 5"];
+  document.getElementById("setStrip").innerHTML=results.map((r,i)=>{
+    const t=r.reduce((a,x)=>a+(Number(x.final)||0),0);
+    return `<div class="set-chip"><b>${names[i]}</b><span>${fmt(t)}</span><div class="small">Final Total</div></div>`;
+  }).join("");
+}
+function renderStatCompareAll(results){
+  const totals=results.map(statTotals);
+  let h="<tr><th class='name'>Stat</th><th>Set 1</th><th>Set 2</th><th>Set 3</th><th>Set 4</th><th>Set 5</th></tr>";
+  stats.forEach(st=>h+=`<tr><td class='name'><b>${st}</b></td>${totals.map(t=>`<td>${fmt(t[st])}</td>`).join("")}</tr>`);
+  document.getElementById("statCompareAll").innerHTML=h;
+}
+
+
+function renderOverviewBars(all){
+  const st=all.map(statTotals), eq=all.map(equipTotals);
+  const maxS=Math.max(...all.flatMap(x=>Object.values(statTotals(x))),1);
+  const maxE=Math.max(...all.flatMap(x=>Object.values(equipTotals(x))),1);
+  document.getElementById("overviewStatBars").innerHTML=stats.map(stat=>{
+    return `<div class="bar-row"><div class="bar-label">${stat}</div><div style="display:grid;gap:2px">${all.map((x,i)=>`<div class="compare-mini ${i%2?'b':'a'}"><div style="width:${st[i][stat]/maxS*100}%"></div></div>`).join("")}</div><div class="bar-value">${fmt(st[0][stat])}<br>${fmt(st[1][stat])}<br>${fmt(st[2][stat])}<br>${fmt(st[3][stat])}</div></div>`;
+  }).join("");
+  document.getElementById("overviewEquipBars").innerHTML=slots.map(sl=>{
+    return `<div class="bar-row"><div class="bar-label">${sl}</div><div style="display:grid;gap:2px">${all.map((x,i)=>`<div class="compare-mini ${i%2?'b':'a'}"><div style="width:${eq[i][sl]/maxE*100}%"></div></div>`).join("")}</div><div class="bar-value">${fmt(eq[0][sl])}<br>${fmt(eq[1][sl])}<br>${fmt(eq[2][sl])}<br>${fmt(eq[3][sl])}</div></div>`;
+  }).join("");
+}
+
+
+let explorerSets=[];
+let explorerSetIndex=0;
+let explorerMode="equipment";
+
+function explorerValue(results,slot,stat){
+  return results.filter(r=>r.slot===slot&&r.stat===stat)
+    .reduce((a,r)=>a+(Number(r.final)||0),0);
+}
+function explorerSetButtonState(){
+  document.querySelectorAll("#explorerSetButtons button").forEach(b=>{
+    const active=(b.dataset.set===String(explorerSetIndex));
+    b.classList.toggle("active",active);
+  });
+}
+function explorerRender(){
+  if(!explorerSets.length) return;
+  const item=document.getElementById("explorerItem");
+  const label=document.getElementById("explorerItemLabel");
+  const title=document.getElementById("explorerTitle");
+  const sub=document.getElementById("explorerSub");
+  const note=document.getElementById("explorerNote");
+  const host=document.getElementById("explorerComparison");
+  const names=["Set 1","Set 2","Set 3","Set 4","Set 5"];
+
+  document.querySelectorAll("#explorerModeButtons button").forEach(b=>b.classList.toggle("active",b.dataset.mode===explorerMode));
+  explorerSetButtonState();
+
+  // The Equipment view is intentionally horizontal: all six equipment pieces
+  // stay in the same positions while the user switches Set 1–4.
+  if(explorerMode==="equipment"){
+    label.textContent="EQUIPMENT";
+    item.style.display="none";
+    const idx=Number(explorerSetIndex);
+    const set=explorerSets[idx]||explorerSets[0];
+    const setName=names[idx]||"Set 1";
+    title.textContent=setName;
+    sub.textContent="";
+
+    const matrix=slots.map(sl=>Object.fromEntries(stats.map(st=>[st,explorerValue(set,sl,st)])));
+    const absMax=Math.max(...matrix.flatMap(v=>stats.map(st=>Math.abs(v[st]))),1);
+
+    host.innerHTML=`<div class="explorer-horizontal">
+      <div class="explorer-equip-row">
+        ${slots.map((sl,i)=>{
+          const vals=matrix[i];
+          const total=stats.reduce((a,st)=>a+vals[st],0);
+          return `<div class="equip-visual-card">
+            <div class="equip-visual-title">${equipmentDisplayName(sl)}</div>
+            <div class="equip-bars-vertical">
+              ${stats.map(st=>{
+                const v=Number(vals[st])||0;
+                const pct=v>0?(v/absMax*100):0;
+                return `<div class="equip-stat-col">
+                  <div class="equip-stat-value ${v<0?'negative':''}">${v!==0?fmt(v):""}</div>
+                  <div class="equip-stat-track"><div class="equip-stat-fill ${v<0?'neg':'pos'} stat-color ${statClass(st)}" style="height:${pct}%"></div></div>
+                  <div class="equip-stat-label">${st}</div>
+                </div>`;
+              }).join("")}
+            </div>
+            <div class="equip-visual-total">${fmt(total)} <span>Total</span></div>
+          </div>`;
+        }).join("")}
+      </div>
+      <div class="equip-scale-note">Positive values keep the larger v0.7.05-style bars. Negative values are shown above the stat in red; zero is left blank.</div>
+    </div>`;
+    note.textContent="";
+    return;
+  }
+
+  // Stat view remains a compact set-by-set comparison for examining one stat.
+  label.textContent="STAT";
+  item.style.display="inline-block";
+  const options=stats;
+  const old=item.value;
+  if(item.options.length!==options.length || [...item.options].some((o,i)=>o.value!==options[i])){
+    item.innerHTML=options.map(x=>`<option value="${x}">${x}</option>`).join("");
+    if(options.includes(old)) item.value=old;
+  }
+  const st=item.value||stats[0];
+  title.textContent=`${st} — Equipment Comparison`;
+  sub.textContent="Same stat across all six equipment pieces; switch Set 1–4 to inspect another distribution.";
+  const idx=Number(explorerSetIndex);
+  const set=explorerSets[idx]||explorerSets[0];
+  const setName=names[idx]||"Set 1";
+  const vals=slots.map(sl=>explorerValue(set,sl,st));
+  const max=Math.max(...vals.map(v=>Math.abs(v)),1);
+  host.innerHTML=`<div class="explorer-horizontal"><div class="explorer-equip-row">
+    ${slots.map((sl,i)=>`<div class="equip-visual-card">
+      <div class="equip-visual-title">${equipmentDisplayName(sl)}</div>
+      <div class="equip-bars-vertical">
+        <div class="equip-stat-col" style="width:28px">
+          <div class="equip-stat-value ${vals[i]<0?'negative':''}" style="font-size:12px">${vals[i]!==0?fmt(vals[i]):""}</div>
+          <div class="equip-stat-track" style="width:24px"><div class="equip-stat-fill ${vals[i]<0?"neg":"pos"} stat-color ${statClass(st)}" style="height:${vals[i]>0?vals[i]/max*100:0}%"></div></div>
+          <div class="equip-stat-label">${st}</div>
+        </div>
+      </div>
+      <div class="equip-visual-total">${vals[i]>0?fmt(vals[i]):"—"} <span>${setName}</span></div>
+    </div>`).join("")}
+  </div></div>`;
+  note.textContent=`${setName}: ${st} distribution across all equipment. Switch the set buttons to compare the same visual layout.`;
+}
+
+function setupExplorer(){
+  document.querySelectorAll("#explorerSetButtons button").forEach(b=>b.addEventListener("click",()=>{
+    explorerSetIndex=Number(b.dataset.set);
+    explorerRender();
+  }));
+  document.querySelectorAll("#explorerModeButtons button").forEach(b=>b.addEventListener("click",()=>{
+    explorerMode=b.dataset.mode;
+    explorerRender();
+  }));
+  document.getElementById("explorerItem")?.addEventListener("change",explorerRender);
+}
+
+function runTests(){
+  saveInputs();
+  const c=calculate();
+  if(c.totalBasis<=0){
+    alert("Enter at least one positive Basis value.");
+    return;
+  }
+  if(c.set1.concat(c.set2).every(r=>r.weight===0)){
+    alert("Set at least one Priority Level from 1 to 10.");
+    return;
+  }
+  const set3=calculateSet3(c);
+  const set4=calculateSet4(c);
+  const set5=calculateSet5(c);
+  const totals4=[c.set1,c.set2,set3,set4,set5].map(arr=>arr.reduce((a,r)=>a+(Number(r.final)||0),0));
+  console.log("Budget check:", {target:c.totalBasis, set1:totals4[0], set2:totals4[1], set3:totals4[2], set4:totals4[3]});
+  renderResultTable("set1Table",c.set1);
+  renderResultTable("set2Table",c.set2);
+  renderResultTable("set3Table",set3);
+  renderResultTable("set4Table",set4);
+  renderResultTable("set5Table",set5);
+  renderSummary("set1Summary",c.set1,c.set1.reduce((a,r)=>a+r.final,0)-c.totalNeg,c.totalNeg);
+  renderSummary("set2Summary",c.set2,c.set2.reduce((a,r)=>a+r.final,0)-c.totalNeg,c.totalNeg);
+  renderSummary("set3Summary",set3,set3.reduce((a,r)=>a+r.final,0)-c.totalNeg,c.totalNeg);
+  renderSummary("set4Summary",set4,set4.reduce((a,r)=>a+r.final,0)-c.totalNeg,c.totalNeg);
+  renderSummary("set5Summary",set5,set5.reduce((a,r)=>a+r.final,0)-c.totalNeg,c.totalNeg);
+  renderCompare(c.set1,c.set2);
+  renderAllSets(c.set1,c.set2,set3,set4,set5);
+  renderAudit(c.set1,c.set2);
+  renderStatBars("statBars1",c.set1,"set1");
+  renderStatBars("statBars2",c.set2,"set2");
+  renderStatBars("statBars3",set3,"set1");
+  renderStatBars("statBars4",set4,"set2");
+  renderStatBars("statBars5",set5,"set2");
+  renderEquipBars("equipBars1",c.set1,"set1");
+  renderEquipBars("equipBars2",c.set2,"set2");
+  renderEquipBars("equipBars3",set3,"set1");
+  renderEquipBars("equipBars4",set4,"set2");
+  renderEquipBars("equipBars5",set5,"set2");
+  renderHeatmap("heat1",c.set1);
+  renderHeatmap("heat2",c.set2);
+  renderHeatmap("heat3",set3);
+  renderHeatmap("heat4",set4);
+  renderSetStrip([c.set1,c.set2,set3,set4,set5]);
+  renderStatCompareAll([c.set1,c.set2,set3,set4,set5]);
+  renderOverviewBars([c.set1,c.set2,set3,set4,set5]);
+  explorerSets=[c.set1,c.set2,set3,set4,set5];
+  explorerRender();
+  renderSideBySide(c.set1,c.set2);
+  renderBudgetCheck(c);
+  document.getElementById("results").classList.remove("hidden");
+}
+function clearPriorities(){slots.forEach(sl=>stats.forEach(st=>document.getElementById("p_"+sl+"_"+st).value=""));updateLiveTotals();saveInputs();}
+function clearNegatives(){slots.forEach(sl=>stats.forEach(st=>document.getElementById("n_"+sl+"_"+st).value=""));updateLiveTotals();saveInputs();}
+function clearAll(){
+  stats.forEach(st=>document.getElementById("b"+st).value="");
+  slots.forEach(sl=>{const e=document.getElementById("ew_"+sl);if(e)e.value="";});
+  clearPriorities();clearNegatives();
+  document.getElementById("results").classList.add("hidden");
+  updateLiveTotals();
+  saveInputs();
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+  makeInputTables();
+  makeEquipmentWeightTable();
+  syncAllLevelSliders();
+  initQuickFill();
+  loadInputs();
+  updateLiveTotals();
+  setupResultsTabs();
+  setupExplorer();
+  const btn=document.getElementById("runButton");
+  if(btn) btn.addEventListener("click", function(){
+    try {
+      runTests();
+    } catch(err) {
+      const box=document.getElementById("errorBox");
+      const txt=document.getElementById("errorText");
+      if(box && txt){
+        box.classList.remove("hidden");
+        txt.textContent=(err && err.stack)?err.stack:String(err);
+      }
+      console.error(err);
+    }
+  });
+});
+
+</script>
+</body>
+</html>

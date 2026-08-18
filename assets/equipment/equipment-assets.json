@@ -10,6 +10,7 @@
       "displayName": "Katana",
       "slot": "Main Hand",
       "masterArtwork": "assets/equipment/katana/katana_master.png",
+      "tunerArtwork": "assets/equipment/katana/katana_tuner.png",
       "icon": null,
       "reference": "assets/equipment/katana/katana_reference.md"
     }

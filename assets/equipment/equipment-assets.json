@@ -13,6 +13,15 @@
       "tunerArtwork": "assets/equipment/katana/katana_tuner.png",
       "icon": null,
       "reference": "assets/equipment/katana/katana_reference.md"
+    },
+    {
+      "id": "sangu",
+      "displayName": "Sangu",
+      "slot": "Off Hand",
+      "masterArtwork": "assets/equipment/sangu/sangu_master.png",
+      "tunerArtwork": "assets/equipment/sangu/sangu_tuner.png",
+      "icon": null,
+      "reference": "assets/equipment/sangu/sangu_reference.md"
     }
   ]
 }

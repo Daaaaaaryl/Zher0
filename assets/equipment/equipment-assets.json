@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "missingAssetPolicy": {
+    "value": null,
+    "meaning": "Asset is pending or unavailable; consumers must render a neutral no-art state."
+  },
+  "equipment": [
+    {
+      "id": "katana",
+      "displayName": "Katana",
+      "slot": "Main Hand",
+      "masterArtwork": "assets/equipment/katana/katana_master.png",
+      "icon": null,
+      "reference": "assets/equipment/katana/katana_reference.md"
+    }
+  ]
+}

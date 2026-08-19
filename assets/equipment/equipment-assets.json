@@ -1,5 +1,6 @@
 {
   "schemaVersion": 1,
+  "assetVersion": "2026-08-19.1",
   "missingAssetPolicy": {
     "value": null,
     "meaning": "Asset is pending or unavailable; consumers must render a neutral no-art state."
@@ -58,6 +59,60 @@
       "tunerArtwork": null,
       "icon": null,
       "reference": "assets/equipment/kegutsu/kegutsu_reference.md"
+    },
+    {
+      "id": "maiogi",
+      "displayName": "Maiōgi",
+      "slot": "Main Hand",
+      "masterArtwork": "assets/equipment/maiogi/maiogi_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/maiogi/maiogi_reference.md"
+    },
+    {
+      "id": "wagasa",
+      "displayName": "Wagasa",
+      "slot": "Off Hand",
+      "masterArtwork": "assets/equipment/wagasa/wagasa_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/wagasa/wagasa_reference.md"
+    },
+    {
+      "id": "hikizuri",
+      "displayName": "Hikizuri",
+      "slot": "Body",
+      "masterArtwork": "assets/equipment/hikizuri/hikizuri_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/hikizuri/hikizuri_reference.md"
+    },
+    {
+      "id": "kanzashi",
+      "displayName": "Kanzashi",
+      "slot": "Head",
+      "masterArtwork": "assets/equipment/kanzashi/kanzashi_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/kanzashi/kanzashi_reference.md"
+    },
+    {
+      "id": "zori",
+      "displayName": "Zōri",
+      "slot": "Boots",
+      "masterArtwork": "assets/equipment/zori/zori_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/zori/zori_reference.md"
+    },
+    {
+      "id": "inro",
+      "displayName": "Inrō",
+      "slot": "Accessory",
+      "masterArtwork": "assets/equipment/inro/inro_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/inro/inro_reference.md"
     }
   ]
 }

@@ -3048,6 +3048,7 @@ body:not(.focus-mode-active) #panelTuner .panel-body{
           <div><b>Google Sheet Endpoint</b><code id="dbgSheetPath">—</code></div>
           <div><b>Asset Registry Path</b><code id="dbgAssetPath">—</code></div>
           <div><b>Loaded Asset IDs</b><code id="dbgAssetIds">—</code></div>
+          <div><b>Equipment Artwork</b><code id="dbgAssetDetails">—</code></div>
           <div><b>Last Runtime Error</b><code id="dbgLastError">None</code></div>
         </div>
         <div class="debug-actions">
@@ -3284,6 +3285,8 @@ let EQUIPMENT_ASSETS={
     reference:"assets/equipment/katana/katana_reference.md"
   }
 };
+const equipmentAssetLoadState=new Map();
+const missingEquipmentAssetLookups=new Set();
 
 function normalizeEquipmentId(value){
   return String(value||"").trim().toLowerCase()
@@ -3292,8 +3295,19 @@ function normalizeEquipmentId(value){
 }
 function assetUrl(path){
   if(!path)return "";
-  if(/^https?:\/\//i.test(path))return path;
-  return location.protocol==="file:" ? EQUIPMENT_ASSET_RAW_BASE+path : path;
+  const resolved=/^https?:\/\//i.test(path)
+    ? path
+    : (location.protocol==="file:" ? EQUIPMENT_ASSET_RAW_BASE+path : path);
+  const version=assetRegistryDebug.assetVersion;
+  if(!version)return resolved;
+  return `${resolved}${resolved.includes("?")?"&":"?"}v=${encodeURIComponent(version)}`;
+}
+function observedEquipmentAssetUrl(url){
+  try{return new URL(url,location.href).href}catch(e){return String(url||"")}
+}
+function recordEquipmentAssetLoad(url,loaded){
+  if(url)equipmentAssetLoadState.set(observedEquipmentAssetUrl(url),loaded?"loaded":"failed");
+  try{updateSystemDiagnostics()}catch(e){}
 }
 async function loadEquipmentAssetRegistry(){
   const registryUrl=location.protocol==="file:"
@@ -3336,10 +3350,12 @@ async function loadEquipmentAssetRegistry(){
 function equipmentAsset(name,slot=""){
   const id=normalizeEquipmentId(name);
   if(EQUIPMENT_ASSETS[id])return EQUIPMENT_ASSETS[id];
-  return Object.values(EQUIPMENT_ASSETS).find(x=>
+  const found=Object.values(EQUIPMENT_ASSETS).find(x=>
     normalizeEquipmentId(x.displayName)===id ||
     (x.slot===slot && normalizeEquipmentId(name)===normalizeEquipmentId(x.displayName))
   )||null;
+  if(!found && (name||slot))missingEquipmentAssetLookups.add(`${slot||"Unknown slot"}: ${name||"Unknown equipment"}`);
+  return found;
 }
 function equipmentArtworkUrl(name,slot=""){
   const a=equipmentAsset(name,slot);
@@ -3357,7 +3373,8 @@ function tunerArtworkHTML(slot,name){
   const url=equipmentTunerArtworkUrl(name,slot);
   return `<div class="tuner-art-frame ${url?"":"asset-missing"}">
     ${url?`<img src="${esc(url)}" alt="${esc(name)} Tuner artwork" loading="lazy"
-      onerror="this.closest('.tuner-art-frame').classList.add('asset-missing');this.remove()">`:""}
+      onload="recordEquipmentAssetLoad(this.src,true)"
+      onerror="recordEquipmentAssetLoad(this.src,false);this.closest('.tuner-art-frame').classList.add('asset-missing');this.remove()">`:""}
     <div class="tuner-art-fallback"><span>Artwork Pending</span><small>${esc(name)}</small></div>
   </div>`;
 }
@@ -3367,7 +3384,7 @@ function finalizedArtworkCard(e){
   const url=equipmentArtworkUrl(name,slot);
   const statTotal=stats.reduce((sum,st)=>sum+(Number(e[st])||0),0);
   const art=url
-    ? `<img src="${esc(url)}" alt="${esc(name)} artwork" loading="lazy" onerror="this.closest('.final-art-frame').classList.add('asset-missing');this.remove()">`
+    ? `<img src="${esc(url)}" alt="${esc(name)} artwork" loading="lazy" onload="recordEquipmentAssetLoad(this.src,true)" onerror="recordEquipmentAssetLoad(this.src,false);this.closest('.final-art-frame').classList.add('asset-missing');this.remove()">`
     : "";
   return `<article class="final-art-card">
     <div class="final-art-name"><strong>${esc(name)}</strong><span>${esc(slot)}</span></div>
@@ -3895,6 +3912,24 @@ function localStorageAvailable(){
   }catch(e){return false}
 }
 function debugReportObject(){
+  const equipmentAssetDiagnostics=Object.values(EQUIPMENT_ASSETS||{}).map(asset=>{
+    const masterResolved=asset.masterArtwork?assetUrl(asset.masterArtwork):"";
+    const tunerResolved=asset.tunerArtwork?assetUrl(asset.tunerArtwork):"";
+    return {
+      id:asset.id||"",
+      displayName:asset.displayName||"",
+      slot:asset.slot||"",
+      masterArtwork:asset.masterArtwork||null,
+      resolvedMasterArtwork:masterResolved||null,
+      masterLoadState:masterResolved?(equipmentAssetLoadState.get(observedEquipmentAssetUrl(masterResolved))||"not-observed"):"missing",
+      tunerArtwork:asset.tunerArtwork||null,
+      resolvedTunerArtwork:tunerResolved||null,
+      tunerLoadState:tunerResolved?(equipmentAssetLoadState.get(observedEquipmentAssetUrl(tunerResolved))||"not-observed"):"pending",
+      icon:asset.icon||null,
+      reference:asset.reference||null,
+      assetVersion:assetRegistryDebug?.assetVersion||null
+    };
+  });
   return {
     generatedAt:new Date().toISOString(),
     frontendVersion:VERSION,
@@ -3920,6 +3955,8 @@ function debugReportObject(){
     assetRegistryLoadedCount:assetRegistryDebug?.loadedCount??Object.keys(EQUIPMENT_ASSETS||{}).length,
     assetRegistryLastError:assetRegistryDebug?.lastError||"",
     loadedAssetIds:Object.keys(EQUIPMENT_ASSETS||{}),
+    equipmentAssetDiagnostics,
+    missingEquipmentAssetLookups:[...missingEquipmentAssetLookups],
     lastRuntimeError:lastRuntimeError||""
   };
 }
@@ -3938,6 +3975,7 @@ function updateSystemDiagnostics(){
   set("dbgSheetPath",d.sheetEndpoint);
   set("dbgAssetPath",`${d.assetRegistryPath}${d.assetRegistryResolvedUrl?` → ${d.assetRegistryResolvedUrl}`:""}`);
   set("dbgAssetIds",d.loadedAssetIds.join(", "));
+  set("dbgAssetDetails",JSON.stringify(d.equipmentAssetDiagnostics,null,2));
   set("dbgLastError",d.lastRuntimeError||d.assetRegistryLastError||"None");
 }
 async function copyDebugReport(){

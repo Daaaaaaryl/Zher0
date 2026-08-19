@@ -22,6 +22,15 @@
       "tunerArtwork": "assets/equipment/sangu/sangu_tuner.png",
       "icon": null,
       "reference": "assets/equipment/sangu/sangu_reference.md"
+    },
+    {
+      "id": "do",
+      "displayName": "Dō",
+      "slot": "Body",
+      "masterArtwork": "assets/equipment/do/do_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/do/do_reference.md"
     }
   ]
 }

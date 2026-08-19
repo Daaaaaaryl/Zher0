@@ -372,6 +372,7 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
   </div>
 </div>
 
+<script src="js/equipment-utils.js"></script>
 <script>
 "use strict";
 
@@ -449,11 +450,6 @@ let EQUIPMENT_ASSETS={
 const equipmentAssetLoadState=new Map();
 const missingEquipmentAssetLookups=new Set();
 
-function normalizeEquipmentId(value){
-  return String(value||"").trim().toLowerCase()
-    .normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
-    .replace(/[^\w]+/g,"-").replace(/^-+|-+$/g,"");
-}
 function assetUrl(path){
   if(!path)return "";
   const resolved=/^https?:\/\//i.test(path)
@@ -583,11 +579,6 @@ function initState(){
 }
 
 function q(id){return document.getElementById(id)}
-function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
-function fmt(v){
-  v=Number(v)||0;
-  return Math.abs(v-Math.round(v))<1e-9?String(Math.round(v)):v.toFixed(2);
-}
 function totalBasis(){return stats.reduce((a,s)=>a+(Number(state.basis[s])||0),0)}
 function totalNegative(){return Object.values(state.negative).reduce((a,v)=>a+(Number(v)||0),0)}
 function positiveTarget(){return totalBasis()-totalNegative()} // negative is negative
@@ -879,9 +870,6 @@ function renderPriorityEditor(){
 function renderWeightBudgets(){
   slots.forEach(sl=>{const el=q("weightBudget_"+safe(sl));if(el)el.innerHTML=`Receives <b>${fmt(results.equipmentBudgets?.[sl]||0)}</b>`});
 }
-function safe(s){return s.replace(/[^a-z0-9]/gi,"_")}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-
 /* viewer */
 function currentRows(){return state.refined?results.set6:results.set5}
 function viewerLabel(){return state.refined?"Set 6 · Refined":"Set 5 · Base"}
@@ -1631,7 +1619,6 @@ function statTunerSignature(){
   const m=basePositiveMatrix();
   return slots.flatMap(sl=>stats.map(st=>`${dualKey(sl,st)}:${Math.round(positiveAt(m,sl,st))}`)).join("|");
 }
-function sumObj(o){return Object.values(o||{}).reduce((a,v)=>a+(Number(v)||0),0)}
 function eqBudgetAvailable(){return Math.max(0,sumObj(equipmentBudgetState.baseline)-sumObj(equipmentBudgetState.draft))}
 function statTunerAvailable(){return Math.max(0,sumObj(statTunerState.baseline)-sumObj(statTunerState.draft))}
 function eqBudgetDelta(sl){return (equipmentBudgetState.draft[sl]||0)-(equipmentBudgetState.baseline[sl]||0)}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "profiles": [
+    {
+      "id": "balanced",
+      "displayName": "Balanced",
+      "roleId": "balanced",
+      "status": "provisional",
+      "weights": { "HP": 20, "PA": 17, "PD": 17, "MA": 16, "MD": 15, "SP": 15 },
+      "notes": "Provisional design profile for architecture and testing; not final game balance."
+    },
+    {
+      "id": "brute",
+      "displayName": "Brute",
+      "roleId": "brute",
+      "status": "provisional",
+      "weights": { "HP": 25, "PA": 30, "PD": 15, "MA": 5, "MD": 10, "SP": 15 },
+      "notes": "Provisional design profile for architecture and testing; not final game balance."
+    },
+    {
+      "id": "tank",
+      "displayName": "Tank",
+      "roleId": "tank",
+      "status": "provisional",
+      "weights": { "HP": 30, "PA": 10, "PD": 25, "MA": 5, "MD": 20, "SP": 10 },
+      "notes": "Provisional design profile for architecture and testing; not final game balance."
+    },
+    {
+      "id": "skirmisher",
+      "displayName": "Skirmisher",
+      "roleId": "skirmisher",
+      "status": "provisional",
+      "weights": { "HP": 15, "PA": 25, "PD": 10, "MA": 5, "MD": 10, "SP": 35 },
+      "notes": "Provisional design profile for architecture and testing; not final game balance."
+    },
+    {
+      "id": "caster",
+      "displayName": "Caster",
+      "roleId": "caster",
+      "status": "provisional",
+      "weights": { "HP": 15, "PA": 5, "PD": 10, "MA": 35, "MD": 20, "SP": 15 },
+      "notes": "Provisional design profile for architecture and testing; not final game balance."
+    },
+    {
+      "id": "mystic",
+      "displayName": "Mystic",
+      "roleId": "mystic",
+      "status": "provisional",
+      "weights": { "HP": 20, "PA": 5, "PD": 10, "MA": 25, "MD": 25, "SP": 15 },
+      "notes": "Provisional design profile for architecture and testing; not final game balance."
+    }
+  ]
+}

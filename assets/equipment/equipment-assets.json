@@ -31,6 +31,15 @@
       "tunerArtwork": null,
       "icon": null,
       "reference": "assets/equipment/do/do_reference.md"
+    },
+    {
+      "id": "menpo",
+      "displayName": "Menpō",
+      "slot": "Accessory",
+      "masterArtwork": "assets/equipment/menpo/menpo_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/menpo/menpo_reference.md"
     }
   ]
 }

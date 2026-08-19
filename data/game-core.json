@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "stats": [
+    { "id": "HP", "displayName": "Health Points", "description": "Measures survivability and available health." },
+    { "id": "PA", "displayName": "Physical Attack", "description": "Measures physical offensive power." },
+    { "id": "PD", "displayName": "Physical Defense", "description": "Measures protection against physical damage." },
+    { "id": "MA", "displayName": "Magical Attack", "description": "Measures magical offensive power." },
+    { "id": "MD", "displayName": "Magical Defense", "description": "Measures protection against magical damage." },
+    { "id": "SP", "displayName": "Speed", "description": "Measures combat speed and agility." }
+  ],
+  "equipmentSlots": [
+    { "id": "main_hand", "displayName": "Main Hand" },
+    { "id": "off_hand", "displayName": "Off Hand" },
+    { "id": "body", "displayName": "Body" },
+    { "id": "head", "displayName": "Head" },
+    { "id": "boots", "displayName": "Boots" },
+    { "id": "accessory", "displayName": "Accessory" }
+  ]
+}

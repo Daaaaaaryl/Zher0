@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "equipment": [
+    {
+      "id": "katana", "displayName": "Katana", "slotId": "main_hand", "setId": "samurai_gusoku", "assetId": "katana",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["samurai"]
+    },
+    {
+      "id": "sangu", "displayName": "Sangu", "slotId": "off_hand", "setId": "samurai_gusoku", "assetId": "sangu",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["samurai"]
+    },
+    {
+      "id": "do", "displayName": "Dō", "slotId": "body", "setId": "samurai_gusoku", "assetId": "do",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["samurai"]
+    },
+    {
+      "id": "kabuto", "displayName": "Kabuto", "slotId": "head", "setId": "samurai_gusoku", "assetId": "kabuto",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["samurai"]
+    },
+    {
+      "id": "kegutsu", "displayName": "Kegutsu", "slotId": "boots", "setId": "samurai_gusoku", "assetId": "kegutsu",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["samurai"]
+    },
+    {
+      "id": "menpo", "displayName": "Menpō", "slotId": "accessory", "setId": "samurai_gusoku", "assetId": "menpo",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["samurai"]
+    },
+    {
+      "id": "maiogi", "displayName": "Maiōgi", "slotId": "main_hand", "setId": "geisha", "assetId": "maiogi",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["geisha"]
+    },
+    {
+      "id": "wagasa", "displayName": "Wagasa", "slotId": "off_hand", "setId": "geisha", "assetId": "wagasa",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["geisha"]
+    },
+    {
+      "id": "hikizuri", "displayName": "Hikizuri", "slotId": "body", "setId": "geisha", "assetId": "hikizuri",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["geisha"]
+    },
+    {
+      "id": "kanzashi", "displayName": "Kanzashi", "slotId": "head", "setId": "geisha", "assetId": "kanzashi",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["geisha"]
+    },
+    {
+      "id": "zori", "displayName": "Zōri", "slotId": "boots", "setId": "geisha", "assetId": "zori",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["geisha"]
+    },
+    {
+      "id": "inro", "displayName": "Inrō", "slotId": "accessory", "setId": "geisha", "assetId": "inro",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["geisha"]
+    },
+    {
+      "id": "sword", "displayName": "Sword", "slotId": "main_hand", "setId": "knight", "assetId": "sword",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["knight"]
+    },
+    {
+      "id": "heater_shield", "displayName": "Heater Shield", "slotId": "off_hand", "setId": "knight", "assetId": "heater_shield",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["knight"]
+    },
+    {
+      "id": "armour", "displayName": "Armour", "slotId": "body", "setId": "knight", "assetId": "armour",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["knight"]
+    },
+    {
+      "id": "helm", "displayName": "Helm", "slotId": "head", "setId": "knight", "assetId": "helm",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["knight"]
+    },
+    {
+      "id": "sabatons", "displayName": "Sabatons", "slotId": "boots", "setId": "knight", "assetId": "sabatons",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["knight"]
+    },
+    {
+      "id": "knights_belt", "displayName": "Knight’s Belt", "slotId": "accessory", "setId": "knight", "assetId": "knights_belt",
+      "statProfile": { "HP": 0, "PA": 0, "PD": 0, "MA": 0, "MD": 0, "SP": 0 },
+      "grantedAttackIds": [], "passiveIds": [], "tags": ["knight"]
+    }
+  ]
+}

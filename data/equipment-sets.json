@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "equipmentSets": [
+    {
+      "id": "samurai_gusoku",
+      "displayName": "Samurai / Gusoku",
+      "equipmentBySlot": {
+        "main_hand": "katana",
+        "off_hand": "sangu",
+        "body": "do",
+        "head": "kabuto",
+        "boots": "kegutsu",
+        "accessory": "menpo"
+      },
+      "collectionUnlockId": null,
+      "tags": ["samurai"]
+    },
+    {
+      "id": "geisha",
+      "displayName": "Geisha",
+      "equipmentBySlot": {
+        "main_hand": "maiogi",
+        "off_hand": "wagasa",
+        "body": "hikizuri",
+        "head": "kanzashi",
+        "boots": "zori",
+        "accessory": "inro"
+      },
+      "collectionUnlockId": null,
+      "tags": ["geisha"]
+    },
+    {
+      "id": "knight",
+      "displayName": "Knight",
+      "equipmentBySlot": {
+        "main_hand": "sword",
+        "off_hand": "heater_shield",
+        "body": "armour",
+        "head": "helm",
+        "boots": "sabatons",
+        "accessory": "knights_belt"
+      },
+      "collectionUnlockId": null,
+      "tags": ["knight"]
+    }
+  ]
+}

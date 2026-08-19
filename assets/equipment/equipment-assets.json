@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "assetVersion": "2026-08-19.1",
+  "assetVersion": "2026-08-19.2",
   "missingAssetPolicy": {
     "value": null,
     "meaning": "Asset is pending or unavailable; consumers must render a neutral no-art state."
@@ -113,6 +113,60 @@
       "tunerArtwork": null,
       "icon": null,
       "reference": "assets/equipment/inro/inro_reference.md"
+    },
+    {
+      "id": "sword",
+      "displayName": "Sword",
+      "slot": "Main Hand",
+      "masterArtwork": "assets/equipment/sword/sword_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/sword/sword_reference.md"
+    },
+    {
+      "id": "heater_shield",
+      "displayName": "Heater Shield",
+      "slot": "Off Hand",
+      "masterArtwork": "assets/equipment/heater_shield/heater_shield_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/heater_shield/heater_shield_reference.md"
+    },
+    {
+      "id": "armour",
+      "displayName": "Armour",
+      "slot": "Body",
+      "masterArtwork": "assets/equipment/armour/armour_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/armour/armour_reference.md"
+    },
+    {
+      "id": "helm",
+      "displayName": "Helm",
+      "slot": "Head",
+      "masterArtwork": "assets/equipment/helm/helm_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/helm/helm_reference.md"
+    },
+    {
+      "id": "sabatons",
+      "displayName": "Sabatons",
+      "slot": "Boots",
+      "masterArtwork": "assets/equipment/sabatons/sabatons_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/sabatons/sabatons_reference.md"
+    },
+    {
+      "id": "knights_belt",
+      "displayName": "Knight’s Belt",
+      "slot": "Accessory",
+      "masterArtwork": "assets/equipment/knights_belt/knights_belt_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/knights_belt/knights_belt_reference.md"
     }
   ]
 }

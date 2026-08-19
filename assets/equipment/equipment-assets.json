@@ -49,6 +49,15 @@
       "tunerArtwork": null,
       "icon": null,
       "reference": "assets/equipment/kabuto/kabuto_reference.md"
+    },
+    {
+      "id": "kegutsu",
+      "displayName": "Kegutsu",
+      "slot": "Boots",
+      "masterArtwork": "assets/equipment/kegutsu/kegutsu_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/kegutsu/kegutsu_reference.md"
     }
   ]
 }

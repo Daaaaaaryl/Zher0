@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "abilities": [
+    {
+      "id": "wayward_gallop",
+      "displayName": "Wayward Gallop",
+      "kind": "attack",
+      "sourceTypes": ["monster"],
+      "damageTypeId": null,
+      "basePower": null,
+      "scalingStat": null,
+      "multiplier": null,
+      "accuracy": null,
+      "criticalModifier": null,
+      "resourceCost": null,
+      "cooldown": null,
+      "targetType": "single_enemy",
+      "effectIds": [],
+      "behaviorKey": null,
+      "tags": ["mobility", "disruption"],
+      "design": {
+        "combatPurpose": "Mobility/disruption-oriented physical attack.",
+        "notes": "Provisional movement-based attack that may later interact with targeting, positioning, or disruption. Damage, scaling, accuracy, critical, effect, resource, and cooldown mechanics remain undecided."
+      },
+      "status": "provisional"
+    },
+    {
+      "id": "lost_path",
+      "displayName": "Lost Path",
+      "kind": "passive",
+      "sourceTypes": ["monster"],
+      "triggerIds": [],
+      "behaviorKey": null,
+      "parameters": {},
+      "tags": ["misdirection", "disruption"],
+      "design": {
+        "combatPurpose": "Misdirection / disruption.",
+        "notes": "Provisional passive concept representing Tikbalang's potential to confuse, mislead, evade, or disrupt opponents. No trigger, status, numeric value, or executable mechanic is canonical yet."
+      },
+      "status": "provisional"
+    }
+  ]
+}

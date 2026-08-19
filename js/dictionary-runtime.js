@@ -10,7 +10,8 @@ const DICTIONARY_REFERENCE_CATEGORIES=Object.freeze({
   monster_family:"monster_family",
   monster_role:"monster_role",
   monster_tier:"monster_tier",
-  monster:"monster"
+  monster:"monster",
+  ability:"ability"
 });
 
 let DICTIONARY_RUNTIME=null;
@@ -24,7 +25,7 @@ function deepFreezeDictionary(value){
   return value;
 }
 
-function canonicalDictionaryReferences(gameData,monsterData=null){
+function canonicalDictionaryReferences(gameData,monsterData=null,abilityData=null){
   return {
     stat:new Set((gameData?.core?.stats||[]).map(item=>item.id)),
     slot:new Set((gameData?.core?.equipmentSlots||[]).map(item=>item.id)),
@@ -33,20 +34,21 @@ function canonicalDictionaryReferences(gameData,monsterData=null){
     monster_family:new Set((monsterData?.core?.families||[]).map(item=>item.id)),
     monster_role:new Set((monsterData?.core?.roles||[]).map(item=>item.id)),
     monster_tier:new Set((monsterData?.core?.tiers||[]).map(item=>item.id)),
-    monster:new Set((monsterData?.monsters?.monsters||[]).map(item=>item.id))
+    monster:new Set((monsterData?.monsters?.monsters||[]).map(item=>item.id)),
+    ability:new Set((abilityData?.abilities||[]).map(item=>item.id))
   };
 }
 
-function validateDictionaryData(dictionaryData,gameData,monsterData=null){
+function validateDictionaryData(dictionaryData,gameData,monsterData=null,abilityData=null){
   const errors=[];
   const duplicateIds=[];
   const missingCanonicalReferences=[];
   const duplicateCanonicalCoverage=[];
   const entries=Array.isArray(dictionaryData?.entries)?dictionaryData.entries:[];
-  const canonical=canonicalDictionaryReferences(gameData,monsterData);
+  const canonical=canonicalDictionaryReferences(gameData,monsterData,abilityData);
   const entryIndex=new Map();
   const referenceIndex=new Map();
-  const counts={stat:0,equipment_slot:0,equipment_set:0,equipment:0,monster_family:0,monster_role:0,monster_tier:0,monster:0};
+  const counts={stat:0,equipment_slot:0,equipment_set:0,equipment:0,monster_family:0,monster_role:0,monster_tier:0,monster:0,ability:0};
   const addError=(code,path,message)=>errors.push({code,path,message});
 
   if(!dictionaryData||!Array.isArray(dictionaryData.entries))addError("invalid_dictionary","entries","dictionary requires an entries array");
@@ -107,8 +109,8 @@ function validateDictionaryData(dictionaryData,gameData,monsterData=null){
   };
 }
 
-function assertValidDictionaryData(dictionaryData,gameData,monsterData=null){
-  const result=validateDictionaryData(dictionaryData,gameData,monsterData);
+function assertValidDictionaryData(dictionaryData,gameData,monsterData=null,abilityData=null){
+  const result=validateDictionaryData(dictionaryData,gameData,monsterData,abilityData);
   if(!result.valid){
     const error=new Error(`Dictionary validation failed: ${result.errors.map(item=>item.message).join("; ")}`);
     error.validation=result;
@@ -121,12 +123,14 @@ async function loadDictionary(options={}){
   const path=options.path||DICTIONARY_DATA_PATH;
   const gameData=options.gameData||(typeof getGameData==="function"?getGameData():null);
   const monsterData=options.monsterData||(typeof MONSTER_DATA_RUNTIME!=="undefined"?MONSTER_DATA_RUNTIME:null);
+  const abilityData=options.abilityData||(typeof ABILITY_DATA_RUNTIME!=="undefined"?ABILITY_DATA_RUNTIME:null);
   if(!gameData)throw new Error("Canonical game data must be loaded or supplied before the dictionary");
   if(!monsterData)throw new Error("Canonical monster data must be loaded or supplied before the dictionary");
+  if(!abilityData)throw new Error("Canonical ability data must be loaded or supplied before the dictionary");
   const response=await fetch(path,{cache:"no-store"});
   if(!response.ok)throw new Error(`Unable to load ${path}: HTTP ${response.status}`);
   const source=await response.json();
-  DICTIONARY_VALIDATION=deepFreezeDictionary(assertValidDictionaryData(source,gameData,monsterData));
+  DICTIONARY_VALIDATION=deepFreezeDictionary(assertValidDictionaryData(source,gameData,monsterData,abilityData));
   DICTIONARY_RUNTIME=deepFreezeDictionary(source);
   const byId=new Map();
   const byCategory=new Map();

@@ -74,7 +74,7 @@ function validateMonsterData(monsterData,gameData){
     if(item?.baseStatBudget!==null&&(!Number.isFinite(item?.baseStatBudget)||item.baseStatBudget<0))addError("invalid_numeric_field",`${path}.baseStatBudget`,"baseStatBudget must be null or a finite non-negative number");
     ["attackIds","passiveIds","statusImmunityIds"].forEach(field=>{
       if(!Array.isArray(item?.[field]))addError("malformed_future_reference",`${path}.${field}`,`${field} must be an array`);
-      else if(item[field].length)addError("premature_future_reference",`${path}.${field}`,`${field} must remain empty until its canonical system exists`);
+      else if(field==="statusImmunityIds"&&item[field].length)addError("premature_future_reference",`${path}.${field}`,`${field} must remain empty until its canonical system exists`);
     });
     ["statProfileId","dropTableId","assetId"].forEach(field=>{
       if(item?.[field]!==null)addError("premature_future_reference",`${path}.${field}`,`${field} must remain null until its canonical system exists`);

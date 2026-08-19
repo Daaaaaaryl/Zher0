@@ -6,7 +6,7 @@
       "displayName": "Wayward Gallop",
       "kind": "attack",
       "sourceTypes": ["monster"],
-      "damageTypeId": null,
+      "damageTypeId": "physical",
       "basePower": null,
       "scalingStat": null,
       "multiplier": null,

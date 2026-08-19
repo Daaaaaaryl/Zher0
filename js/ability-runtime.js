@@ -17,13 +17,14 @@ async function loadAbilities(options={}){
   const gameData=options.gameData||(typeof getGameData==="function"?getGameData():null);
   const monsterData=options.monsterData||(typeof requireMonsterData==="function"?requireMonsterData():null);
   const statusData=options.statusData||(typeof STATUS_DATA_RUNTIME!=="undefined"?STATUS_DATA_RUNTIME:null);
+  const damageTypeData=options.damageTypeData||(typeof DAMAGE_TYPE_DATA_RUNTIME!=="undefined"?DAMAGE_TYPE_DATA_RUNTIME:null);
   if(!gameData)throw new Error("Canonical game data must be loaded or supplied before abilities");
   if(!monsterData)throw new Error("Canonical monster data must be loaded or supplied before abilities");
   if(typeof assertValidAbilityData!=="function")throw new Error("ability-validation.js must load before ability-runtime.js");
   const response=await fetch(path,{cache:"no-store"});
   if(!response.ok)throw new Error(`Unable to load ${path}: HTTP ${response.status}`);
   const source=await response.json();
-  ABILITY_DATA_VALIDATION=deepFreezeAbilityData(assertValidAbilityData(source,gameData,monsterData,statusData));
+  ABILITY_DATA_VALIDATION=deepFreezeAbilityData(assertValidAbilityData(source,gameData,monsterData,statusData,damageTypeData));
   ABILITY_DATA_RUNTIME=deepFreezeAbilityData(source);
   const byId=new Map();
   source.abilities.forEach(ability=>{

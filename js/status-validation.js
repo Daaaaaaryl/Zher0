@@ -15,13 +15,14 @@ function statusContainsExecutable(value,seen=new Set()){
   return Object.values(value).some(item=>statusContainsExecutable(item,seen));
 }
 
-function validateStatusEffects(statusData,gameData){
+function validateStatusEffects(statusData,gameData,damageTypeData=null){
   const errors=[];
   const duplicateIds=[];
   const addError=(code,path,message)=>errors.push({code,path,message});
   const statuses=Array.isArray(statusData?.statusEffects)?statusData.statusEffects:[];
   const ids=new Set();
   const canonicalStats=new Set((gameData?.core?.stats||[]).map(item=>item.id));
+  const canonicalDamageTypes=new Set((damageTypeData?.damageTypes||[]).map(item=>item.id));
   if(!statusData||!Array.isArray(statusData.statusEffects))addError("invalid_status_collection","statusEffects","Status data requires a statusEffects array");
 
   statuses.forEach((status,index)=>{
@@ -50,6 +51,7 @@ function validateStatusEffects(statusData,gameData){
       else{
         if(effect.behaviorKey!==null&&(typeof effect.behaviorKey!=="string"||!STATUS_ID_PATTERN.test(effect.behaviorKey)))addError("malformed_periodic_effect",`${path}.periodicEffect.behaviorKey`,"Periodic behaviorKey must be null or ASCII-safe");
         if(effect.scalingStat!==null&&!STATUS_STAT_IDS.has(effect.scalingStat))addError("unknown_stat_id",`${path}.periodicEffect.scalingStat`,`Unknown canonical stat '${effect.scalingStat}'`);
+        if(effect.damageTypeId!==null&&!canonicalDamageTypes.has(effect.damageTypeId))addError("unknown_damage_type",`${path}.periodicEffect.damageTypeId`,`Unknown canonical damage type '${effect.damageTypeId}'`);
         if(effect.multiplier!==null&&(typeof effect.multiplier!=="number"||!Number.isFinite(effect.multiplier)))addError("malformed_periodic_effect",`${path}.periodicEffect.multiplier`,"Periodic multiplier must be null or finite");
       }
     }
@@ -76,8 +78,8 @@ function validateStatusEffects(statusData,gameData){
   return {valid:errors.length===0,count:statuses.length,errors,duplicateIds:[...new Set(duplicateIds)]};
 }
 
-function assertValidStatusEffects(statusData,gameData){
-  const result=validateStatusEffects(statusData,gameData);
+function assertValidStatusEffects(statusData,gameData,damageTypeData=null){
+  const result=validateStatusEffects(statusData,gameData,damageTypeData);
   if(!result.valid){const error=new Error(`Status validation failed with ${result.errors.length} error(s)`);error.validation=result;throw error}
   return result;
 }

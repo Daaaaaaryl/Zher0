@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "damageTypes": [
+    {
+      "id": "physical",
+      "displayName": "Physical",
+      "category": "standard",
+      "offensiveStatId": "PA",
+      "defensiveStatId": "PD",
+      "behaviorKey": "physical",
+      "tags": [],
+      "design": {
+        "summary": "Conventional physical damage associated with physical attacks.",
+        "notes": "PA and PD are canonical metadata relationships only; no physical damage formula is defined."
+      },
+      "status": "provisional"
+    },
+    {
+      "id": "magical",
+      "displayName": "Magical",
+      "category": "standard",
+      "offensiveStatId": "MA",
+      "defensiveStatId": "MD",
+      "behaviorKey": "magical",
+      "tags": [],
+      "design": {
+        "summary": "Conventional magical or supernatural damage.",
+        "notes": "MA and MD are canonical metadata relationships only; no magical damage formula is defined."
+      },
+      "status": "provisional"
+    },
+    {
+      "id": "true",
+      "displayName": "True",
+      "category": "special",
+      "offensiveStatId": null,
+      "defensiveStatId": null,
+      "behaviorKey": "true",
+      "tags": [],
+      "design": {
+        "summary": "Special damage intended to bypass some or all conventional defenses.",
+        "notes": "The exact defenses or calculations bypassed by True damage remain undecided."
+      },
+      "status": "provisional"
+    }
+  ]
+}

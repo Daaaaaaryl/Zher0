@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "monsters": [
+    {
+      "id": "tikbalang",
+      "displayName": "Tikbalang",
+      "familyId": "mystical",
+      "roleId": "skirmisher",
+      "tierId": null,
+      "statProfileId": null,
+      "baseStatBudget": null,
+      "strongStatIds": ["SP", "PA"],
+      "weakStatIds": ["MD"],
+      "attackIds": [],
+      "passiveIds": [],
+      "statusImmunityIds": [],
+      "dropTableId": null,
+      "assetId": null,
+      "tags": ["design_example"],
+      "design": {
+        "combatIdentity": "An extremely mobile mystical creature that disrupts targeting and positioning.",
+        "visualConcept": "A folklore-inspired, horse-headed humanoid presence suited to deceptive movement.",
+        "notes": "Design references only: Wayward Gallop (signature attack concept) and Lost Path (passive or trait concept). No mechanics are canonical yet."
+      },
+      "status": "idea"
+    }
+  ]
+}

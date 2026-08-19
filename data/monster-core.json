@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "families": [
+    { "id": "beast", "displayName": "Beast", "summary": "Natural creatures defined by instinct and physical traits.", "tags": [] },
+    { "id": "goblinkin", "displayName": "Goblinkin", "summary": "Cunning humanoid creatures linked by goblin ancestry.", "tags": [] },
+    { "id": "undead", "displayName": "Undead", "summary": "Creatures persisting beyond ordinary life.", "tags": [] },
+    { "id": "elemental", "displayName": "Elemental", "summary": "Creatures formed from or strongly bound to natural forces.", "tags": [] },
+    { "id": "mystical", "displayName": "Mystical", "summary": "Supernatural creatures shaped by folklore and unusual powers.", "tags": [] }
+  ],
+  "roles": [
+    { "id": "balanced", "displayName": "Balanced", "description": "A broadly distributed combat identity without a single dominant tendency.", "strongStatTendencies": [], "weakStatTendencies": [] },
+    { "id": "brute", "displayName": "Brute", "description": "Applies physical pressure while retaining meaningful durability.", "strongStatTendencies": ["PA", "HP"], "weakStatTendencies": ["MA"] },
+    { "id": "tank", "displayName": "Tank", "description": "Emphasizes survivability and defensive presence.", "strongStatTendencies": ["HP", "PD", "MD"], "weakStatTendencies": ["SP"] },
+    { "id": "skirmisher", "displayName": "Skirmisher", "description": "Uses speed, mobility, and physical pressure to control engagements.", "strongStatTendencies": ["SP", "PA"], "weakStatTendencies": ["MD"] },
+    { "id": "caster", "displayName": "Caster", "description": "Centers its combat identity on magical offense.", "strongStatTendencies": ["MA"], "weakStatTendencies": ["PD"] },
+    { "id": "mystic", "displayName": "Mystic", "description": "Supports magical, supportive, or specialized supernatural behavior.", "strongStatTendencies": ["MA", "MD"], "weakStatTendencies": [] }
+  ],
+  "tiers": [
+    { "id": "common", "displayName": "Common", "description": "A standard classification for frequently encountered monsters." },
+    { "id": "uncommon", "displayName": "Uncommon", "description": "A less frequently encountered monster classification." },
+    { "id": "elite", "displayName": "Elite", "description": "A distinguished monster classification beyond ordinary peers." },
+    { "id": "champion", "displayName": "Champion", "description": "A notable high-presence monster classification." },
+    { "id": "boss", "displayName": "Boss", "description": "A major encounter classification with special narrative or encounter weight." },
+    { "id": "mythic", "displayName": "Mythic", "description": "An exceptional classification associated with legendary significance." }
+  ]
+}

@@ -40,6 +40,15 @@
       "tunerArtwork": null,
       "icon": null,
       "reference": "assets/equipment/menpo/menpo_reference.md"
+    },
+    {
+      "id": "kabuto",
+      "displayName": "Kabuto",
+      "slot": "Head",
+      "masterArtwork": "assets/equipment/kabuto/kabuto_master.png",
+      "tunerArtwork": null,
+      "icon": null,
+      "reference": "assets/equipment/kabuto/kabuto_reference.md"
     }
   ]
 }

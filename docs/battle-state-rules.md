@@ -187,3 +187,180 @@ Legacy prototype behavior is not canonical unless explicitly adopted by the Batt
 ## Implementation and design authority
 
 Existing runtime code describes what is currently implemented. This document describes approved game-design intent. If implementation and this design document conflict, do not silently change either one: report and resolve the conflict explicitly. Prototype code must not make an accidental game-design decision canonical.
+
+## Player Battle Actions
+
+**[ESTABLISHED]**
+
+The player's top-level Battle Action choices are:
+
+- Attack
+- Defend
+- Buffs
+- Run
+
+These are action categories. The specific behavior comes from the selected action and, where applicable, the selected active Equipment and Move.
+
+## Defend
+
+**[ESTABLISHED]**
+
+Defend is an Equipment-based action path.
+
+Player selects:
+
+Defend
+→ choose an ACTIVE Equipment
+→ view the Defend-capable Moves available from that Equipment
+→ choose a Defend Move
+→ choose a target when the Move requires one
+→ commit the Battle Action
+
+Defend is not one universal defensive effect.
+
+Different Equipment may provide different defensive Moves.
+
+Equipment slot does not determine whether an Equipment can defend. For example, a Main Hand or Off Hand Equipment may provide Defend-capable Moves.
+
+A Defend Move may have its own Priority, SP Output behavior, targeting rules, and defensive properties.
+
+There is no universal Defend Priority.
+
+**[UNDECIDED]**
+
+The Defensive Calculation that determines how much incoming damage is minimized remains undecided.
+
+After defensive resolution, any remaining incoming damage is deducted from the target's current HP.
+
+## Buffs
+
+**[ESTABLISHED]**
+
+Buffs is an Equipment-based action path.
+
+Player selects:
+
+Buffs
+→ choose an ACTIVE Equipment
+→ view the Buff-capable Moves available from that Equipment
+→ choose a Buff Move
+→ choose a target when the Move requires one
+→ commit the Battle Action
+
+Buffs may include Moves that modify Battle State values such as:
+
+- PA
+- PD
+- MA
+- MD
+- SP
+- HP
+
+Buff-capable Moves may include healing, temporary stat increases, regeneration, or other self-affecting effects defined by the Move.
+
+A healing effect may restore HP directly or affect HP over time, depending on the Move.
+
+Buffs are not assumed to affect allies. Their targeting behavior is defined by the individual Move.
+
+**[UNDECIDED]**
+
+Final Buff values, durations, stacking behavior, healing formulas, regeneration formulas, and interaction with Status Effects remain undecided.
+
+## Run
+
+**[ESTABLISHED]**
+
+Run is a top-level Battle Action and does not require selecting Equipment.
+
+Run checks these conditions in order:
+
+1. If the target is 1 or more levels higher than the player, Run succeeds.
+2. If the player's current HP is 50% or lower, Run succeeds.
+3. If neither Condition 1 nor Condition 2 is met, check the player's aggregated Zher0 SP (Z'SP) against the target's SP.
+
+For Condition 3:
+
+Run Chance % = ((Z'SP - Target SP) / Target SP) × 100
+
+If Run Chance is 0% or lower:
+
+Run fails. There is no chance to Run through the SP condition.
+
+If Run Chance is greater than 0%:
+
+The resulting percentage is the player's chance to Run successfully.
+
+Z'SP refers to the player's aggregated Zher0 SP from active Equipment, not the SP of an individual Equipment piece.
+
+**[UNDECIDED]**
+
+The exact random roll procedure used to resolve a positive Run Chance remains undecided.
+
+The Battle State consequence of a failed Run attempt remains undecided.
+
+Special encounters, Bosses, abilities, statuses, passives, or other mechanics may eventually modify or prevent Run, but no such exceptions are canonical yet.
+
+## Clash
+
+**[PROVISIONAL]**
+
+Zher0 remains a turn-based battle system.
+
+Clash is a special action-resolution mechanic that may occur when offensive Moves resolve simultaneously.
+
+A tie in action ordering does not automatically require an arbitrary tiebreaker.
+
+When two actions have:
+
+- equal Priority
+- equal SP Output
+
+they enter a simultaneous resolution condition.
+
+If both actions are compatible offensive Moves directed into conflict with each other, that condition may become a Clash.
+
+A tie does NOT automatically mean Clash.
+
+Attack vs Defend, Defend vs Defend, actions against different targets, Buffs, Run, and other simultaneous situations may require different resolution rules.
+
+Clash is therefore a consequence of compatible simultaneous offensive actions, not simply a consequence of equal numbers.
+
+**[PROVISIONAL] Attack DNA**
+
+Offensive Moves may eventually identify their attack nature as:
+
+- Physical DNA (P)
+- Magical DNA (M)
+- Hybrid DNA (P/M)
+
+Potential Clash relationships include:
+
+- P vs P
+- M vs M
+- P vs M
+- Hybrid interactions
+
+Physical and Magical attacks are allowed to oppose one another in a Clash. Neither Physical nor Magical is automatically superior.
+
+A sufficiently strong Magical attack may overpower a Physical attack.
+
+A sufficiently strong Physical attack may overpower a Magical attack.
+
+**[UNDECIDED]**
+
+The following Clash mechanics are not yet canonical:
+
+- Clash calculation
+- how PA contributes
+- how MA contributes
+- how SP or Move speed contributes
+- Move strength or power contribution
+- Hybrid attack calculation
+- partial victories
+- whether a losing Move can still reduce incoming damage
+- damage received by the Clash winner
+- damage received by the Clash loser
+- exact tie outcomes inside the Clash calculation
+- interactions between Clash and defensive Moves
+
+Do not implement Clash mathematics until these rules are explicitly designed.

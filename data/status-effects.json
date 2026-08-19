@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "statusEffects": [
+    {
+      "id": "bleed", "displayName": "Bleed", "category": "damage_over_time",
+      "durationType": "turns", "baseDuration": null,
+      "stacking": { "mode": "add", "maxStacks": null },
+      "applicationChance": null, "resistanceTypeId": null, "periodicEffect": null,
+      "statModifiers": [], "removalConditions": [], "behaviorKey": null,
+      "tags": ["physical", "damage_over_time"],
+      "design": { "combatPurpose": "Physical damage-over-time effect that may stack.", "notes": "Provisional definition only; damage, duration, scaling, stack limit, and application chance remain undecided." },
+      "status": "provisional"
+    },
+    {
+      "id": "poison", "displayName": "Poison", "category": "damage_over_time",
+      "durationType": "turns", "baseDuration": null,
+      "stacking": { "mode": "refresh", "maxStacks": null },
+      "applicationChance": null, "resistanceTypeId": null, "periodicEffect": null,
+      "statModifiers": [], "removalConditions": [], "behaviorKey": null,
+      "tags": ["damage_over_time", "toxin"],
+      "design": { "combatPurpose": "Persistent damage-over-time effect distinct from Bleed.", "notes": "Provisional definition only; resistance, scaling, damage, duration, and application chance remain undecided." },
+      "status": "provisional"
+    },
+    {
+      "id": "burn", "displayName": "Burn", "category": "damage_over_time",
+      "durationType": "turns", "baseDuration": null,
+      "stacking": { "mode": "refresh", "maxStacks": null },
+      "applicationChance": null, "resistanceTypeId": null, "periodicEffect": null,
+      "statModifiers": [], "removalConditions": [], "behaviorKey": null,
+      "tags": ["damage_over_time", "elemental"],
+      "design": { "combatPurpose": "Fire-related damage-over-time effect.", "notes": "Provisional definition only; no fire damage type, damage, duration, or application chance is canonical yet." },
+      "status": "provisional"
+    },
+    {
+      "id": "freeze", "displayName": "Freeze", "category": "control",
+      "durationType": "turns", "baseDuration": null,
+      "stacking": { "mode": "none", "maxStacks": null },
+      "applicationChance": null, "resistanceTypeId": null, "periodicEffect": null,
+      "statModifiers": [], "removalConditions": [], "behaviorKey": null,
+      "tags": ["control", "elemental"],
+      "design": { "combatPurpose": "Control effect that may later affect speed, actions, or movement.", "notes": "Provisional definition only; exact behavior and duration remain undecided." },
+      "status": "provisional"
+    },
+    {
+      "id": "stun", "displayName": "Stun", "category": "control",
+      "durationType": "turns", "baseDuration": null,
+      "stacking": { "mode": "none", "maxStacks": null },
+      "applicationChance": null, "resistanceTypeId": null, "periodicEffect": null,
+      "statModifiers": [], "removalConditions": [], "behaviorKey": null,
+      "tags": ["control", "interruption"],
+      "design": { "combatPurpose": "Temporary action denial or interruption.", "notes": "Provisional definition only; duration and action-resolution behavior remain undecided." },
+      "status": "provisional"
+    },
+    {
+      "id": "blind", "displayName": "Blind", "category": "debuff",
+      "durationType": "turns", "baseDuration": null,
+      "stacking": { "mode": "refresh", "maxStacks": null },
+      "applicationChance": null, "resistanceTypeId": null, "periodicEffect": null,
+      "statModifiers": [], "removalConditions": [], "behaviorKey": null,
+      "tags": ["debuff", "targeting"],
+      "design": { "combatPurpose": "Future accuracy or targeting impairment.", "notes": "Provisional definition only; no accuracy formula, penalty, or duration is canonical yet." },
+      "status": "provisional"
+    },
+    {
+      "id": "confusion", "displayName": "Confusion", "category": "control",
+      "durationType": "turns", "baseDuration": null,
+      "stacking": { "mode": "refresh", "maxStacks": null },
+      "applicationChance": null, "resistanceTypeId": null, "periodicEffect": null,
+      "statModifiers": [], "removalConditions": [], "behaviorKey": null,
+      "tags": ["control", "targeting"],
+      "design": { "combatPurpose": "Future targeting or action disruption.", "notes": "Provisional definition only and not connected to Tikbalang or Lost Path; exact behavior remains undecided." },
+      "status": "provisional"
+    },
+    {
+      "id": "silence", "displayName": "Silence", "category": "control",
+      "durationType": "turns", "baseDuration": null,
+      "stacking": { "mode": "refresh", "maxStacks": null },
+      "applicationChance": null, "resistanceTypeId": null, "periodicEffect": null,
+      "statModifiers": [], "removalConditions": [], "behaviorKey": null,
+      "tags": ["control", "ability_restriction"],
+      "design": { "combatPurpose": "Future restriction of selected ability categories.", "notes": "Provisional definition only; affected ability kinds and duration remain undecided." },
+      "status": "provisional"
+    }
+  ]
+}

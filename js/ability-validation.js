@@ -14,13 +14,14 @@ function containsExecutableValue(value,seen=new Set()){
   return Object.values(value).some(item=>containsExecutableValue(item,seen));
 }
 
-function validateAbilityData(abilityData,gameData,monsterData){
+function validateAbilityData(abilityData,gameData,monsterData,statusData=null){
   const errors=[];
   const duplicateIds=[];
   const addError=(code,path,message)=>errors.push({code,path,message});
   const abilities=Array.isArray(abilityData?.abilities)?abilityData.abilities:[];
   const abilityIndex=new Map();
   const canonicalStats=new Set((gameData?.core?.stats||[]).map(item=>item.id));
+  const canonicalStatuses=new Set((statusData?.statusEffects||[]).map(item=>item.id));
 
   if(!abilityData||!Array.isArray(abilityData.abilities))addError("invalid_ability_collection","abilities","Ability data requires an abilities array");
   abilities.forEach((ability,index)=>{
@@ -59,7 +60,7 @@ function validateAbilityData(abilityData,gameData,monsterData){
         if(!cost||typeof cost!=="object"||Array.isArray(cost)||typeof cost.resourceId!=="string"||!ABILITY_ID_PATTERN.test(cost.resourceId)||typeof cost.amount!=="number"||!Number.isFinite(cost.amount)||cost.amount<0)addError("invalid_resource_cost",`${path}.resourceCost`,"resourceCost must be null or contain a valid resourceId and finite non-negative amount");
       }
       if(!Array.isArray(ability.effectIds))addError("invalid_effect_ids",`${path}.effectIds`,"effectIds must be an array");
-      else if(ability.effectIds.length)addError("premature_effect_reference",`${path}.effectIds`,"effectIds must remain empty until the canonical effect system exists");
+      else ability.effectIds.forEach((effectId,effectIndex)=>{if(!canonicalStatuses.has(effectId))addError("unknown_effect_id",`${path}.effectIds[${effectIndex}]`,`Unknown canonical status effect '${effectId}'`)});
     }
 
     if(ability?.kind==="passive"){
@@ -92,8 +93,8 @@ function validateAbilityData(abilityData,gameData,monsterData){
   };
 }
 
-function assertValidAbilityData(abilityData,gameData,monsterData){
-  const result=validateAbilityData(abilityData,gameData,monsterData);
+function assertValidAbilityData(abilityData,gameData,monsterData,statusData=null){
+  const result=validateAbilityData(abilityData,gameData,monsterData,statusData);
   if(!result.valid){
     const error=new Error(`Ability validation failed with ${result.errors.length} error(s)`);
     error.validation=result;

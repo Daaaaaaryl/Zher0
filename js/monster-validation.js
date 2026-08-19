@@ -2,7 +2,7 @@
 
 const MONSTER_ID_PATTERN=/^[a-z][a-z0-9_]*$/;
 
-function validateMonsterData(monsterData,gameData){
+function validateMonsterData(monsterData,gameData,statusData=null){
   const errors=[];
   const duplicateIds=[];
   const addError=(code,path,message)=>errors.push({code,path,message});
@@ -13,6 +13,7 @@ function validateMonsterData(monsterData,gameData){
   const tiers=Array.isArray(core?.tiers)?core.tiers:[];
   const monsters=Array.isArray(collection?.monsters)?collection.monsters:[];
   const statIds=new Set((gameData?.core?.stats||[]).map(item=>item.id));
+  const statusIds=new Set((statusData?.statusEffects||[]).map(item=>item.id));
 
   if(!core||!Array.isArray(core.families)||!Array.isArray(core.roles)||!Array.isArray(core.tiers))addError("invalid_monster_core","core","monster-core requires families, roles, and tiers arrays");
   if(!collection||!Array.isArray(collection.monsters))addError("invalid_monster_collection","monsters","monsters requires a monsters array");
@@ -74,7 +75,7 @@ function validateMonsterData(monsterData,gameData){
     if(item?.baseStatBudget!==null&&(!Number.isFinite(item?.baseStatBudget)||item.baseStatBudget<0))addError("invalid_numeric_field",`${path}.baseStatBudget`,"baseStatBudget must be null or a finite non-negative number");
     ["attackIds","passiveIds","statusImmunityIds"].forEach(field=>{
       if(!Array.isArray(item?.[field]))addError("malformed_future_reference",`${path}.${field}`,`${field} must be an array`);
-      else if(field==="statusImmunityIds"&&item[field].length)addError("premature_future_reference",`${path}.${field}`,`${field} must remain empty until its canonical system exists`);
+      else if(field==="statusImmunityIds")item[field].forEach((statusId,statusIndex)=>{if(!statusIds.has(statusId))addError("unknown_status_immunity",`${path}.${field}[${statusIndex}]`,`Unknown canonical status effect '${statusId}'`)});
     });
     ["statProfileId","dropTableId","assetId"].forEach(field=>{
       if(item?.[field]!==null)addError("premature_future_reference",`${path}.${field}`,`${field} must remain null until its canonical system exists`);
@@ -92,8 +93,8 @@ function validateMonsterData(monsterData,gameData){
   };
 }
 
-function assertValidMonsterData(monsterData,gameData){
-  const result=validateMonsterData(monsterData,gameData);
+function assertValidMonsterData(monsterData,gameData,statusData=null){
+  const result=validateMonsterData(monsterData,gameData,statusData);
   if(!result.valid){
     const error=new Error(`Monster validation failed: ${result.errors.map(item=>item.message).join("; ")}`);
     error.validation=result;

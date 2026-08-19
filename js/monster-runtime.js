@@ -30,11 +30,12 @@ async function fetchMonsterJSON(path){
 async function loadMonsterData(options={}){
   const paths={...MONSTER_DATA_PATHS,...(options.paths||{})};
   const gameData=options.gameData||(typeof getGameData==="function"?getGameData():null);
+  const statusData=options.statusData||(typeof STATUS_DATA_RUNTIME!=="undefined"?STATUS_DATA_RUNTIME:null);
   if(!gameData)throw new Error("Canonical game data must be loaded or supplied before monster data");
   const [core,monsters]=await Promise.all([fetchMonsterJSON(paths.core),fetchMonsterJSON(paths.monsters)]);
   const source={core,monsters};
   if(typeof assertValidMonsterData!=="function")throw new Error("monster-validation.js must load before monster-runtime.js");
-  MONSTER_DATA_VALIDATION=deepFreezeMonsterData(assertValidMonsterData(source,gameData));
+  MONSTER_DATA_VALIDATION=deepFreezeMonsterData(assertValidMonsterData(source,gameData,statusData));
   MONSTER_DATA_RUNTIME=deepFreezeMonsterData(source);
   MONSTER_DATA_INDEX={
     families:buildMonsterIndex(core.families,"monster family"),

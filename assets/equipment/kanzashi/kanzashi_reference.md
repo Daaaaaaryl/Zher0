@@ -4,7 +4,7 @@
 - Slot: Head
 - Status: Approved master
 - Canonical artwork: `kanzashi_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `kanzashi_tuner.png`
 - Icon: pending
 - The supplied PNG is the canonical visual source of truth.
 - An ornamental hairpiece; preserve the approved composition without automatic transformation.

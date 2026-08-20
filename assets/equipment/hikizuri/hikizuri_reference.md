@@ -4,7 +4,7 @@
 - Slot: Body
 - Status: Approved master
 - Canonical artwork: `hikizuri_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `hikizuri_tuner.png`
 - Icon: pending
 - The supplied PNG is the canonical visual source of truth.
 - A formal trailing kimono; preserve the approved composition without automatic transformation.

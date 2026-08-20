@@ -4,7 +4,7 @@
 - Slot: Off Hand
 - Status: Approved master
 - Canonical artwork: `wagasa_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `wagasa_tuner.png`
 - Icon: pending
 - The supplied PNG is the canonical visual source of truth.
 - A traditional umbrella; preserve the approved composition without automatic transformation.

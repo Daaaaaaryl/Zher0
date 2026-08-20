@@ -4,7 +4,7 @@
 - Slot: Main Hand
 - Status: Approved master
 - Canonical artwork: `maiogi_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `maiogi_tuner.png`
 - Icon: pending
 - The supplied PNG is the canonical visual source of truth.
 - A folding fan; preserve the approved composition without automatic transformation.

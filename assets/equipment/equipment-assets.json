@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "assetVersion": "2026-08-19.2",
+  "assetVersion": "2026-08-20.1",
   "missingAssetPolicy": {
     "value": null,
     "meaning": "Asset is pending or unavailable; consumers must render a neutral no-art state."
@@ -65,7 +65,7 @@
       "displayName": "Maiōgi",
       "slot": "Main Hand",
       "masterArtwork": "assets/equipment/maiogi/maiogi_master.png",
-      "tunerArtwork": null,
+      "tunerArtwork": "assets/equipment/maiogi/maiogi_tuner.png",
       "icon": null,
       "reference": "assets/equipment/maiogi/maiogi_reference.md"
     },
@@ -74,7 +74,7 @@
       "displayName": "Wagasa",
       "slot": "Off Hand",
       "masterArtwork": "assets/equipment/wagasa/wagasa_master.png",
-      "tunerArtwork": null,
+      "tunerArtwork": "assets/equipment/wagasa/wagasa_tuner.png",
       "icon": null,
       "reference": "assets/equipment/wagasa/wagasa_reference.md"
     },
@@ -83,7 +83,7 @@
       "displayName": "Hikizuri",
       "slot": "Body",
       "masterArtwork": "assets/equipment/hikizuri/hikizuri_master.png",
-      "tunerArtwork": null,
+      "tunerArtwork": "assets/equipment/hikizuri/hikizuri_tuner.png",
       "icon": null,
       "reference": "assets/equipment/hikizuri/hikizuri_reference.md"
     },
@@ -92,7 +92,7 @@
       "displayName": "Kanzashi",
       "slot": "Head",
       "masterArtwork": "assets/equipment/kanzashi/kanzashi_master.png",
-      "tunerArtwork": null,
+      "tunerArtwork": "assets/equipment/kanzashi/kanzashi_tuner.png",
       "icon": null,
       "reference": "assets/equipment/kanzashi/kanzashi_reference.md"
     },
@@ -101,7 +101,7 @@
       "displayName": "Zōri",
       "slot": "Boots",
       "masterArtwork": "assets/equipment/zori/zori_master.png",
-      "tunerArtwork": null,
+      "tunerArtwork": "assets/equipment/zori/zori_tuner.png",
       "icon": null,
       "reference": "assets/equipment/zori/zori_reference.md"
     },
@@ -110,7 +110,7 @@
       "displayName": "Inrō",
       "slot": "Accessory",
       "masterArtwork": "assets/equipment/inro/inro_master.png",
-      "tunerArtwork": null,
+      "tunerArtwork": "assets/equipment/inro/inro_tuner.png",
       "icon": null,
       "reference": "assets/equipment/inro/inro_reference.md"
     },

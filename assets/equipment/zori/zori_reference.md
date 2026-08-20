@@ -4,7 +4,7 @@
 - Slot: Boots
 - Status: Approved master
 - Canonical artwork: `zori_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `zori_tuner.png`
 - Icon: pending
 - The supplied PNG is the canonical visual source of truth.
 - A naturally paired set of sandals; preserve the approved composition without automatic transformation.

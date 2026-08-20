@@ -1,6 +1,6 @@
 <!--
 ================================================================================
-EQUIPMENT STAT DESTRIBUTION — SOURCE MAP
+EQUIPMENT STAT DISTRIBUTION — SOURCE MAP
 Version: v0.8.16
 
 PURPOSE
@@ -39,16 +39,16 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Equipment Stat Distribution v 0.8.16.010</title>
+<title>Equipment Stat Distribution v 0.8.16.032 GSHEET TEST</title>
 <link rel="stylesheet" href="css/equipment-stats.css">
 </head>
 <body>
 <div class="wrap">
   <!-- ===== APP HEADER / SYSTEM STATUS ===== -->
 <div class="app-head">
-    <div class="app-title"><h1>Equipment Stat Destribution</h1></div>
+    <div class="app-title"><h1>Equipment Stat Distribution</h1></div>
     <div class="system-head">
-      <span id="cloudStatus" class="status compact-status">Google Sheet ready</span>
+      <span id="cloudStatus" class="status compact-status">Google Sheet paused · local UI test</span>
       <button class="menu-trigger" id="mainMenuBtn" type="button" aria-label="Open main menu">☰ <span>Menu</span></button>
     </div>
   </div>
@@ -56,23 +56,27 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
   <!-- ===== 1. TEST / EQUIPMENT SET RECORD CONTROLS ===== -->
 <section class="panel record-panel">
     <div class="record-hero">
-      <div class="record-commandbar">
-        <label class="field compact-field">Test Name
-          <input id="recordName" type="text" placeholder="e.g. Gusoku">
-        </label>
-        <label class="field compact-field">Equipment Set Name
-          <input id="equipmentSetName" type="text" placeholder="e.g. Samurai Set">
-        </label>
+      <div class="record-commandbar equipment-set-commandbar">
+        <div class="equipment-set-primary">
+          <strong class="equipment-set-label">Equipment Set</strong>
+          <button class="btn primary" id="newSetBtn" type="button">+ New Set</button>
+          <select id="savedSetSelect" class="saved-set-select" aria-label="Select Saved Set">
+            <option value="">Select Saved Set…</option>
+          </select>
+        </div>
+        <!-- Backward-compatible hidden identity fields. They are kept synchronized
+             to one canonical Equipment Set name so existing backend contracts survive. -->
+        <input id="recordName" type="hidden" value="">
+        <input id="equipmentSetName" type="hidden" value="">
         <div class="record-tools-wrap">
           <button class="btn workspace-tools-btn" id="workspaceToolsBtn" type="button" aria-expanded="false">Tools ▾</button>
           <div class="workspace-tools-popover hidden" id="workspaceToolsPopover">
-            <button class="btn primary" id="saveCloudBtn">Save</button>
-            <button class="btn" id="loadByNameBtn">Load</button>
-            <button id="resetBtn" class="btn ghost">Reset</button>
+            <button class="btn" id="loadSelectedSetBtn" type="button">Load</button>
+            <button id="resetBtn" class="btn ghost" type="button">Reset</button>
           </div>
         </div>
       </div>
-</div>
+    </div>
   </section>
 
   <div class="focus-mode-toolbar">
@@ -83,9 +87,13 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
       <button type="button" class="focus-dock-btn" data-focus-target="priority">Priority</button>
       <button type="button" class="focus-dock-btn" data-focus-target="stats">Stats</button>
       <button type="button" class="focus-dock-btn" data-focus-target="tuner">Final Balancing<span class="focus-status-dot hidden" id="tunerStatusDot" aria-hidden="true"></span></button>
+      <div class="focus-global-save">
+        <span class="tool-save-state" id="focusGlobalSaveState">Saved</span>
+        <button type="button" class="btn primary" id="focusFinalizeBtn">Finalize Equipment</button>
+      </div>
     </div>
   </div>
-  
+
 
   <section class="panel workspace-panel" id="panelBasis" data-focus-panel="basis">
     <!-- ===== 2. STAT BASIS ===== -->
@@ -110,13 +118,16 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
           <div><span>Baseline</span><strong id="equipmentBudgetBaseline">0</strong></div>
           <div><span>Assigned</span><strong id="equipmentBudgetAssigned">0</strong></div>
           <button class="btn ghost" id="resetEquipmentBudgetBtn" type="button">Reset</button>
-          <button class="btn" id="saveEquipmentBudgetBtn" type="button">Save</button>
         </div>
-        <div class="tool-save-state" id="equipmentBudgetSaveState">Saved</div>
+        <div class="tool-save-state subsystem-save-note" id="equipmentBudgetSaveState">Changes finalize with Equipment Set</div>
         <div class="equipment-budget-picker" id="equipmentBudgetPicker"></div>
-        <div class="equipment-budget-focus" id="equipmentBudgetFocus"></div>
-        <div class="advanced-context-label">Other Equipment</div>
-        <div class="equipment-budget-context" id="equipmentBudgetContext"></div>
+        <div class="equipment-budget-stack">
+          <div class="equipment-budget-focus" id="equipmentBudgetFocus"></div>
+          <div class="equipment-budget-slider-card" id="equipmentBudgetSliderCard"></div>
+          <div class="equipment-budget-context-card">
+            <div class="equipment-budget-context advanced-equipment-context" id="equipmentBudgetContext"></div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -154,8 +165,9 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
     <div id="comparisonBody">
       <div id="viewer" class="viewer"></div>
       <div class="comparison-finalize comparison-final-actions">
-        <button class="btn primary finalize-main" id="saveDistributionBtn" type="button">Save</button>
         <button class="btn final-tweak-toggle" id="finalTweakBtn" type="button" aria-pressed="false">Final Tweak</button>
+        <!-- Kept as an internal compatibility target; the only visible persistent
+             action is Finalize Equipment in Final Balancing / Focus Mode. -->
         <button class="btn primary finalize-main hidden" id="finalizeBtn" type="button">Finalize Distribution</button>
       </div>
     </div>
@@ -163,15 +175,17 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
 <section class="panel workspace-panel tuner-focus-panel" id="panelTuner" data-focus-panel="tuner">
     <div class="panel-head tuner-panel-head">
       <h2>Final Balancing</h2>
-      <div class="tuner-points-summary"><span>Available Points</span><strong id="tunerAvailablePoints">0</strong></div>
+      <div class="global-finalize-cluster">
+        <span class="tool-save-state" id="globalSaveState">Saved</span>
+        <button class="btn primary tuner-finalize-btn" id="tunerFinalizeBtn" type="button">Finalize Equipment</button>
+      </div>
     </div>
     <div class="panel-body">
-      <div class="tuner-actions">
-        <button class="btn primary tuner-finalize-btn" id="tunerFinalizeBtn" type="button">Finalize Equipment</button>
+      <div class="tuner-actions tuner-actions-swapped">
+        <div class="tuner-points-summary"><span>Available Points</span><strong id="tunerAvailablePoints">0</strong></div>
         <div class="tuner-action-tools">
-          <span class="tool-save-state" id="tunerSaveState">Saved</span>
+          <span class="tool-save-state subsystem-save-note" id="tunerSaveState">Changes finalize with Equipment Set</span>
           <button class="btn ghost" id="resetTunerBtn" type="button">Reset</button>
-          <button class="btn" id="saveTunerBtn" type="button">Save</button>
         </div>
       </div>
       <div class="tuner-equipment-picker" id="tunerEquipmentPicker"></div>
@@ -209,7 +223,6 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
           <div><b>Google Sheet Endpoint</b><code id="dbgSheetPath">—</code></div>
           <div><b>Asset Registry Path</b><code id="dbgAssetPath">—</code></div>
           <div><b>Loaded Asset IDs</b><code id="dbgAssetIds">—</code></div>
-          <div><b>Equipment Artwork</b><code id="dbgAssetDetails">—</code></div>
           <div><b>Last Runtime Error</b><code id="dbgLastError">None</code></div>
         </div>
         <div class="debug-actions">
@@ -221,7 +234,7 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
       <div class="advanced-group"><details><summary>Sheet Sync</summary><div class="advanced-group-body small">Use these tools only when troubleshooting saved records or Google Sheet sync.</div></details></div>
     </div>
   </section>
-  
+
   <div class="main-menu-scrim hidden" id="mainMenuScrim"></div>
   <aside class="main-menu hidden" id="mainMenu" aria-label="Main menu">
     <div class="main-menu-head">
@@ -259,7 +272,7 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
   </section>
 
 
-  
+
       </div>
 
       <div class="menu-page hidden" id="menuPageComparison">
@@ -316,7 +329,7 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
     </div>
   </details>
 
-  
+
       </div>
 
       <div class="menu-page hidden" id="menuPageSettings">
@@ -344,6 +357,14 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
     <details class="version-history">
       <summary>Version history</summary>
       <div style="padding-top:6px;line-height:1.55">
+        <b>v0.8.16.032 GSHEET TEST</b> — Pre-publication integration test build: re-enabled the preserved Google Sheet / Apps Script connection without changing its endpoint. Advanced Equipment Weight .031 layout/colors and Final Balancing remain unchanged. This build is for end-to-end save/load testing before publication.<br>
+        <b>v0.8.16.031 TEST</b> — Advanced Equipment Weight color adjustment: set #fcfaf5 on the active-equipment card, slider card, inactive/compact equipment-card backgrounds, and the Available Points, Baseline, and Assigned summary slots. Layout, graph behavior, sliders, Final Balancing, and dormant Google Sheet state unchanged.<br>
+        <b>v0.8.16.030 TEST</b> — Advanced Equipment Weight color-polish pass only: active graph card, slider card, five-equipment card, and compact equipment cards now inherit the existing panel/ink/line theme variables; plotting areas remain transparent; stat bar colors and all geometry/logic are unchanged. Google Sheet remains dormant for local UI testing.<br>
+        <b>v0.8.16.029 TEST</b> — Hotfix for Advanced Equipment Weight .028: repaired the runtime ReferenceError by restoring baseline/assigned totals to the existing sumObj state calculation; active and compact graphs now render from equipmentBudgetRows so Advanced Weight changes are reflected correctly. Three-card layout, transparent bar plots, enlarged values, shared baseline, slider-only card, five compact graphs, Final Balancing, and dormant Google Sheet state preserved.<br>
+        <b>v0.8.16.028 TEST</b> — Advanced Equipment Weight rebuilt into three explicit cards: active equipment graph, slider-only card, and five compact equipment graphs. Active graph bar background boxes removed; values enlarged and moved above bars; one baseline added under all six bars. Compact graph values enlarged for readability. Final Balancing left unchanged from the approved .023/.027 path. Google Sheet remains dormant for local UI testing.<br>
+        <b>v0.8.16.017 TEST</b> — Local-only: Final Balancing slider rebuilt directly from the working Negative slider structure; Priority, Negative, regular Equipment Weight, and Advanced Equipment Weight remain untouched. Added a dedicated mid-width Final Balancing breakpoint to drop the graph below PNG + Stats before overlap occurs. Google Sheet remains dormant.<br>
+        <b>v0.8.16.012 TEST</b> — Local-only iteration: repaired Advanced Equipment Weight toggle; compacted Saved Set selector; removed duplicate external set-name display; Final Balancing now uses controls-left / tuner-art-middle / graph-right on desktop; mobile keeps art-first vertical flow; active graph underline removed; slider track movement made visually explicit; Focus Mode shows only its dock Finalize Equipment action.<br>
+        <b>v0.8.16.011</b> — Unified Equipment Set workflow: New Set + Saved Set selector, one Finalize Equipment save action, Advanced Weight collapsed inactive equipment with larger active graph, Final Balancing three-column layout, focus-mode finalize action, selected-stat underline removed, and user-facing “Destribution” typo corrected to “Distribution”.<br>
         <b>v0.8.16.010</b> — Finalized Equipment stability/debug patch: preserves View/Edit state across async artwork rerenders, prevents action-button bubbling, keeps the Finalized Equipment menu header from following scroll, and adds detailed System Diagnostics plus Copy Debug Report under the secret version button.<br>
         <b>v0.8.16.009</b> — Final Balancing workflow: renamed Tuner to Final Balancing; Distributed Stats now uses Save + Final Tweak actions; Final Balancing stays hidden in Show All until Final Tweak is opened, while Focus Mode can still open Final Balancing directly; existing Finalize Equipment action remains inside Final Balancing.<br>
         <b>v0.8.16.008</b> — Show All Tuner fix: Tuner now renders fully whenever Focus Mode is off, instead of showing only its header/action shell; leaving Focus Mode immediately restores the full Tuner workspace below Distributed Stats.<br>
@@ -376,6 +397,7 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
 <script src="js/equipment-assets.js"></script>
 <script src="js/equipment-diagnostics.js"></script>
 <script>
+
 "use strict";
 
 /*
@@ -422,65 +444,21 @@ const slots=["Main Hand","Off Hand","Body","Head","Boots","Accessory"];
 const stats=["HP","PA","PD","MA","MD","SP"];
 const statColors={HP:"#43a047",PA:"#e53935",PD:"#64b5f6",MA:"#8e44ad",MD:"#5c6bc0",SP:"#f2c94c"};
 const statBg={HP:"hp-bg",PA:"pa-bg",PD:"pd-bg",MA:"ma-bg",MD:"md-bg",SP:"sp-bg"};
-const GOOGLE_SHEET_API="https://script.google.com/macros/s/AKfycby3J_-GaiSv_dyaq0XnIJt-7BX2nI9UKTTt-9nnmZ12nR6tPwcsjKaxmtDLEb1jAZuo/exec";
+// LOCAL UI TEST ONLY — restore after HTML approval.
+const SAVED_GOOGLE_SHEET_API="https://script.google.com/macros/s/AKfycby3J_-GaiSv_dyaq0XnIJt-7BX2nI9UKTTt-9nnmZ12nR6tPwcsjKaxmtDLEb1jAZuo/exec";
+const GSHEET_ENABLED=true;
+const GOOGLE_SHEET_API=GSHEET_ENABLED?SAVED_GOOGLE_SHEET_API:"";
 const STORAGE_KEY="equipmentStatDestribution_v0800";
 const VERSION="0.8.16";
-const BUILD_VERSION="0.8.16.010";
+const BUILD_VERSION="0.8.16.032 GSHEET TEST";
 const BACKEND_VERSION="0.8.15";
 
-function tunerArtworkHTML(slot,name){
-  const url=equipmentTunerArtworkUrl(name,slot);
-  return `<div class="tuner-art-frame ${url?"":"asset-missing"}">
-    ${url?`<img src="${esc(url)}" alt="${esc(name)} Tuner artwork" loading="lazy"
-      onload="recordEquipmentAssetLoad(this.src,true)"
-      onerror="recordEquipmentAssetLoad(this.src,false);this.closest('.tuner-art-frame').classList.add('asset-missing');this.remove()">`:""}
-    <div class="tuner-art-fallback"><span>Artwork Pending</span><small>${esc(name)}</small></div>
-  </div>`;
-}
-function finalizedArtworkCard(e){
-  const name=e.equipmentName||e.slot||"Equipment";
-  const slot=e.slot||"";
-  const url=equipmentArtworkUrl(name,slot);
-  const statTotal=stats.reduce((sum,st)=>sum+(Number(e[st])||0),0);
-  const art=url
-    ? `<img src="${esc(url)}" alt="${esc(name)} artwork" loading="lazy" onload="recordEquipmentAssetLoad(this.src,true)" onerror="recordEquipmentAssetLoad(this.src,false);this.closest('.final-art-frame').classList.add('asset-missing');this.remove()">`
-    : "";
-  return `<article class="final-art-card">
-    <div class="final-art-name"><strong>${esc(name)}</strong><span>${esc(slot)}</span></div>
-    <div class="final-art-frame ${url?"":"asset-missing"}">
-      ${art}
-      <div class="final-art-fallback"><span>No Artwork</span><small>Pending equipment asset</small></div>
-    </div>
-    <div class="final-art-stats">
-      ${stats.map(st=>`<span class="${statBg[st]}"><b>${st}</b><i>${fmt(e[st]||0)}</i></span>`).join("")}
-    </div>
-    <div class="final-art-total">Total <b>${fmt(statTotal)}</b></div>
-  </article>`;
-}
-
-let state={
-  recordName:"",equipmentSetName:"",
-  basis:{HP:0,PA:0,PD:0,MA:0,MD:0,SP:0},
-  equipment:{},
-  priority:{},
-  negative:{},
-  viewMode:"full",focusSlot:"Main Hand",refined:false,activePrioritySlot:"Main Hand",finalizeSet:"Set 5"
-};
-let results={set1:[],set2:[],set3:[],set4:[],set5:[],set6:[],equipmentBudgets:{}};
-
-
-/* ---------- STATE INITIALIZATION ---------- */
-function initState(){
-  slots.forEach(sl=>{
-    state.equipment[sl]={name:"",weight:5};
-    stats.forEach(st=>{
-      state.priority[sl+"|"+st]=0;
-      state.negative[sl+"|"+st]=0;
-    });
-  });
-}
-
 function q(id){return document.getElementById(id)}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function fmt(v){
+  v=Number(v)||0;
+  return Math.abs(v-Math.round(v))<1e-9?String(Math.round(v)):v.toFixed(2);
+}
 function totalBasis(){return stats.reduce((a,s)=>a+(Number(state.basis[s])||0),0)}
 function totalNegative(){return Object.values(state.negative).reduce((a,v)=>a+(Number(v)||0),0)}
 function positiveTarget(){return totalBasis()-totalNegative()} // negative is negative
@@ -678,14 +656,19 @@ function buildBasis(){
 }
 function buildWeights(){
   q("weightCards").innerHTML=slots.map(sl=>`
-    <div class="weight-card">
+    <div class="weight-card" data-advanced-weight-slot="${sl}">
       <div class="slot-label">${sl}</div>
       <input class="eq-name" id="name_${safe(sl)}" type="text" placeholder="${sl}" value="${esc(state.equipment[sl].name||"")}">
       <div class="weight-row"><input class="weight-range" id="weight_${safe(sl)}" type="range" min="0" max="10" step="1" value="${ew(sl)}"><div id="weightNum_${safe(sl)}" class="level-num">${ew(sl)||"—"}</div></div>
-
+      <button class="advanced-weight-inline" id="advancedWeightInline_${safe(sl)}" type="button">BASE</button>
     </div>`).join("");
   slots.forEach(sl=>{
     q("name_"+safe(sl)).addEventListener("input",e=>{state.equipment[sl].name=e.target.value;renderViewer();buildPriority();saveLocal()});
+    q("advancedWeightInline_"+safe(sl))?.addEventListener("click",()=>{
+      if(!equipmentBudgetState.open)return;
+      equipmentBudgetState.activeSlot=sl;
+      renderEquipmentBudgetAdvanced();
+    });
     q("weight_"+safe(sl)).addEventListener("input",e=>{
       state.equipment[sl].weight=Number(e.target.value)||0;
       q("weightNum_"+safe(sl)).textContent=ew(sl)||"—";
@@ -772,6 +755,9 @@ function renderPriorityEditor(){
 function renderWeightBudgets(){
   slots.forEach(sl=>{const el=q("weightBudget_"+safe(sl));if(el)el.innerHTML=`Receives <b>${fmt(results.equipmentBudgets?.[sl]||0)}</b>`});
 }
+function safe(s){return s.replace(/[^a-z0-9]/gi,"_")}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
 /* viewer */
 function currentRows(){return state.refined?results.set6:results.set5}
 function viewerLabel(){return state.refined?"Set 6 · Refined":"Set 5 · Base"}
@@ -955,14 +941,43 @@ function updateDebug(record=null){
   set("dbgSavedAt",r.savedAt||state.lastSavedAt);
   set("dbgVersion",r.frontendVersion?`${r.frontendVersion} · backend ${r.version||BACKEND_VERSION}`:(r.version||VERSION));
 }
-function renderDraftSelect(){
-  const el=q("draftSelect");if(!el)return;
-  el.innerHTML='<option value="">Saved drafts…</option>'+savedDrafts.map(r=>
-    `<option value="${esc(r.recordId)}">${esc(r.equipmentSetName||"Unnamed")} — ${esc(r.recordName||"")} · ${esc(String(r.recordId||"").slice(-6))}</option>`
+function canonicalSetName(record={}){
+  return String(record.equipmentSetName||record.recordName||"").trim();
+}
+function syncCanonicalSetIdentity(name){
+  const clean=String(name||"").trim();
+  state.recordName=clean;
+  state.equipmentSetName=clean;
+  const rn=q("recordName"),sn=q("equipmentSetName");
+  if(rn)rn.value=clean;
+  if(sn)sn.value=clean;
+  // The saved-set selector itself is the only visible set-name display.
+}
+function renderSavedSetSelect(){
+  const el=q("savedSetSelect");if(!el)return;
+  const unique=[],seen=new Set();
+  savedDrafts.forEach(r=>{
+    const id=String(r.recordId||"");
+    if(!id||seen.has(id))return;
+    seen.add(id);unique.push(r);
+  });
+  el.innerHTML='<option value="">Select Saved Set…</option>'+unique.map(r=>
+    `<option value="${esc(r.recordId)}">${esc(canonicalSetName(r)||"Unnamed Set")}</option>`
   ).join("");
   if(state.currentRecordId)el.value=state.currentRecordId;
 }
+function renderDraftSelect(){
+  const el=q("draftSelect");
+  if(el){
+    el.innerHTML='<option value="">Saved drafts…</option>'+savedDrafts.map(r=>
+      `<option value="${esc(r.recordId)}">${esc(r.equipmentSetName||"Unnamed")} — ${esc(r.recordName||"")} · ${esc(String(r.recordId||"").slice(-6))}</option>`
+    ).join("");
+    if(state.currentRecordId)el.value=state.currentRecordId;
+  }
+  renderSavedSetSelect();
+}
 async function refreshDraftList(){
+  if(!GSHEET_ENABLED){renderDraftSelect();return}
   try{
     const data=await fetchJSON(GOOGLE_SHEET_API+"?action=listRecords&_="+Date.now(),{},20000);
     if(!data.ok)throw new Error(data.error||"Draft list failed");
@@ -991,6 +1006,7 @@ function openInspect(sl){
 function closeInspect(){q("inspectBackdrop")?.classList.add("hidden")}
 
 async function loadSelectedDraft(){
+  if(!GSHEET_ENABLED){cloud("Google Sheet paused · local UI test",null);return}
   const id=q("draftSelect")?.value;
   if(!id){cloud("Choose a saved draft",false);return}
   cloudBusy("Loading");
@@ -1003,11 +1019,13 @@ async function loadSelectedDraft(){
     applyRecord(data.record);
     state.currentRecordId=id;
     state.lastSavedAt=data.record.savedAt||"";
-    saveLocal();updateDebug(data.record);renderDraftSelect();
-    cloud("Loaded: "+(data.record.equipmentSetName||data.record.recordName||"Draft"),true);
+    syncCanonicalSetIdentity(canonicalSetName(data.record));
+    saveLocal();updateDebug(data.record);renderDraftSelect();setGlobalSaveState(false);
+    cloud("Loaded: "+(canonicalSetName(data.record)||"Draft"),true);
   }catch(e){cloud("Load failed",false);showError(e.message||e)}
 }
 async function deleteCurrentDraft(){
+  if(!GSHEET_ENABLED){cloud("Google Sheet paused · local UI test",null);return}
   const id=state.currentRecordId||q("draftSelect")?.value;
   if(!id){cloud("No saved draft selected",false);return}
   const item=savedDrafts.find(x=>String(x.recordId)===String(id));
@@ -1030,8 +1048,74 @@ function newTestIdentity(){
   cloud("New test ready",true);
 }
 
+
+function hasMeaningfulWorkspaceData(){
+  return totalBasis()>0 || slots.some(sl=>
+    String(state.equipment?.[sl]?.name||"").trim() ||
+    Number(state.equipment?.[sl]?.weight||0)>0
+  );
+}
+function createNewEquipmentSet(){
+  const name=prompt("New Equipment Set name:");
+  if(name===null)return;
+  const clean=String(name).trim();
+  if(!clean){cloud("Enter an Equipment Set name",false);return}
+  if(hasMeaningfulWorkspaceData() && !confirm(`Start "${clean}" as a new set and clear the current workspace?`))return;
+  localStorage.removeItem(STORAGE_KEY);
+  state={
+    currentRecordId:"",lastSavedAt:"",recordName:clean,equipmentSetName:clean,
+    basis:{HP:0,PA:0,PD:0,MA:0,MD:0,SP:0},
+    equipment:{},priority:{},negative:{},viewMode:"full",
+    focusSlot:"Main Hand",refined:false,activePrioritySlot:"Main Hand",finalizeSet:"Set 5"
+  };
+  initState();
+  syncCanonicalSetIdentity(clean);
+  equipmentBudgetState.signature="";
+  statTunerState.signature="";
+  buildAll();recalc(true);renderDraftSelect();updateDebug();
+  markGlobalDirty();
+  cloud(`New set: ${clean}`,true);
+}
+async function loadSelectedEquipmentSet(){
+  if(!GSHEET_ENABLED){cloud("Google Sheet paused · local UI test",null);return}
+  const id=q("savedSetSelect")?.value;
+  if(!id){cloud("Select a saved Equipment Set",false);return}
+  cloudBusy("Loading");
+  try{
+    const data=await fetchJSON(GOOGLE_SHEET_API+"?action=loadRecordById&recordId="+encodeURIComponent(id)+"&_="+Date.now(),{},25000);
+    if(!data.ok)throw new Error(data.error||"Load failed");
+    if(!data.record||String(data.record.recordId)!==String(id))throw new Error("Selected record mismatch");
+    applyRecord(data.record);
+    state.currentRecordId=id;
+    state.lastSavedAt=data.record.savedAt||"";
+    // New UI has one identity. Existing old records are normalized to their
+    // Equipment Set display name on the next Finalize Equipment.
+    syncCanonicalSetIdentity(canonicalSetName(data.record));
+    equipmentBudgetState.signature="";
+    statTunerState.signature="";
+    ensureEquipmentBudgetState();ensureStatTunerState();
+    saveLocal();updateDebug(data.record);renderDraftSelect();
+    setGlobalSaveState(false);
+    cloud("Loaded: "+(canonicalSetName(data.record)||"Equipment Set"),true);
+  }catch(e){cloud("Load failed",false);showError(e.message||e)}
+}
+let globalSaveDirty=false;
+function setGlobalSaveState(dirty){
+  globalSaveDirty=!!dirty;
+  const text=globalSaveDirty?"Unsaved":"Saved";
+  ["globalSaveState","focusGlobalSaveState"].forEach(id=>{
+    const el=q(id);if(!el)return;
+    el.textContent=text;
+    el.classList.toggle("dirty",globalSaveDirty);
+  });
+}
+function markGlobalDirty(){
+  setGlobalSaveState(true);
+}
+
 /* ---------- GOOGLE SHEET: SAVE / LOAD ---------- */
 async function saveCloud(){
+  if(!GSHEET_ENABLED){cloud("Google Sheet paused · local UI test",null);return false}
   if(!q("recordName").value.trim()){cloud("Enter Test Name",false);q("recordName").focus();return}
   if(!q("equipmentSetName").value.trim()){cloud("Enter Equipment Set Name",false);q("equipmentSetName").focus();return}
   recalc(true);
@@ -1049,12 +1133,15 @@ async function saveCloud(){
     await refreshDraftList();
     cloud(data.updated?"Updated":"Saved",true);
     await loadFinalizedSets(true);
+    return true;
   }catch(e){
     cloud("Save failed",false);
     showError(e.name==="AbortError"?"Google Sheet save timed out.":e.message||e);
+    return false;
   }
 }
 async function loadCloud(){
+  if(!GSHEET_ENABLED){cloud("Google Sheet paused · local UI test",null);return false}
   cloudBusy("Loading");
   try{
     const data=await fetchJSON(GOOGLE_SHEET_API+"?action=loadLatestRecord&_="+Date.now(),{},25000);
@@ -1106,6 +1193,7 @@ function shortDate(value){
 
 
 async function checkSheetStatus(){
+  if(!GSHEET_ENABLED){cloud("Google Sheet paused · local UI test",null);return}
   cloudBusy("Google Sheet Checking");
   let lastError=null;
   for(let attempt=1;attempt<=3;attempt++){
@@ -1139,6 +1227,7 @@ function selectedFinalRows(){return state.refined?results.set6:results.set5}
 
 /* ---------- GOOGLE SHEET: FINALIZATION ---------- */
 async function finalizeCloud(){
+  if(!GSHEET_ENABLED){cloud("Google Sheet paused · local UI test",null);return false}
   if(!q("recordName").value.trim()){cloud("Enter Test Name",false);return}
   if(!q("equipmentSetName").value.trim()){cloud("Enter Equipment Set Name",false);return}
   recalc(false);
@@ -1153,6 +1242,7 @@ async function finalizeCloud(){
     if(data.recordId){state.currentRecordId=data.recordId;saveLocal();}
     cloud("Finalized",true);
     await loadFinalizedSets(true);
+    return true;
   }catch(e){
     cloud("Finalize failed",false);
     console.error("Finalize failed",{
@@ -1164,10 +1254,33 @@ async function finalizeCloud(){
       equipmentSetName:q("equipmentSetName")?.value||""
     });
     showError(e.name==="AbortError"?"Finalizing timed out.":e.message||e);
+    return false;
+  }
+}
+async function finalizeEquipmentSet(){
+  const name=String(q("equipmentSetName")?.value||state.equipmentSetName||"").trim();
+  if(!name){cloud("Create or load an Equipment Set first",false);return}
+  syncCanonicalSetIdentity(name);
+  // Collapse the old three-save model into one user action while retaining
+  // the existing persistence mechanisms for backward compatibility.
+  saveEquipmentBudget();
+  saveStatTuner();
+  const saved=await saveCloud();
+  if(!saved){markGlobalDirty();return}
+  const finalized=await finalizeCloud();
+  if(finalized){
+    setGlobalSaveState(false);
+    renderDraftSelect();
+  }else{
+    markGlobalDirty();
   }
 }
 async function loadFinalizedSets(silent=false){
   const st=q("finalizedStatus");
+  if(!GSHEET_ENABLED){
+    if(st){st.textContent="Google Sheet paused · local UI test";st.className="status";}
+    return;
+  }
   if(st){st.textContent="Loading";st.className="status loading";}
   try{
     const data=await fetchJSON(GOOGLE_SHEET_API+"?action=listFinalizedSets&_="+Date.now(),{},25000);
@@ -1432,6 +1545,7 @@ function statTunerSignature(){
   const m=basePositiveMatrix();
   return slots.flatMap(sl=>stats.map(st=>`${dualKey(sl,st)}:${Math.round(positiveAt(m,sl,st))}`)).join("|");
 }
+function sumObj(o){return Object.values(o||{}).reduce((a,v)=>a+(Number(v)||0),0)}
 function eqBudgetAvailable(){return Math.max(0,sumObj(equipmentBudgetState.baseline)-sumObj(equipmentBudgetState.draft))}
 function statTunerAvailable(){return Math.max(0,sumObj(statTunerState.baseline)-sumObj(statTunerState.draft))}
 function eqBudgetDelta(sl){return (equipmentBudgetState.draft[sl]||0)-(equipmentBudgetState.baseline[sl]||0)}
@@ -1583,36 +1697,118 @@ function miniBars(m,sl,maxPos,klass="dual-mini-bars"){
 
 function renderEquipmentBudgetAdvanced(){
   ensureEquipmentBudgetState();
-  const rows=equipmentBudgetRows(),m=matrix(rows),maxPos=Math.max(1,...rows.map(r=>Math.max(0,Number(r.positive)||0)));
   const sl=slots.includes(equipmentBudgetState.activeSlot)?equipmentBudgetState.activeSlot:"Main Hand";
-  const base=equipmentBudgetState.baseline[sl]||0,draft=equipmentBudgetState.draft[sl]||0,d=eqBudgetDelta(sl);
-  const other=sumObj(equipmentBudgetState.draft)-draft,maxAllowed=Math.max(0,sumObj(equipmentBudgetState.baseline)-other);
-  q("equipmentBudgetPoints").textContent=fmt(eqBudgetAvailable());
+  equipmentBudgetState.activeSlot=sl;
+
+  const available=eqBudgetAvailable();
+  const current=equipmentBudgetState.draft[sl]||0;
+  const base=equipmentBudgetState.baseline[sl]||0;
+  const delta=current-base;
+  const maxAllowed=current+available;
+
+  q("equipmentBudgetPoints").textContent=fmt(available);
   q("equipmentBudgetBaseline").textContent=fmt(sumObj(equipmentBudgetState.baseline));
   q("equipmentBudgetAssigned").textContent=fmt(sumObj(equipmentBudgetState.draft));
-  q("equipmentBudgetSaveState").textContent=equipmentBudgetState.dirty?"Unsaved changes":"Saved";
+  q("equipmentBudgetSaveState").textContent=equipmentBudgetState.dirty
+    ?"Unsaved changes"
+    :"Saved";
   q("equipmentBudgetSaveState").classList.toggle("dirty",equipmentBudgetState.dirty);
+  if(equipmentBudgetState.dirty)markGlobalDirty();
 
-  q("equipmentBudgetPicker").innerHTML=slots.map(x=>{
-    const dx=eqBudgetDelta(x);
-    return `<button class="dual-pick ${x===sl?"active":""}" data-eqbudget-slot="${x}"><b>${esc(eqName(x))}</b><span>${x}</span><i class="${dx>0?"plus":dx<0?"minus":"zero"}">${dx===0?"BASE":`${dx>0?"+":""}${fmt(dx)}`}</i></button>`;
-  }).join("");
+  // No detached picker in this layout.
+  q("equipmentBudgetPicker").innerHTML="";
 
-  q("equipmentBudgetFocus").innerHTML=`<div class="dual-focus-card">
-    <div class="dual-focus-head"><div><strong>${esc(eqName(sl))}</strong><span>${sl}</span></div><div>Computed <b>${fmt(base)}</b> → Tuned <b>${fmt(draft)}</b></div></div>
-    ${miniBars(m,sl,maxPos,"dual-focus-bars")}
-    <div class="dual-range-row"><span>0</span><input id="equipmentBudgetRange" type="range" min="0" max="${maxAllowed}" step="1" value="${draft}"><span>${fmt(maxAllowed)}</span></div>
-    <div class="dual-change ${d>0?"plus":d<0?"minus":"zero"}">${d===0?"Baseline":d<0?`Returned ${fmt(-d)} Points`:`Received ${fmt(d)} Points`}</div>
+  // Build the active graph using the equipment stat matrix.
+  const rows=equipmentBudgetRows(),m=matrix(rows);
+  const maxPos=Math.max(1,...rows.map(r=>Math.max(0,Number(r.positive)||0)));
+
+  q("equipmentBudgetFocus").innerHTML=`<div class="equipment-budget-active-card">
+    <div class="equipment-budget-active-head">
+      <div class="equipment-budget-active-title">
+        <strong>${esc(eqName(sl))}</strong>
+        <span>${sl}</span>
+      </div>
+      <div class="equipment-budget-active-meta">
+        <span>Computed ${fmt(base)}</span>
+        <b>→</b>
+        <span>Tuned ${fmt(current)}</span>
+      </div>
+    </div>
+
+    <div class="equipment-budget-active-graph">
+      ${stats.map(st=>{
+        const v=Math.max(0,Number(m[sl]?.[st]?.positive)||0);
+        const n=negativeAt(basePositiveMatrix(),sl,st);
+        const shown=v>0?v:(n<0?n:0);
+        const pct=maxPos?Math.max(0,v/maxPos*100):0;
+        return `<div class="equipment-budget-stat">
+          <div class="equipment-budget-stat-value">${fmt(shown)}</div>
+          <div class="equipment-budget-stat-plot">
+            <div class="equipment-budget-stat-fill" style="height:${pct}%;background:${statColors[st]}"></div>
+          </div>
+          <div class="equipment-budget-stat-label">${st}</div>
+        </div>`;
+      }).join("")}
+    </div>
   </div>`;
 
+  // Slider gets its own separate card underneath the active graph.
+  q("equipmentBudgetSliderCard").innerHTML=`<div class="equipment-budget-slider-inner">
+    <div class="equipment-budget-slider-copy">
+      <strong>${esc(eqName(sl))}</strong>
+      <span>${delta===0?"BASE":`${delta>0?"+":""}${fmt(delta)}`}</span>
+    </div>
+    <input id="equipmentBudgetRange" type="range" min="0" max="${maxAllowed}" step="1" value="${current}">
+  </div>`;
+
+  // Five compact equipment graphs live together in their own card.
   q("equipmentBudgetContext").innerHTML=slots.filter(x=>x!==sl).map(x=>{
     const dx=eqBudgetDelta(x);
-    return `<button class="dual-context-card" data-eqbudget-context="${x}"><div class="dual-context-head"><div><b>${esc(eqName(x))}</b><span>${x}</span></div><i class="${dx>0?"plus":dx<0?"minus":"zero"}">${dx===0?"BASE":`${dx>0?"+":""}${fmt(dx)}`}</i></div>${miniBars(m,x,maxPos)}</button>`;
+    return `<button class="equipment-budget-mini-card" data-eqbudget-context="${x}" type="button">
+      <div class="equipment-budget-mini-head">
+        <span><b>${esc(eqName(x))}</b><small>${x}</small></span>
+        <i class="${dx>0?"plus":dx<0?"minus":"zero"}">${dx===0?"BASE":`${dx>0?"+":""}${fmt(dx)}`}</i>
+      </div>
+      <div class="equipment-budget-mini-graph">
+        ${stats.map(st=>{
+          const v=Math.max(0,Number(m[x]?.[st]?.positive)||0);
+          const pct=maxPos?Math.max(0,v/maxPos*100):0;
+          return `<div class="equipment-budget-mini-stat">
+            <span>${fmt(v)}</span>
+            <div class="equipment-budget-mini-track">
+              <div class="equipment-budget-mini-fill" style="height:${pct}%;background:${statColors[st]}"></div>
+            </div>
+            <small>${st}</small>
+          </div>`;
+        }).join("")}
+      </div>
+    </button>`;
   }).join("");
 
-  q("equipmentBudgetPicker").querySelectorAll("[data-eqbudget-slot]").forEach(b=>b.onclick=()=>{equipmentBudgetState.activeSlot=b.dataset.eqbudgetSlot;renderEquipmentBudgetAdvanced()});
-  q("equipmentBudgetContext").querySelectorAll("[data-eqbudget-context]").forEach(b=>b.onclick=()=>{equipmentBudgetState.activeSlot=b.dataset.eqbudgetContext;renderEquipmentBudgetAdvanced()});
-  q("equipmentBudgetRange").oninput=e=>setEquipmentBudget(sl,e.target.value);
+  const range=q("equipmentBudgetRange");
+  if(range)range.oninput=e=>setEquipmentBudget(sl,e.target.value);
+
+  q("equipmentBudgetContext").querySelectorAll("[data-eqbudget-context]").forEach(b=>{
+    b.onclick=()=>{
+      equipmentBudgetState.activeSlot=b.dataset.eqbudgetContext;
+      renderEquipmentBudgetAdvanced();
+    };
+  });
+
+  // Keep BASE/delta directly under each Equipment Weight card.
+  slots.forEach(x=>{
+    const dx=eqBudgetDelta(x);
+    const chip=q("advancedWeightInline_"+safe(x));
+    const card=document.querySelector(`[data-advanced-weight-slot="${x}"]`);
+    if(chip){
+      chip.textContent=dx===0?"BASE":`${dx>0?"+":""}${fmt(dx)}`;
+      chip.classList.toggle("plus",dx>0);
+      chip.classList.toggle("minus",dx<0);
+      chip.classList.toggle("zero",dx===0);
+      chip.classList.toggle("active",x===sl);
+    }
+    if(card)card.classList.toggle("advanced-active",x===sl);
+  });
 }
 
 function renderStatTuner(){
@@ -1624,8 +1820,9 @@ function renderStatTuner(){
   statTunerState.activeSlot=sl;statTunerState.activeStat=activeStat;
 
   q("tunerAvailablePoints").textContent=fmt(statTunerAvailable());
-  q("tunerSaveState").textContent=statTunerState.dirty?"Unsaved changes":"Saved";
+  q("tunerSaveState").textContent=statTunerState.dirty?"Changes finalize with Equipment Set":"Included in finalized set";
   q("tunerSaveState").classList.toggle("dirty",statTunerState.dirty);
+  if(statTunerState.dirty)markGlobalDirty();
 
   q("tunerEquipmentPicker").innerHTML=slots.map(x=>{
     const dx=statEquipmentDelta(x);
@@ -1636,30 +1833,50 @@ function renderStatTuner(){
   const d=statCellDelta(sl,activeStat),available=statTunerAvailable(),maxAllowed=draft+available,neg=negativeAt(baseM,sl,activeStat);
 
   q("tunerFocus").innerHTML=`<div class="dual-focus-card tuner-graph-focus">
-    <div class="tuner-visual-workbench">
-      <div class="tuner-art-column">
+    <div class="tuner-visual-workbench tuner-reference-layout">
+
+      <div class="tuner-art-column tuner-panel-card">
         <div class="tuner-art-heading"><strong>${esc(eqName(sl))}</strong><span>${sl}</span></div>
         ${tunerArtworkHTML(sl,eqName(sl))}
       </div>
-      <div class="tuner-graph-column">
-        <div class="tuner-graph-heading"><span>Available <b>${fmt(available)}</b></span></div>
-        <div class="tuner-main-graph">${stats.map(st=>{
-      const r=m[sl][st],v=Math.max(0,Number(r.positive)||0),n=negativeAt(baseM,sl,st),pct=maxPos?v/maxPos*100:0;
-      const shown=v>0?v:(n<0?n:0);
-      return `<button type="button" class="tuner-main-stat ${st===activeStat?"active":""}" data-select-stat="${st}"><div class="tuner-main-value ${shown<0?"minus":""}">${fmt(shown)}</div><div class="tuner-main-track"><div class="tuner-main-fill" style="height:${pct}%;background:${statColors[st]}"></div></div><div class="tuner-main-label">${st}</div></button>`;
-    }).join("")}</div>
+
+      <div class="tuner-center-column">
+        <div class="tuner-graph-card tuner-panel-card">
+          <div class="tuner-graph-heading"><span>Available <b>${fmt(available)}</b></span></div>
+          <div class="tuner-main-graph">${stats.map(st=>{
+            const r=m[sl][st],v=Math.max(0,Number(r.positive)||0),n=negativeAt(baseM,sl,st),pct=maxPos?v/maxPos*100:0;
+            const shown=v>0?v:(n<0?n:0);
+            return `<button type="button" class="tuner-main-stat ${st===activeStat?"active":""}" data-select-stat="${st}">
+              <div class="tuner-main-value ${shown<0?"minus":""}">${fmt(shown)}</div>
+              <div class="tuner-main-track"><div class="tuner-main-fill" style="height:${pct}%;background:${statColors[st]}"></div></div>
+              <div class="tuner-main-label">${st}</div>
+            </button>`;
+          }).join("")}</div>
+        </div>
+
+        <div class="tuner-selected-stat ${statBg[activeStat]}">
+          <div class="tuner-active-top">
+            <div><b>${activeStat}</b><span>Base ${fmt(base)}${neg<0?` · NEG ${fmt(neg)}`:""}</span></div>
+            <strong>${fmt(draft)}</strong>
+          </div>
+          <input class="stat-tuner-range" id="activeStatRange" data-stat="${activeStat}" type="range" min="0" max="${maxAllowed}" step="1" value="${draft}">
+          <div class="tuner-active-bottom">
+            <span>${available<=0?"No points available":`${fmt(available)} Points available`}</span>
+            <span class="${d>0?"plus":d<0?"minus":"zero"}">${d===0?"BASE":d<0?`Returned ${fmt(-d)}`:`Received ${fmt(d)}`}</span>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="tuner-stat-strip">
-      <div class="tuner-active-stat ${statBg[activeStat]}">
-        <div class="tuner-active-top"><div><b>${activeStat}</b><span>Base ${fmt(base)}${neg<0?` · NEG ${fmt(neg)}`:""}</span></div><strong>${fmt(draft)}</strong></div>
-        <input class="stat-tuner-range" id="activeStatRange" data-stat="${activeStat}" type="range" min="0" max="${maxAllowed}" step="1" value="${draft}">
-        <div class="tuner-active-bottom"><span>${available<=0?"No points available":`${fmt(available)} Points available`}</span><span class="${d>0?"plus":d<0?"minus":"zero"}">${d===0?"BASE":d<0?`Returned ${fmt(-d)}`:`Received ${fmt(d)}`}</span></div>
+
+      <div class="tuner-right-stats">
+        ${stats.filter(st=>st!==activeStat).map(st=>{
+          const sk=dualKey(sl,st),v=statTunerState.draft[sk]||0,sd=statCellDelta(sl,st);
+          return `<button type="button" class="tuner-side-stat ${statBg[st]}" data-select-stat="${st}">
+            <b>${st}</b><strong>${fmt(v)}</strong>
+            <span class="${sd>0?"plus":sd<0?"minus":"zero"}">${sd===0?"BASE":`${sd>0?"+":""}${fmt(sd)}`}</span>
+          </button>`;
+        }).join("")}
       </div>
-      ${stats.filter(st=>st!==activeStat).map(st=>{
-        const sk=dualKey(sl,st),v=statTunerState.draft[sk]||0,sd=statCellDelta(sl,st);
-        return `<button type="button" class="tuner-compact-stat ${statBg[st]}" data-select-stat="${st}"><b>${st}</b><strong>${fmt(v)}</strong><span class="${sd>0?"plus":sd<0?"minus":"zero"}">${sd===0?"BASE":`${sd>0?"+":""}${fmt(sd)}`}</span></button>`;
-      }).join("")}
+
     </div>
   </div>`;
 
@@ -1671,15 +1888,35 @@ function renderStatTuner(){
   q("tunerEquipmentPicker").querySelectorAll("[data-tuner-slot]").forEach(b=>b.onclick=()=>{statTunerState.activeSlot=b.dataset.tunerSlot;renderStatTuner()});
   q("tunerContext").querySelectorAll("[data-tuner-context]").forEach(b=>b.onclick=()=>{statTunerState.activeSlot=b.dataset.tunerContext;renderStatTuner()});
   q("tunerFocus").querySelectorAll("[data-select-stat]").forEach(b=>b.onclick=()=>{statTunerState.activeStat=b.dataset.selectStat;renderStatTuner()});
-  const activeRange=q("activeStatRange");if(activeRange)activeRange.oninput=e=>setTunerStat(sl,e.target.dataset.stat,e.target.value);
+  const activeRange=q("activeStatRange");
+  if(activeRange)activeRange.oninput=e=>setTunerStat(sl,e.target.dataset.stat,e.target.value);
 }
+
+
 function toggleEquipmentBudgetAdvanced(force){
-  equipmentBudgetState.open=typeof force==="boolean"?force:!equipmentBudgetState.open;
-  q("equipmentBudgetAdvanced").classList.toggle("hidden",!equipmentBudgetState.open);
-  q("advancedWeightToggle").setAttribute("aria-expanded",String(equipmentBudgetState.open));
-  q("advancedWeightToggle").classList.toggle("active",equipmentBudgetState.open);
-  if(equipmentBudgetState.open)renderEquipmentBudgetAdvanced();
+  equipmentBudgetState.open=typeof force==="boolean"
+    ? force
+    : !equipmentBudgetState.open;
+
+  const panel=q("equipmentBudgetAdvanced");
+  const btn=q("advancedWeightToggle");
+
+  if(panel)panel.classList.toggle("hidden",!equipmentBudgetState.open);
+  document.body.classList.toggle("advanced-equipment-weight-active",equipmentBudgetState.open);
+
+  if(btn){
+    btn.setAttribute("aria-expanded",String(equipmentBudgetState.open));
+    btn.classList.toggle("active",equipmentBudgetState.open);
+  }
+
+  if(equipmentBudgetState.open){
+    renderEquipmentBudgetAdvanced();
+  }else{
+    document.querySelectorAll(".weight-card.advanced-active")
+      .forEach(el=>el.classList.remove("advanced-active"));
+  }
 }
+
 function updateDualStatus(){
   ensureEquipmentBudgetState();ensureStatTunerState();
   const wActive=eqBudgetAvailable()>0||equipmentBudgetState.dirty;
@@ -1736,6 +1973,11 @@ function setFocusMode(active){
 
 
 function bind(){
+  document.addEventListener("input",e=>{
+    const el=e.target;
+    if(el && (el.matches?.("input,select,textarea")))markGlobalDirty();
+  });
+
 
   document.addEventListener("change",e=>{
     const el=e.target;
@@ -1752,13 +1994,13 @@ function bind(){
     scheduleRecalc();
   });
 
-  q("tunerFinalizeBtn")?.addEventListener("click",()=>q("finalizeBtn")?.click());  const uiPrefs=loadUIPrefs();
+  q("tunerFinalizeBtn")?.addEventListener("click",finalizeEquipmentSet);
+  q("focusFinalizeBtn")?.addEventListener("click",finalizeEquipmentSet);
+  const uiPrefs=loadUIPrefs();
   applyTheme(uiPrefs.theme||"parchment");
   q("advancedWeightToggle").onclick=()=>toggleEquipmentBudgetAdvanced();
-  q("resetEquipmentBudgetBtn").onclick=()=>resetEquipmentBudget();
-  q("saveEquipmentBudgetBtn").onclick=()=>saveEquipmentBudget();
-  q("resetTunerBtn").onclick=()=>resetStatTuner();
-  q("saveTunerBtn").onclick=()=>saveStatTuner();
+  q("resetEquipmentBudgetBtn").onclick=()=>{resetEquipmentBudget();markGlobalDirty()};
+  q("resetTunerBtn").onclick=()=>{resetStatTuner();markGlobalDirty()};
   updateDualStatus();
   focusPanel=uiPrefs.focusPanel||"basis";
   finalTweakOpen=!!uiPrefs.finalTweakOpen;
@@ -1779,13 +2021,14 @@ function bind(){
   setComparisonCollapsed(uiPrefs.comparisonCollapsed!==undefined?!!uiPrefs.comparisonCollapsed:(window.innerWidth<=760),false);
   q("detailSetA").onchange=renderDetailedComparison;q("detailSetB").onchange=renderDetailedComparison;
   q("themeOptions").querySelectorAll('input[name="appTheme"]').forEach(r=>r.onchange=()=>applyTheme(r.value));
-  q("recordName").value=state.recordName||"";q("equipmentSetName").value=state.equipmentSetName||"";
-  q("recordName").addEventListener("input",saveLocal);q("equipmentSetName").addEventListener("input",saveLocal);
-  q("resetBtn").onclick=()=>{if(confirm("Clear the current inputs?")){localStorage.removeItem(STORAGE_KEY);state={currentRecordId:"",lastSavedAt:"",recordName:"",equipmentSetName:"",basis:{HP:0,PA:0,PD:0,MA:0,MD:0,SP:0},equipment:{},priority:{},negative:{},viewMode:"full",focusSlot:"Main Hand",refined:false,activePrioritySlot:"Main Hand",finalizeSet:"Set 5"};initState();buildAll();recalc(true)}};
-  q("saveCloudBtn").onclick=saveCloud;
-  q("saveDistributionBtn")?.addEventListener("click",()=>saveCloud());
+  syncCanonicalSetIdentity(state.equipmentSetName||state.recordName||"");
+  q("newSetBtn")?.addEventListener("click",createNewEquipmentSet);
+  q("savedSetSelect")?.addEventListener("change",()=>{
+    // Keep selection visible only inside the compact selector.
+  });
+  q("loadSelectedSetBtn")?.addEventListener("click",loadSelectedEquipmentSet);
+  q("resetBtn").onclick=()=>{if(confirm("Reset the current Equipment Set workspace?")){localStorage.removeItem(STORAGE_KEY);state={currentRecordId:"",lastSavedAt:"",recordName:"",equipmentSetName:"",basis:{HP:0,PA:0,PD:0,MA:0,MD:0,SP:0},equipment:{},priority:{},negative:{},viewMode:"full",focusSlot:"Main Hand",refined:false,activePrioritySlot:"Main Hand",finalizeSet:"Set 5"};initState();syncCanonicalSetIdentity("");buildAll();recalc(true);markGlobalDirty()}};
   q("finalTweakBtn")?.addEventListener("click",()=>setFinalTweakOpen(!finalTweakOpen));
-  q("loadByNameBtn").onclick=loadByNames;
   q("advancedToggle").onclick=()=>{
     closeMainMenu();
     closeMenuPage();
@@ -1835,6 +2078,7 @@ window.addEventListener("unhandledrejection",e=>showError(e.reason||"Unhandled p
 document.addEventListener("DOMContentLoaded",()=>{
   initState();loadLocal();if(!state.activePrioritySlot)state.activePrioritySlot="Main Hand";if(!state.finalizeSet)state.finalizeSet="Set 5";buildAll();bind();recalc(true);checkSheetStatus();loadFinalizedSets();loadEquipmentAssetRegistry();
 });
+
 </script>
 </body>
 </html>

@@ -1,4 +1,3 @@
-
 :root{
   --bg:#eef1f4;--panel:#fbfcfd;--panel2:#f3f6f8;--ink:#20262b;--muted:#687078;
   --line:#d5dbe0;--line2:#c4ccd3;--accent:#30485a;--accent2:#547083;
@@ -726,17 +725,17 @@ body{min-height:100vh}
   background:rgba(255,252,244,.78)!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.72)
 }
-input[type=range]:not(.v-slider){
+input[type=range]:not(.v-slider):not(.stat-tuner-range){
   appearance:none;height:16px;background:transparent
 }
-input[type=range]:not(.v-slider)::-webkit-slider-runnable-track{
+input[type=range]:not(.v-slider):not(.stat-tuner-range)::-webkit-slider-runnable-track{
   height:3px;border-radius:99px;background:#91a0a8
 }
-input[type=range]:not(.v-slider)::-webkit-slider-thumb{
+input[type=range]:not(.v-slider):not(.stat-tuner-range)::-webkit-slider-thumb{
   appearance:none;width:13px;height:13px;border-radius:50%;background:#17384d;border:2px solid #fbf4e6;margin-top:-5px
 }
-input[type=range]:not(.v-slider)::-moz-range-track{height:3px;border-radius:99px;background:#91a0a8}
-input[type=range]:not(.v-slider)::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#17384d;border:2px solid #fbf4e6}
+input[type=range]:not(.v-slider):not(.stat-tuner-range)::-moz-range-track{height:3px;border-radius:99px;background:#91a0a8}
+input[type=range]:not(.v-slider):not(.stat-tuner-range)::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#17384d;border:2px solid #fbf4e6}
 .v-slider-shell:before{width:5px!important;opacity:.24!important}
 .v-slider{accent-color:#17384d!important}
 .toggle span{background:#9aabb4!important}
@@ -1129,16 +1128,16 @@ body[data-theme="parchment"] .btn.primary{
 }
 
 /* Slider styling: thin tracks + dark grip */
-body[data-theme="parchment"] input[type=range]:not(.v-slider)::-webkit-slider-runnable-track{
+body[data-theme="parchment"] input[type=range]:not(.v-slider):not(.stat-tuner-range)::-webkit-slider-runnable-track{
   height:3px!important;background:#8a9ba3!important;
 }
-body[data-theme="parchment"] input[type=range]:not(.v-slider)::-webkit-slider-thumb{
+body[data-theme="parchment"] input[type=range]:not(.v-slider):not(.stat-tuner-range)::-webkit-slider-thumb{
   background:#294858!important;border:2px solid #f3efe6!important;
 }
-body[data-theme="parchment"] input[type=range]:not(.v-slider)::-moz-range-track{
+body[data-theme="parchment"] input[type=range]:not(.v-slider):not(.stat-tuner-range)::-moz-range-track{
   height:3px!important;background:#8a9ba3!important;
 }
-body[data-theme="parchment"] input[type=range]:not(.v-slider)::-moz-range-thumb{
+body[data-theme="parchment"] input[type=range]:not(.v-slider):not(.stat-tuner-range)::-moz-range-thumb{
   background:#294858!important;border:2px solid #f3efe6!important;
 }
 
@@ -1847,8 +1846,7 @@ input[type="range"].weight-range::-moz-range-thumb,input[type="range"].v-slider:
 .dual-focus-card{border:1px solid #879aa3;border-radius:10px;background:#f7f4ed;padding:10px;margin-bottom:11px}
 .dual-focus-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:8px;color:#60717a}.dual-focus-head>div:first-child{display:grid}.dual-focus-head strong{font-size:14px;color:#214555}.dual-focus-head span{font-size:8px}.dual-focus-head b{font-size:13px;color:#21485b}
 .dual-focus-bars,.dual-mini-bars{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;align-items:end}.dual-stat{text-align:center;min-width:0}.dual-stat-value{height:15px;font-size:7px;font-weight:900}.dual-stat-track{height:88px;background:#e4e9ea;border:1px solid rgba(52,75,86,.16);border-radius:3px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}.dual-mini-bars .dual-stat-track{height:48px}.dual-stat-fill{width:68%;border-radius:2px 2px 0 0}.dual-stat-label{font-size:7px;font-weight:1000;margin-top:2px}
-.dual-range-row{display:grid;grid-template-columns:28px 1fr 28px;gap:8px;align-items:center;margin-top:9px}.dual-range-row span{text-align:center;font-size:7px}.dual-range-row input,.stat-tuner-range{-webkit-appearance:none;appearance:none;width:100%;height:18px;background:transparent!important;border:0!important;box-shadow:none!important}.dual-range-row input::-webkit-slider-runnable-track,.stat-tuner-range::-webkit-slider-runnable-track{height:3px;border-radius:99px;background:#87989f}.dual-range-row input::-webkit-slider-thumb,.stat-tuner-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;margin-top:-5.5px;background:#315363;border:2px solid #f4f0e8}
-.dual-change{text-align:center;font-size:7px;font-weight:1000;margin-top:2px}.plus{color:#27804d!important}.minus{color:#ae4a45!important}.zero{color:#77858b!important}
+.dual-range-row{display:grid;grid-template-columns:28px 1fr 28px;gap:8px;align-items:center;margin-top:9px}.dual-range-row span{text-align:center;font-size:7px}.dual-range-row input,.dual-range-row input::-webkit-slider-runnable-track,.dual-range-row input::-webkit-slider-thumb,.dual-change{text-align:center;font-size:7px;font-weight:1000;margin-top:2px}.plus{color:#27804d!important}.minus{color:#ae4a45!important}.zero{color:#77858b!important}
 .equipment-budget-context,.tuner-context-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.dual-context-card{min-width:0;border:1px solid #b3bec2;border-radius:8px;background:#f8f5ee;padding:7px;cursor:pointer;text-align:left}.dual-context-head{display:flex;justify-content:space-between;gap:5px;margin-bottom:5px}.dual-context-head>div{display:grid;min-width:0}.dual-context-head b{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dual-context-head span{font-size:7px;color:#6d7c83}.dual-context-head i{font-size:8px;font-style:normal;font-weight:1000}
 .stat-tuner-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}.stat-tuner-cell{min-width:0;border:1px solid rgba(53,76,87,.22);border-radius:8px;padding:7px 6px;text-align:center}.stat-tuner-name{display:grid;gap:2px}.stat-tuner-name b{font-size:10px}.stat-tuner-name span{font-size:7px;color:#60717a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stat-tuner-number{font-size:16px;font-weight:1000;color:#254655;margin:5px 0 2px}
 @media(max-width:760px){.equipment-budget-picker,.tuner-equipment-picker{grid-template-columns:repeat(3,minmax(0,1fr))}.stat-tuner-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.equipment-budget-context,.tuner-context-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -1904,9 +1902,6 @@ input[type="range"].weight-range::-moz-range-thumb,input[type="range"].v-slider:
   font-size:6px;
   color:#718087;
   margin-top:1px;
-}
-.stat-tuner-range{
-  cursor:pointer;
 }
 .stat-tuner-cell:has(.tuner-limit-note){
   position:relative;
@@ -2835,5 +2830,1760 @@ body:not(.focus-mode-active) #panelTuner .panel-body{
 @media(max-width:760px){
   .system-debug-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
   .debug-paths>div{grid-template-columns:1fr}
+}
+
+
+/* ==========================================================================
+   v0.8.16.011 — ONE SET / ONE FINALIZE UI
+   ========================================================================== */
+.equipment-set-commandbar{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  width:100%;
+}
+.equipment-set-primary{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+  flex:1 1 auto;
+}
+.equipment-set-label{
+  color:var(--ink);
+  white-space:nowrap;
+}
+.saved-set-select{
+  min-width:210px;
+  max-width:360px;
+  flex:0 1 320px;
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--ink);
+  border-radius:8px;
+  padding:8px 10px;
+}
+.active-set-name{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:var(--muted);
+  font-size:10px;
+}
+.record-tools-wrap{
+  margin-left:auto!important;
+  flex:0 0 auto;
+}
+
+/* Global save/finalize */
+.global-finalize-cluster{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+#globalSaveState.dirty,#focusGlobalSaveState.dirty{
+  color:#8d3f22;
+  border-color:#d5a284;
+  background:#fff2e8;
+}
+.subsystem-save-note{
+  opacity:.78;
+  font-size:9px;
+}
+.tuner-actions-swapped{
+  justify-content:space-between;
+  align-items:center;
+}
+.tuner-actions-swapped .tuner-points-summary{
+  margin:0;
+}
+
+/* Focus mode: action stays pinned to the far right of the collapsed panel row. */
+.focus-dock{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.focus-global-save{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding-left:10px;
+  border-left:1px solid var(--line);
+  flex:0 0 auto;
+}
+body:not(.focus-mode-active) .focus-global-save{display:none}
+
+/* Advanced Equipment Weight: one full active editor, compact inactive rows. */
+#equipmentBudgetPicker{display:none!important}
+.equipment-budget-focus .dual-focus-card{
+  min-height:300px;
+}
+.equipment-budget-focus .dual-focus-bars{
+  min-height:210px!important;
+}
+.equipment-budget-context{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:6px!important;
+}
+.budget-collapsed-row{
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:var(--panel);
+  color:var(--ink);
+  padding:7px 8px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  text-align:left;
+  cursor:pointer;
+}
+.budget-collapsed-row:hover{border-color:#829aa7}
+.budget-collapsed-row span{display:grid;min-width:0}
+.budget-collapsed-row b{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:10px;
+}
+.budget-collapsed-row small{color:var(--muted);font-size:8px}
+
+/* Final Balancing: Tuner art | controls | graph */
+.tuner-three-column{
+  grid-template-columns:minmax(170px,.82fr) minmax(230px,1fr) minmax(250px,1.2fr)!important;
+  align-items:stretch!important;
+  gap:12px!important;
+}
+.tuner-controls-column{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.tuner-unused-stats{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:6px;
+}
+.tuner-controls-column .tuner-active-stat{
+  margin:0!important;
+}
+.tuner-controls-column .tuner-compact-stat{
+  min-height:42px;
+  width:100%;
+}
+.tuner-graph-column{
+  min-width:0;
+  border-left:1px solid var(--line);
+  padding-left:12px;
+}
+.tuner-main-graph{
+  min-height:245px!important;
+}
+.tuner-main-stat.active{
+  outline:none!important;
+  box-shadow:none!important;
+  border-bottom-color:transparent!important;
+}
+.tuner-main-stat.active:before,
+.tuner-main-stat.active:after,
+.tuner-compact-stat.active:before,
+.tuner-compact-stat.active:after{
+  display:none!important;
+  content:none!important;
+}
+
+/* The old lower six-stat strip is intentionally gone in .011. */
+.tuner-stat-strip{display:none!important}
+
+@media(max-width:920px){
+  .tuner-three-column{
+    grid-template-columns:minmax(160px,.8fr) minmax(210px,1fr)!important;
+  }
+  .tuner-three-column .tuner-graph-column{
+    grid-column:1/-1;
+    border-left:0;
+    border-top:1px solid var(--line);
+    padding-left:0;
+    padding-top:10px;
+  }
+  .equipment-budget-context{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:680px){
+  .equipment-set-commandbar{align-items:flex-start!important;flex-wrap:wrap}
+  .equipment-set-primary{flex-wrap:wrap;width:100%}
+  .saved-set-select{flex:1 1 180px;min-width:160px}
+  .record-tools-wrap{margin-left:auto!important}
+  .focus-global-save{margin-left:8px}
+  .focus-global-save .tool-save-state{display:none}
+  .tuner-three-column{grid-template-columns:1fr!important}
+  .tuner-three-column .tuner-graph-column{
+    grid-column:auto;border-top:1px solid var(--line);
+  }
+  .equipment-budget-context{grid-template-columns:1fr!important}
+}
+
+
+/* ==========================================================================
+   v0.8.16.012 TEST — LOCAL ITERATION, DO NOT PUBLISH YET
+   ========================================================================== */
+
+/* Compact saved-set selector. The dropdown itself is the only visible name. */
+.saved-set-select{
+  flex:0 0 190px!important;
+  width:190px!important;
+  min-width:170px!important;
+  max-width:210px!important;
+  padding:7px 28px 7px 9px!important;
+}
+.active-set-name{display:none!important}
+
+/* Focus Mode owns the only visible Finalize Equipment action.
+   Outside Focus Mode, Final Balancing owns it. */
+body.focus-mode-active #panelTuner .global-finalize-cluster{
+  display:none!important;
+}
+body.focus-mode-active .focus-global-save{
+  display:flex!important;
+}
+body:not(.focus-mode-active) .focus-global-save{
+  display:none!important;
+}
+body:not(.focus-mode-active) #panelTuner .global-finalize-cluster{
+  display:flex!important;
+}
+
+/* Final Balancing desktop order:
+   controls / unused stats | tuner PNG | graph */
+.tuner-three-column{
+  grid-template-columns:minmax(225px,.95fr) minmax(185px,.78fr) minmax(270px,1.22fr)!important;
+  gap:12px!important;
+  align-items:stretch!important;
+}
+.tuner-controls-column{grid-column:1}
+.tuner-art-column{
+  grid-column:2;
+  display:flex!important;
+  flex-direction:column;
+  justify-content:flex-start;
+  min-width:0;
+}
+.tuner-graph-column{
+  grid-column:3;
+  min-width:0;
+  border-left:1px solid var(--line);
+  padding-left:12px;
+}
+
+/* Keep the tuner art readable but compact enough that the graph retains room. */
+.tuner-art-column .tuner-artwork,
+.tuner-art-column .equipment-artwork,
+.tuner-art-column img{
+  max-width:100%!important;
+  object-fit:contain!important;
+}
+
+/* Remove every active-stat underline/outline artifact from graph buttons.
+   Keyboard focus is still shown only when focus-visible is genuinely needed. */
+#tunerFocus .tuner-main-stat,
+#tunerFocus .tuner-main-stat.active,
+#tunerFocus .tuner-main-stat[aria-pressed="true"]{
+  outline:0!important;
+  outline-offset:0!important;
+  box-shadow:none!important;
+  border:0!important;
+  border-bottom:0!important;
+  text-decoration:none!important;
+  background:transparent!important;
+}
+#tunerFocus .tuner-main-stat::before,
+#tunerFocus .tuner-main-stat::after,
+#tunerFocus .tuner-main-stat.active::before,
+#tunerFocus .tuner-main-stat.active::after{
+  content:none!important;
+  display:none!important;
+}
+#tunerFocus .tuner-main-stat:focus:not(:focus-visible){outline:none!important}
+#tunerFocus .tuner-main-stat:focus-visible{
+  outline:1px dashed rgba(49,83,99,.6)!important;
+  outline-offset:2px!important;
+}
+
+/* Advanced Equipment Weight: make the active editor/graph use the space
+   vacated by the collapsed equipment rows. */
+.equipment-budget-focus{
+  width:100%!important;
+}
+.equipment-budget-focus .dual-focus-card{
+  width:100%!important;
+  min-height:350px!important;
+}
+.equipment-budget-focus .dual-focus-bars{
+  min-height:255px!important;
+}
+
+/* Narrow/mobile layout keeps the visual flow the user liked:
+   tuner image first, active/unused stats second, graph last. */
+@media(max-width:920px){
+  .tuner-three-column{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+  }
+  .tuner-art-column{
+    grid-column:1!important;
+    grid-row:1!important;
+    max-width:420px;
+    width:100%;
+    margin:0 auto;
+  }
+  .tuner-controls-column{
+    grid-column:1!important;
+    grid-row:2!important;
+  }
+  .tuner-graph-column{
+    grid-column:1!important;
+    grid-row:3!important;
+    border-left:0!important;
+    border-top:1px solid var(--line);
+    padding-left:0!important;
+    padding-top:10px!important;
+  }
+}
+@media(max-width:680px){
+  .saved-set-select{
+    flex:1 1 175px!important;
+    width:auto!important;
+    min-width:150px!important;
+    max-width:220px!important;
+  }
+}
+
+
+/* ==========================================================================
+   v0.8.16.013 TEST — LOCAL ONLY
+   ========================================================================== */
+
+/* Final Balancing: artwork card left, stats middle, graph card right. */
+.tuner-three-column{
+  grid-template-columns:minmax(200px,.86fr) minmax(245px,1fr) minmax(330px,1.42fr)!important;
+  align-items:stretch!important;
+  gap:12px!important;
+}
+.tuner-art-column{grid-column:1!important;display:flex!important;flex-direction:column}
+.tuner-controls-column{grid-column:2!important}
+.tuner-graph-column{grid-column:3!important;border-left:0!important;padding-left:0!important}
+.tuner-panel-card{
+  border:1px solid var(--line)!important;
+  border-radius:10px!important;
+  background:rgba(255,255,255,.16)!important;
+  padding:12px!important;
+}
+.tuner-art-column img{
+  width:100%!important;
+  max-width:300px!important;
+  height:auto!important;
+  object-fit:contain!important;
+  margin:auto!important;
+}
+.tuner-graph-column .tuner-main-graph{
+  min-height:325px!important;
+}
+
+/* No underline/selection bar under active graph stat. */
+#tunerFocus .tuner-main-stat,
+#tunerFocus .tuner-main-stat.active,
+#tunerFocus .tuner-main-stat[aria-pressed="true"]{
+  border:0!important;
+  border-bottom:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  text-decoration:none!important;
+}
+#tunerFocus .tuner-main-stat::before,
+#tunerFocus .tuner-main-stat::after,
+#tunerFocus .tuner-main-stat.active::before,
+#tunerFocus .tuner-main-stat.active::after,
+#tunerFocus .tuner-main-label::before,
+#tunerFocus .tuner-main-label::after{
+  content:none!important;
+  display:none!important;
+}
+
+/* Advanced Weight: inactive equipment use normal theme, not stat colors. */
+.equipment-budget-context{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:7px!important;
+}
+.equipment-context-card{
+  min-height:52px!important;
+  border:1px solid var(--line)!important;
+  border-radius:9px!important;
+  background:var(--panel)!important;
+  color:var(--ink)!important;
+  padding:8px 10px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+}
+.equipment-context-card:hover{border-color:#829aa7!important}
+.equipment-context-copy{
+  min-width:0;
+  display:flex!important;
+  flex-direction:column!important;
+  text-align:left!important;
+}
+.equipment-context-copy b{
+  font-size:10px!important;
+  font-weight:700!important;
+  line-height:1.15!important;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.equipment-context-copy small{
+  font-size:8px!important;
+  color:var(--muted)!important;
+}
+.equipment-context-state{
+  font-size:8px!important;
+  font-weight:600!important;
+  line-height:1!important;
+}
+
+/* Active Advanced Weight graph gets the reclaimed space. */
+.equipment-budget-focus{width:100%!important}
+.equipment-budget-focus .dual-focus-card{
+  width:100%!important;
+  min-height:420px!important;
+}
+.equipment-budget-focus .dual-focus-bars{
+  min-height:330px!important;
+  height:330px!important;
+}
+
+@media(max-width:920px){
+  .tuner-three-column{grid-template-columns:1fr!important}
+  .tuner-art-column{grid-column:1!important;grid-row:1!important}
+  .tuner-controls-column{grid-column:1!important;grid-row:2!important}
+  .tuner-graph-column{grid-column:1!important;grid-row:3!important}
+  .equipment-budget-context{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:560px){
+  .equipment-budget-context{grid-template-columns:1fr!important}
+}
+
+
+/* v0.8.16.014 TEST — Advanced Equipment Weight integrated with Weight boxes */
+.advanced-weight-inline{
+  display:none;width:100%;min-height:24px;padding:4px 7px;
+  border:1px solid var(--line);border-radius:7px;background:transparent;
+  color:var(--muted);font:700 9px/1.1 inherit;letter-spacing:.04em;
+  text-align:center;cursor:pointer;box-shadow:none;
+}
+body.advanced-equipment-weight-active .advanced-weight-inline{display:block}
+body.advanced-equipment-weight-active .weight-card.advanced-active{
+  border-color:#6f8794!important;
+  box-shadow:0 0 0 1px rgba(49,83,99,.10),inset 0 1px 0 rgba(255,255,255,.55)!important;
+}
+.advanced-weight-inline:hover,.advanced-weight-inline.active{
+  border-color:#6f8794;color:var(--ink);background:rgba(49,83,99,.055);
+}
+.advanced-weight-inline.plus{color:#2f6b43}
+.advanced-weight-inline.minus{color:#8d3f22}
+.advanced-weight-inline.zero{color:var(--muted)}
+#equipmentBudgetPicker{display:none!important}
+.equipment-budget-focus{width:100%!important;margin-top:10px}
+.equipment-budget-focus .dual-focus-card{width:100%!important;min-height:440px!important}
+.equipment-budget-focus .dual-focus-bars{width:100%!important;min-height:350px!important;height:350px!important}
+
+
+/* ==========================================================================
+   v0.8.16.016 TEST — SURGICAL SLIDER PASS
+   Priority: untouched
+   Negative: untouched
+   regular Equipment Weight: untouched
+   Final Balancing + Advanced Equipment Weight: Negative-style structure
+   ========================================================================== */
+
+/* Final Balancing slider — same structural language as .neg-range */
+/* Advanced Equipment Weight active slider only — same structure */
+#equipmentBudgetRange{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  width:100%!important;
+  height:18px!important;
+  background:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  padding:0!important;
+}
+#equipmentBudgetRange::-webkit-slider-runnable-track{
+  height:3px!important;
+  border-radius:999px!important;
+  background:#93a2a8!important;
+  background-image:none!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+#equipmentBudgetRange::-webkit-slider-thumb{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  width:12px!important;
+  height:12px!important;
+  margin-top:-4.5px!important;
+  border-radius:50%!important;
+  background:#315363!important;
+  background-image:none!important;
+  border:2px solid #f4f0e8!important;
+  box-shadow:none!important;
+}
+#equipmentBudgetRange::-moz-range-track{
+  height:3px!important;
+  border-radius:999px!important;
+  background:#93a2a8!important;
+  border:0!important;
+}
+#equipmentBudgetRange::-moz-range-progress{
+  height:3px!important;
+  border-radius:999px!important;
+  background:#93a2a8!important;
+}
+#equipmentBudgetRange::-moz-range-thumb{
+  width:10px!important;
+  height:10px!important;
+  border-radius:50%!important;
+  background:#315363!important;
+  border:2px solid #f4f0e8!important;
+  box-shadow:none!important;
+}
+
+
+/* ==========================================================================
+   v0.8.16.017 TEST — FINAL BALANCING SLIDER COPIED FROM NEGATIVE STRUCTURE
+   ========================================================================== */
+/* Active graph underline remains removed. */
+#tunerFocus .tuner-main-stat,
+#tunerFocus .tuner-main-stat.active,
+#tunerFocus .tuner-main-stat[aria-pressed="true"]{
+  outline:0!important;
+  border:0!important;
+  border-bottom:0!important;
+  box-shadow:none!important;
+  text-decoration:none!important;
+}
+#tunerFocus .tuner-main-stat::before,
+#tunerFocus .tuner-main-stat::after,
+#tunerFocus .tuner-main-label::before,
+#tunerFocus .tuner-main-label::after{
+  content:none!important;
+  display:none!important;
+}
+
+#cloudStatus{opacity:.76}
+
+/* v0.8.16.018 TEST — Final Balancing slider only */
+
+
+/* v0.8.16.018 TEST — Final Balancing stays one row until mobile */
+.tuner-three-column{
+  display:grid!important;
+  grid-template-columns:minmax(180px,24%) minmax(240px,31%) minmax(280px,45%)!important;
+  gap:12px!important;
+  width:100%!important;
+  align-items:stretch!important;
+}
+.tuner-art-column{
+  grid-column:1!important;
+  min-width:0!important;
+  overflow:hidden!important;
+}
+.tuner-controls-column{
+  grid-column:2!important;
+  min-width:0!important;
+  overflow:hidden!important;
+}
+.tuner-graph-column{
+  grid-column:3!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  border-left:0!important;
+  padding-left:0!important;
+}
+.tuner-panel-card{
+  min-width:0!important;
+  height:100%!important;
+}
+.tuner-art-column img{
+  display:block!important;
+  width:100%!important;
+  max-width:260px!important;
+  max-height:315px!important;
+  margin:auto!important;
+  object-fit:contain!important;
+}
+.tuner-controls-column .tuner-active-stat,
+.tuner-controls-column .tuner-compact-stat{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+}
+.tuner-graph-column .tuner-main-graph{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:305px!important;
+  margin:0!important;
+  padding:6px 4px 0!important;
+  gap:8px!important;
+}
+.tuner-graph-column .tuner-main-track{
+  height:235px!important;
+}
+
+/* Mid-size browser: keep the same one-row structure, but tighten spacing. */
+@media (max-width:1180px) and (min-width:701px){
+  .tuner-three-column{
+    grid-template-columns:minmax(160px,23%) minmax(220px,32%) minmax(250px,45%)!important;
+    gap:8px!important;
+  }
+  .tuner-art-column img{
+    max-width:230px!important;
+    max-height:285px!important;
+  }
+  .tuner-controls-column .tuner-active-stat,
+  .tuner-controls-column .tuner-compact-stat{
+    padding-left:10px!important;
+    padding-right:10px!important;
+  }
+  .tuner-graph-column .tuner-main-graph{
+    min-height:285px!important;
+    gap:6px!important;
+  }
+  .tuner-graph-column .tuner-main-track{
+    height:215px!important;
+  }
+}
+
+/* Only true mobile stacks. */
+@media (max-width:700px){
+  .tuner-three-column{
+    grid-template-columns:1fr!important;
+  }
+  .tuner-art-column{
+    grid-column:1!important;
+    grid-row:1!important;
+  }
+  .tuner-controls-column{
+    grid-column:1!important;
+    grid-row:2!important;
+  }
+  .tuner-graph-column{
+    grid-column:1!important;
+    grid-row:3!important;
+  }
+  .tuner-art-column img{
+    max-width:340px!important;
+  }
+}
+
+
+#tunerFocus .tuner-main-stat,
+#tunerFocus .tuner-main-stat.active,
+#tunerFocus .tuner-main-stat[aria-pressed="true"]{
+  outline:0!important;
+  border:0!important;
+  border-bottom:0!important;
+  box-shadow:none!important;
+  text-decoration:none!important;
+}
+#tunerFocus .tuner-main-stat::before,
+#tunerFocus .tuner-main-stat::after,
+#tunerFocus .tuner-main-label::before,
+#tunerFocus .tuner-main-label::after{
+  content:none!important;
+  display:none!important;
+}
+
+
+/* v0.8.16.019 TEST — screenshot reference layout */
+.tuner-reference-layout{
+  display:grid!important;
+  grid-template-columns:minmax(220px,25%) minmax(330px,38%) minmax(250px,37%)!important;
+  gap:12px!important;
+  width:100%!important;
+  align-items:stretch!important;
+}
+.tuner-reference-layout .tuner-art-column{
+  grid-column:1!important;min-width:0!important;overflow:hidden!important;
+  display:flex!important;flex-direction:column!important;justify-content:center!important;
+}
+.tuner-reference-layout .tuner-art-column img{
+  display:block!important;width:100%!important;max-width:290px!important;max-height:340px!important;
+  margin:auto!important;object-fit:contain!important;
+}
+.tuner-center-column{
+  grid-column:2!important;min-width:0!important;display:flex!important;flex-direction:column!important;gap:10px!important;
+}
+.tuner-graph-card{flex:1 1 auto!important;min-height:300px!important}
+.tuner-graph-card .tuner-main-graph{
+  width:100%!important;min-width:0!important;max-width:none!important;min-height:250px!important;
+  margin:0!important;padding:4px 2px 0!important;gap:6px!important;
+}
+.tuner-graph-card .tuner-main-track{height:205px!important}
+.tuner-selected-stat{
+  flex:0 0 auto!important;width:100%!important;border:1px solid var(--line)!important;border-radius:9px!important;
+  padding:10px 12px!important;min-width:0!important;
+}
+.tuner-right-stats{
+  grid-column:3!important;min-width:0!important;display:grid!important;
+  grid-template-columns:1fr!important;grid-template-rows:repeat(5,minmax(0,1fr))!important;gap:9px!important;
+}
+.tuner-side-stat{
+  width:100%!important;min-width:0!important;min-height:0!important;border:1px solid var(--line)!important;
+  border-radius:9px!important;padding:9px 12px!important;display:grid!important;place-items:center!important;
+  align-content:center!important;gap:2px!important;cursor:pointer;
+}
+.tuner-side-stat b{font-size:11px!important;line-height:1!important}
+.tuner-side-stat strong{font-size:18px!important;line-height:1!important}
+.tuner-side-stat span{font-size:8px!important;line-height:1!important}
+
+/* No active underline */
+#tunerFocus .tuner-main-stat,
+#tunerFocus .tuner-main-stat.active,
+#tunerFocus .tuner-main-stat[aria-pressed="true"]{
+  outline:0!important;border:0!important;border-bottom:0!important;box-shadow:none!important;text-decoration:none!important;
+}
+#tunerFocus .tuner-main-stat::before,
+#tunerFocus .tuner-main-stat::after,
+#tunerFocus .tuner-main-label::before,
+#tunerFocus .tuner-main-label::after{
+  content:none!important;display:none!important;
+}
+
+/* Mid width: same 3-part structure, tighter */
+@media (max-width:1180px) and (min-width:701px){
+  .tuner-reference-layout{
+    grid-template-columns:minmax(180px,24%) minmax(285px,39%) minmax(220px,37%)!important;
+    gap:8px!important;
+  }
+  .tuner-reference-layout .tuner-art-column img{max-width:245px!important;max-height:300px!important}
+  .tuner-graph-card{min-height:275px!important}
+  .tuner-graph-card .tuner-main-graph{min-height:225px!important;gap:4px!important}
+  .tuner-graph-card .tuner-main-track{height:180px!important}
+  .tuner-side-stat{padding:7px 8px!important}
+}
+
+/* True mobile only */
+@media (max-width:700px){
+  .tuner-reference-layout{grid-template-columns:1fr!important}
+  .tuner-reference-layout .tuner-art-column{grid-column:1!important;grid-row:1!important}
+  .tuner-center-column{grid-column:1!important;grid-row:2!important}
+  .tuner-right-stats{
+    grid-column:1!important;grid-row:3!important;
+    grid-template-columns:1fr 1fr!important;grid-template-rows:auto!important;
+  }
+}
+
+
+
+/* ==========================================================================
+   v0.8.16.021 TEST — Final Balancing slider uses its own visual shell.
+   The native range track is invisible. The shell draws the one thin line.
+   ========================================================================== */
+/* Native track is deliberately invisible: the shell owns the line. */
+
+
+/* v0.8.16.022 TEST — Final Balancing slider isolated from shared range CSS */
+input[type=range].stat-tuner-range{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  display:block!important;
+  width:100%!important;
+  height:16px!important;
+  margin:6px 0!important;
+  padding:0!important;
+  border:0!important;
+  outline:0!important;
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+input[type=range].stat-tuner-range:hover,
+input[type=range].stat-tuner-range:focus,
+input[type=range].stat-tuner-range:active{
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+}
+input[type=range].stat-tuner-range::-webkit-slider-runnable-track{
+  height:3px!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:#8f9ea4!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+input[type=range].stat-tuner-range::-webkit-slider-thumb{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  width:12px!important;
+  height:12px!important;
+  margin-top:-4.5px!important;
+  border-radius:50%!important;
+  background:#315363!important;
+  background-image:none!important;
+  border:2px solid #f4f0e8!important;
+  box-shadow:none!important;
+}
+input[type=range].stat-tuner-range::-moz-range-track{
+  height:3px!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:#8f9ea4!important;
+  box-shadow:none!important;
+}
+input[type=range].stat-tuner-range::-moz-range-progress{
+  height:3px!important;
+  border-radius:999px!important;
+  background:#8f9ea4!important;
+}
+input[type=range].stat-tuner-range::-moz-range-thumb{
+  width:10px!important;
+  height:10px!important;
+  border-radius:50%!important;
+  background:#315363!important;
+  border:2px solid #f4f0e8!important;
+  box-shadow:none!important;
+}
+
+
+/* ==========================================================================
+   v0.8.16.023 TEST — Final Balancing column collision fix
+   Use FR units so gaps are included inside the available width.
+   ========================================================================== */
+.tuner-reference-layout{
+  display:grid!important;
+  grid-template-columns:minmax(200px,1fr) minmax(310px,1.35fr) minmax(240px,1.15fr)!important;
+  column-gap:14px!important;
+  row-gap:10px!important;
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  align-items:stretch!important;
+}
+.tuner-reference-layout > *{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+.tuner-reference-layout .tuner-art-column,
+.tuner-center-column,
+.tuner-right-stats{
+  margin:0!important;
+}
+.tuner-center-column{
+  overflow:hidden!important;
+}
+.tuner-graph-card,
+.tuner-selected-stat{
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+
+/* Mid-size stays in one row but uses flexible fractions instead of percentages. */
+@media (max-width:1180px) and (min-width:701px){
+  .tuner-reference-layout{
+    grid-template-columns:minmax(165px,.85fr) minmax(270px,1.3fr) minmax(205px,1fr)!important;
+    column-gap:10px!important;
+  }
+}
+
+/* Mobile behavior remains unchanged. */
+@media (max-width:700px){
+  .tuner-reference-layout{
+    grid-template-columns:1fr!important;
+  }
+}
+
+
+/* ==========================================================================
+   v0.8.16.024 TEST — Advanced Equipment Weight graph fit only
+   ========================================================================== */
+#equipmentBudgetAdvanced{
+  min-width:0!important;
+  overflow:hidden!important;
+}
+#equipmentBudgetAdvanced .equipment-budget-focus,
+#equipmentBudgetAdvanced .budget-focus-card,
+#equipmentBudgetAdvanced .advanced-weight-focus{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+#equipmentBudgetAdvanced .budget-graph,
+#equipmentBudgetAdvanced .equipment-budget-graph,
+#equipmentBudgetAdvanced .advanced-weight-graph{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:260px!important;
+  max-height:360px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  margin:0!important;
+  padding:10px 10px 6px!important;
+}
+#equipmentBudgetAdvanced .budget-bars,
+#equipmentBudgetAdvanced .equipment-budget-bars,
+#equipmentBudgetAdvanced .advanced-weight-bars{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:240px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:6px!important;
+  align-items:end!important;
+}
+#equipmentBudgetAdvanced .budget-bar,
+#equipmentBudgetAdvanced .equipment-budget-bar,
+#equipmentBudgetAdvanced .advanced-weight-bar{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+#equipmentBudgetAdvanced .budget-baseline,
+#equipmentBudgetAdvanced .equipment-budget-baseline,
+#equipmentBudgetAdvanced .advanced-weight-baseline{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  margin:8px 0 0!important;
+  padding:0 8px 4px!important;
+  overflow:hidden!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetRange{
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  margin-left:0!important;
+  margin-right:0!important;
+}
+
+/* The current implementation also uses these generic graph classes.
+   Scope them strictly under Advanced Equipment Weight. */
+#equipmentBudgetAdvanced .dual-main-graph,
+#equipmentBudgetAdvanced .tuner-main-graph{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:250px!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  margin:0!important;
+  padding:8px 6px 0!important;
+  gap:6px!important;
+}
+#equipmentBudgetAdvanced .dual-main-track,
+#equipmentBudgetAdvanced .tuner-main-track{
+  height:190px!important;
+  min-height:0!important;
+}
+#equipmentBudgetAdvanced .dual-focus-card{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  padding:12px!important;
+}
+
+
+/* ==========================================================================
+   v0.8.16.025 TEST — Advanced Equipment Weight layout matched to reference
+   ========================================================================== */
+body.advanced-equipment-weight-active #weightCards{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:8px!important;
+}
+body.advanced-equipment-weight-active #weightCards .weight-card{
+  min-width:0!important;
+  width:100%!important;
+  padding:8px!important;
+  box-sizing:border-box!important;
+}
+body.advanced-equipment-weight-active .advanced-weight-inline{
+  display:block!important;
+  margin-top:7px!important;
+  min-height:25px!important;
+  border-radius:7px!important;
+  font-size:9px!important;
+  font-weight:600!important;
+  background:transparent!important;
+}
+
+/* Summary row */
+#equipmentBudgetAdvanced .advanced-weight-summary{
+  display:grid!important;
+  grid-template-columns:1fr 1fr 1fr auto!important;
+  align-items:stretch!important;
+  gap:8px!important;
+  width:100%!important;
+  margin:8px 0 0!important;
+}
+#equipmentBudgetAdvanced .advanced-weight-summary > div{
+  min-width:0!important;
+  border:1px solid var(--line)!important;
+  border-radius:8px!important;
+  background:var(--panel)!important;
+  padding:8px 12px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+}
+#equipmentBudgetAdvanced .advanced-weight-summary > div span{
+  font-size:8px!important;
+  font-weight:700!important;
+  letter-spacing:.04em!important;
+  text-transform:uppercase!important;
+  color:var(--muted)!important;
+}
+#equipmentBudgetAdvanced .advanced-weight-summary > div strong{
+  font-size:18px!important;
+  line-height:1!important;
+}
+#equipmentBudgetAdvanced #resetEquipmentBudgetBtn{
+  min-width:54px!important;
+  padding:0 12px!important;
+}
+
+/* Saved indicator row */
+#equipmentBudgetAdvanced #equipmentBudgetSaveState{
+  width:100%!important;
+  margin:7px 0 8px!important;
+  min-height:20px!important;
+  padding:4px 8px!important;
+  border-radius:999px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  font-size:8px!important;
+  box-sizing:border-box!important;
+}
+
+/* Main active graph card */
+#equipmentBudgetAdvanced #equipmentBudgetFocus{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-card{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:auto!important;
+  padding:10px 12px 8px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  border-radius:10px!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-head{
+  min-height:42px!important;
+  margin-bottom:4px!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-head b{
+  font-size:16px!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-head span{
+  font-size:8px!important;
+}
+
+/* Graph uses available card width */
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-main-graph,
+#equipmentBudgetAdvanced #equipmentBudgetFocus .tuner-main-graph,
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-bars{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:300px!important;
+  min-height:300px!important;
+  max-height:300px!important;
+  margin:0!important;
+  padding:4px 6px 0!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  gap:6px!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-main-track,
+#equipmentBudgetAdvanced #equipmentBudgetFocus .tuner-main-track{
+  height:235px!important;
+  min-height:235px!important;
+  max-height:235px!important;
+}
+
+/* Baseline slider stays inside active card */
+#equipmentBudgetAdvanced #equipmentBudgetRange{
+  display:block!important;
+  width:calc(100% - 22px)!important;
+  max-width:calc(100% - 22px)!important;
+  margin:8px 11px 2px!important;
+  box-sizing:border-box!important;
+}
+
+/* Detached Other Equipment stays hidden */
+#equipmentBudgetAdvanced #equipmentBudgetContext,
+#equipmentBudgetAdvanced .advanced-context-label{
+  display:none!important;
+}
+
+@media(max-width:980px){
+  body.advanced-equipment-weight-active #weightCards{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:620px){
+  body.advanced-equipment-weight-active #weightCards{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  #equipmentBudgetAdvanced .advanced-weight-summary{
+    grid-template-columns:1fr 1fr!important;
+  }
+}
+
+
+/* ==========================================================================
+   v0.8.16.026 TEST — Advanced Equipment Weight reference layout
+   Active graph first, compact remaining equipment cards directly underneath.
+   ========================================================================== */
+#equipmentBudgetAdvanced #equipmentBudgetContext.advanced-equipment-context{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:7px!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin:8px 0 0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+}
+#equipmentBudgetAdvanced .advanced-equipment-mini{
+  display:block!important;
+  min-width:0!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:96px!important;
+  padding:7px 8px!important;
+  border:1px solid var(--line)!important;
+  border-radius:8px!important;
+  background:var(--panel)!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+#equipmentBudgetAdvanced .advanced-equipment-mini .dual-context-head{
+  min-height:28px!important;
+  margin:0 0 3px!important;
+}
+#equipmentBudgetAdvanced .advanced-equipment-mini .dual-context-head b{
+  font-size:9px!important;
+  line-height:1.05!important;
+}
+#equipmentBudgetAdvanced .advanced-equipment-mini .dual-context-head span{
+  font-size:7px!important;
+}
+#equipmentBudgetAdvanced .advanced-equipment-mini .dual-context-head i{
+  font-size:8px!important;
+}
+#equipmentBudgetAdvanced .advanced-equipment-mini .dual-mini-bars{
+  height:55px!important;
+  min-height:55px!important;
+  gap:4px!important;
+}
+#equipmentBudgetAdvanced .advanced-equipment-mini .dual-mini-track{
+  height:42px!important;
+}
+
+/* Keep the active graph compact enough to leave room for the mini cards. */
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-card{
+  min-height:0!important;
+  height:auto!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-bars{
+  height:280px!important;
+  min-height:280px!important;
+  max-height:280px!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetRange{
+  margin-top:7px!important;
+}
+
+@media(max-width:900px){
+  #equipmentBudgetAdvanced #equipmentBudgetContext.advanced-equipment-context{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:620px){
+  #equipmentBudgetAdvanced #equipmentBudgetContext.advanced-equipment-context{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+
+
+/* ==========================================================================
+   v0.8.16.027 TEST — Advanced Equipment Weight: match reference screenshot
+   Key fixes:
+   1) active equipment title centered
+   2) active bar tracks use the graph height instead of staying tiny
+   3) compact equipment cards remain directly below the graph
+   ========================================================================== */
+
+/* Header: active equipment centered; computed/tuned stays at far right. */
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-head{
+  position:relative!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:flex-end!important;
+  min-height:48px!important;
+  margin:0 0 6px!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-head > div:first-child{
+  position:absolute!important;
+  left:50%!important;
+  top:0!important;
+  transform:translateX(-50%)!important;
+  display:grid!important;
+  justify-items:center!important;
+  text-align:center!important;
+  width:max-content!important;
+  max-width:55%!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-head > div:first-child strong{
+  font-size:16px!important;
+  line-height:1.05!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-head > div:first-child span{
+  font-size:8px!important;
+  line-height:1.1!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-head > div:last-child{
+  margin-left:auto!important;
+  padding-top:3px!important;
+  font-size:8px!important;
+  white-space:nowrap!important;
+}
+
+/* Active graph: use the vertical space. */
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-bars{
+  width:100%!important;
+  height:330px!important;
+  min-height:330px!important;
+  max-height:330px!important;
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:6px!important;
+  align-items:end!important;
+  margin:0!important;
+  padding:0 6px!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-bars .dual-stat{
+  min-width:0!important;
+  height:100%!important;
+  display:grid!important;
+  grid-template-rows:18px 1fr 16px!important;
+  align-items:end!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-bars .dual-stat-value{
+  height:18px!important;
+  display:grid!important;
+  place-items:center!important;
+  font-size:8px!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-bars .dual-stat-track{
+  width:100%!important;
+  height:260px!important;
+  min-height:260px!important;
+  max-height:260px!important;
+  align-self:end!important;
+  background:#e4e9ea!important;
+  border:1px solid rgba(52,75,86,.16)!important;
+  border-radius:3px!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-bars .dual-stat-fill{
+  width:68%!important;
+  max-width:76px!important;
+}
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-bars .dual-stat-label{
+  height:16px!important;
+  display:grid!important;
+  place-items:center!important;
+  margin:0!important;
+  font-size:7px!important;
+}
+
+/* Active card height now follows the real graph instead of leaving dead space. */
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-focus-card{
+  min-height:0!important;
+  height:auto!important;
+  padding:10px 12px 8px!important;
+}
+
+/* Baseline slider remains inside the card, directly under graph. */
+#equipmentBudgetAdvanced #equipmentBudgetFocus .dual-range-row{
+  width:100%!important;
+  margin-top:8px!important;
+  box-sizing:border-box!important;
+}
+
+/* Keep the five compact equipment cards exactly below the graph. */
+#equipmentBudgetAdvanced #equipmentBudgetContext.advanced-equipment-context{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:7px!important;
+  margin-top:8px!important;
+}
+
+
+/* ==========================================================================
+   v0.8.16.028 TEST — Advanced Equipment Weight final geometry pass
+   1. Active graph card
+   2. Slider-only card
+   3. Five compact equipment graphs card
+   ========================================================================== */
+
+#equipmentBudgetAdvanced .equipment-budget-stack{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:8px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-active-card,
+#equipmentBudgetAdvanced .equipment-budget-slider-card,
+#equipmentBudgetAdvanced .equipment-budget-context-card{
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  border:1px solid var(--line)!important;
+  border-radius:10px!important;
+  background:var(--panel)!important;
+  box-shadow:none!important;
+}
+
+/* ---------------- Active graph card ---------------- */
+#equipmentBudgetAdvanced .equipment-budget-active-card{
+  padding:10px 12px 12px!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-active-head{
+  position:relative!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:flex-end!important;
+  min-height:44px!important;
+  margin-bottom:4px!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-active-title{
+  position:absolute!important;
+  left:50%!important;
+  top:0!important;
+  transform:translateX(-50%)!important;
+  display:grid!important;
+  justify-items:center!important;
+  gap:1px!important;
+  text-align:center!important;
+  max-width:58%!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-active-title strong{
+  font-size:16px!important;
+  line-height:1.05!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-active-title span{
+  font-size:8px!important;
+  line-height:1!important;
+  color:var(--muted)!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-active-meta{
+  margin-left:auto!important;
+  display:flex!important;
+  gap:4px!important;
+  align-items:center!important;
+  padding-top:3px!important;
+  font-size:8px!important;
+  color:var(--muted)!important;
+  white-space:nowrap!important;
+}
+
+/* Plot area: no individual bar backgrounds/cards.
+   Bars float in one clean graph space and sit on one baseline. */
+#equipmentBudgetAdvanced .equipment-budget-active-graph{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:10px!important;
+  align-items:end!important;
+  width:100%!important;
+  min-width:0!important;
+  height:300px!important;
+  padding:12px 14px 18px!important;
+  box-sizing:border-box!important;
+  background:transparent!important;
+  overflow:hidden!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-active-graph::after{
+  content:""!important;
+  position:absolute!important;
+  left:14px!important;
+  right:14px!important;
+  bottom:34px!important;
+  height:1px!important;
+  background:#71848d!important;
+  opacity:.68!important;
+  pointer-events:none!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-stat{
+  position:relative!important;
+  z-index:1!important;
+  min-width:0!important;
+  height:100%!important;
+  display:grid!important;
+  grid-template-rows:22px 1fr 18px!important;
+  align-items:end!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-stat-value{
+  display:grid!important;
+  place-items:center!important;
+  min-height:22px!important;
+  font-size:11px!important;
+  font-weight:700!important;
+  line-height:1!important;
+  color:var(--ink)!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-stat-plot{
+  position:relative!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  height:100%!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-stat-fill{
+  width:min(56%,72px)!important;
+  min-height:0!important;
+  border-radius:3px 3px 0 0!important;
+  box-shadow:none!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-stat-label{
+  display:grid!important;
+  place-items:center!important;
+  min-height:18px!important;
+  font-size:9px!important;
+  font-weight:700!important;
+  line-height:1!important;
+  color:var(--muted)!important;
+}
+
+/* ---------------- Slider-only card ---------------- */
+#equipmentBudgetAdvanced .equipment-budget-slider-card{
+  padding:9px 12px!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-slider-inner{
+  display:grid!important;
+  grid-template-columns:auto 1fr!important;
+  align-items:center!important;
+  gap:12px!important;
+  width:100%!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-slider-copy{
+  min-width:110px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-slider-copy strong{
+  font-size:10px!important;
+  line-height:1!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-slider-copy span{
+  font-size:8px!important;
+  font-weight:700!important;
+  line-height:1!important;
+  color:var(--muted)!important;
+}
+
+#equipmentBudgetAdvanced #equipmentBudgetRange{
+  width:100%!important;
+  max-width:100%!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+
+/* ---------------- Five compact graphs card ---------------- */
+#equipmentBudgetAdvanced .equipment-budget-context-card{
+  padding:8px!important;
+}
+
+#equipmentBudgetAdvanced #equipmentBudgetContext.advanced-equipment-context{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:7px!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-card{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:112px!important;
+  padding:7px 8px!important;
+  border:1px solid var(--line)!important;
+  border-radius:8px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+  cursor:pointer!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-card:hover{
+  border-color:#829aa7!important;
+  background:rgba(49,83,99,.035)!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-head{
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:6px!important;
+  min-height:28px!important;
+  margin-bottom:4px!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-head > span{
+  min-width:0!important;
+  display:grid!important;
+  gap:1px!important;
+  text-align:left!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-head b{
+  font-size:9px!important;
+  line-height:1.05!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-head small{
+  font-size:7px!important;
+  line-height:1!important;
+  color:var(--muted)!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-head i{
+  flex:0 0 auto!important;
+  font-size:8px!important;
+  line-height:1!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-graph{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:4px!important;
+  align-items:end!important;
+  height:66px!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-stat{
+  display:grid!important;
+  grid-template-rows:14px 1fr 11px!important;
+  height:100%!important;
+  min-width:0!important;
+  align-items:end!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-stat > span{
+  display:grid!important;
+  place-items:center!important;
+  font-size:8px!important;
+  font-weight:700!important;
+  line-height:1!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-track{
+  height:40px!important;
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  background:transparent!important;
+  border:0!important;
+  overflow:hidden!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-fill{
+  width:64%!important;
+  border-radius:2px 2px 0 0!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-stat > small{
+  display:grid!important;
+  place-items:center!important;
+  font-size:6px!important;
+  line-height:1!important;
+  color:var(--muted)!important;
+}
+
+/* Old generic graph shells do not participate in this layout. */
+#equipmentBudgetAdvanced .dual-focus-card,
+#equipmentBudgetAdvanced .dual-focus-bars,
+#equipmentBudgetAdvanced .dual-main-graph,
+#equipmentBudgetAdvanced .tuner-main-graph{
+  min-height:0!important;
+}
+
+/* Responsive */
+@media(max-width:900px){
+  #equipmentBudgetAdvanced #equipmentBudgetContext.advanced-equipment-context{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+}
+
+@media(max-width:620px){
+  #equipmentBudgetAdvanced .equipment-budget-active-graph{
+    gap:5px!important;
+    padding-left:8px!important;
+    padding-right:8px!important;
+  }
+
+  #equipmentBudgetAdvanced .equipment-budget-slider-inner{
+    grid-template-columns:1fr!important;
+    gap:8px!important;
+  }
+
+  #equipmentBudgetAdvanced .equipment-budget-slider-copy{
+    min-width:0!important;
+  }
+
+  #equipmentBudgetAdvanced #equipmentBudgetContext.advanced-equipment-context{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+
+
+/* ==========================================================================
+   v0.8.16.030 TEST — Advanced Equipment Weight theme-color polish only
+   Uses existing theme variables so the new cards belong to the current UI.
+   ========================================================================== */
+
+#equipmentBudgetAdvanced .equipment-budget-active-card,
+#equipmentBudgetAdvanced .equipment-budget-slider-card,
+#equipmentBudgetAdvanced .equipment-budget-context-card{
+  background:var(--panel)!important;
+  color:var(--ink)!important;
+  border-color:var(--line)!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-card{
+  background:var(--panel)!important;
+  color:var(--ink)!important;
+  border-color:var(--line)!important;
+}
+
+#equipmentBudgetAdvanced .equipment-budget-mini-card:hover{
+  background:var(--panel)!important;
+  border-color:#829aa7!important;
+}
+
+/* Plot area stays transparent exactly as intended. */
+#equipmentBudgetAdvanced .equipment-budget-active-graph,
+#equipmentBudgetAdvanced .equipment-budget-stat-plot,
+#equipmentBudgetAdvanced .equipment-budget-mini-track{
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+}
+
+/* Keep text harmonized with the rest of the UI. */
+#equipmentBudgetAdvanced .equipment-budget-active-title span,
+#equipmentBudgetAdvanced .equipment-budget-active-meta,
+#equipmentBudgetAdvanced .equipment-budget-stat-label,
+#equipmentBudgetAdvanced .equipment-budget-slider-copy span,
+#equipmentBudgetAdvanced .equipment-budget-mini-head small,
+#equipmentBudgetAdvanced .equipment-budget-mini-stat > small{
+  color:var(--muted)!important;
+}
+
+/* Baseline uses the same restrained line language as the rest of the theme. */
+#equipmentBudgetAdvanced .equipment-budget-active-graph::after{
+  background:var(--line)!important;
+  opacity:1!important;
+}
+
+
+/* ==========================================================================
+   v0.8.16.031 TEST — Advanced Equipment Weight requested card color
+   ========================================================================== */
+#equipmentBudgetAdvanced .equipment-budget-active-card,
+#equipmentBudgetAdvanced .equipment-budget-slider-card,
+#equipmentBudgetAdvanced .equipment-budget-context-card,
+#equipmentBudgetAdvanced .equipment-budget-mini-card{
+  background:#fcfaf5!important;
+  background-color:#fcfaf5!important;
+}
+
+/* Advanced Equipment Weight summary slots:
+   Available Points / Baseline / Assigned */
+#equipmentBudgetAdvanced .advanced-weight-summary > div{
+  background:#fcfaf5!important;
+  background-color:#fcfaf5!important;
 }
 

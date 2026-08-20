@@ -4,7 +4,7 @@
 - Slot: Boots
 - Status: Approved master
 - Canonical artwork: `sabatons_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `sabatons_tuner.png`
 - Icon: pending
 - The supplied PNG is the canonical visual source of truth and must not be automatically transformed.
 - A naturally paired set of armored lower-leg and sabaton pieces treated as one Boots asset.

@@ -4,7 +4,7 @@
 - Slot: Body
 - Status: Approved master
 - Canonical artwork: `armour_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `armour_tuner.png`
 - Icon: pending
 - The supplied PNG is the canonical visual source of truth and must not be automatically transformed.
 - Chest armour with connected armored arms and gauntlets as one Body asset; no separate gauntlet entry or artificial belt.

@@ -4,7 +4,7 @@
 - Slot: Body
 - Status: Approved master
 - Canonical artwork: `do_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `do_tuner.png`
 - Icon: pending
 - The supplied PNG is the visual source of truth.
 

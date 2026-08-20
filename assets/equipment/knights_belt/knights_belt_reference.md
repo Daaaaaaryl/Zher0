@@ -4,7 +4,7 @@
 - Slot: Accessory
 - Status: Approved master
 - Canonical artwork: `knights_belt_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `knights_belt_tuner.png`
 - Icon: pending
 - The supplied PNG is the canonical visual source of truth and must not be automatically transformed.
 - Standalone natural-brown leather belt with a simple steel buckle and restrained construction.

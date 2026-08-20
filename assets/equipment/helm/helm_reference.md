@@ -4,7 +4,7 @@
 - Slot: Head
 - Status: Approved master
 - Canonical artwork: `helm_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `helm_tuner.png`
 - Icon: pending
 - The supplied PNG is the canonical visual source of truth and must not be automatically transformed.
 - Corrected approved helm with its final visor and faceplate construction; no added ventilation, plume, or heraldry.

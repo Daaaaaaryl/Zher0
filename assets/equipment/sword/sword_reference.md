@@ -4,7 +4,7 @@
 - Slot: Main Hand
 - Status: Approved master
 - Canonical artwork: `sword_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `sword_tuner.png`
 - Icon: pending
 - The supplied PNG is the canonical visual source of truth and must not be automatically transformed.
 - Straightforward medieval sword with a steel blade, practical crossguard, wrapped grip, and restrained pommel.

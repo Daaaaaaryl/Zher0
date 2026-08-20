@@ -4,7 +4,7 @@
 - Slot: Off Hand
 - Status: Approved master
 - Canonical artwork: `heater_shield_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `heater_shield_tuner.png`
 - Icon: pending
 - The supplied PNG is the canonical visual source of truth and must not be automatically transformed.
 - Wooden-faced heater shield with steel reinforcement, rim, rivets, and boss; no heraldic crest.

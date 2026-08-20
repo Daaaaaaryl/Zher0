@@ -4,7 +4,7 @@
 - Slot: Accessory
 - Status: Approved master
 - Canonical artwork: `menpo_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `menpo_tuner.png`
 - Icon: pending
 - The supplied PNG is the canonical visual source of truth.
 - Equipment family: baseline Zero-to-Hero

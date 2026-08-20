@@ -4,7 +4,7 @@
 - Slot: Boots
 - Status: Current approved master
 - Canonical artwork: `kegutsu_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `kegutsu_tuner.png`
 - Icon: pending
 - The supplied PNG is the current source-of-truth asset.
 

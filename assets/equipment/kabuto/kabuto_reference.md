@@ -4,7 +4,7 @@
 - Slot: Head
 - Status: Approved master
 - Canonical artwork: `kabuto_master.png`
-- Final Balancing artwork: pending
+- Final Balancing artwork: `kabuto_tuner.png`
 - Icon: pending
 - The supplied PNG is the canonical visual source of truth.
 - Existing approved artwork must not be automatically transformed by the application.

@@ -4,9 +4,17 @@ Date: 2026-08-23
 
 Purpose: preserve the current approved Physical-defense / Defense Attrition design state before numerical Attrition conversion work begins. This checkpoint is additive and does not replace the earlier protected monster/combat checkpoint.
 
+## Development discipline authority
+
+This checkpoint follows `docs/development-discipline.md`.
+
+**Project Owner / Final Design Authority: Daryl.**
+
+If this checkpoint, current Git authority, historical material, implementation artifacts, or future guidance appear to conflict, follow the repository development discipline: begin with read-only synchronization, preserve established authority, surface the conflict, and obtain Daryl's decision before changing an established rule.
+
 ## Checkpoint protection rule
 
-- Established rules remain established unless the game owner explicitly approves a change.
+- Established rules remain established unless Daryl explicitly approves a change.
 - Experiments and candidate formulas do not become established automatically.
 - If future work conflicts with this checkpoint or another established authority, stop and surface the conflict before changing anything.
 - Historical formulas and prototype behavior must not be promoted to current canon merely because they exist in repository history.
@@ -160,8 +168,8 @@ No candidate conversion formula is approved by this checkpoint.
 4. Test edge cases including weak attack vs strong ZPD, near-equal incoming force and ZPD, partial pass-through, repeated attacks, and heavily depleted ZPD.
 5. Compare promising candidates using the existing Samurai, Knight, and Geisha reference builds and relevant preserved monster experiment profiles.
 6. Check whether the behavior preserves meaningful defense without recreating the temporary subtraction ruler's defense cliff or causing defense to disappear too quickly.
-7. Present experimental results to the game owner for review.
-8. Only after explicit owner approval should a chosen Attrition behavior move toward establishment.
+7. Present experimental results to Daryl for review.
+8. Only after explicit approval from Daryl should a chosen Attrition behavior move toward establishment.
 9. Continue ordinary damage-resolution design from the approved Attrition baseline.
 10. Keep monster balancing paused until enough of the real combat calculation exists to make those balance experiments meaningful.
 

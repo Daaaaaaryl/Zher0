@@ -6,6 +6,8 @@ Status: **QUICK BACKUP ONLY — NOT MAIN CHECKPOINT — NOT CANON**
 
 Purpose: Temporary safety snapshot of the current Clash probability experiment so testing can resume without treating these ideas as finalized combat rules.
 
+Reason: ChatGPT acting up deleting chats randomly. Daryl is scared.
+
 ## Current A/B experiment
 
 ### A — Random ranges

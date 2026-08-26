@@ -1,60 +1,2241 @@
-<!--
-================================================================================
-EQUIPMENT STAT DISTRIBUTION — SOURCE MAP
-Version: v0.8.16
-
-PURPOSE
-  A single-file UI for building, comparing, saving, loading, and finalizing
-  equipment-stat distributions.
-
-IDENTITY CONTRACT — DO NOT BREAK
-  • state.currentRecordId = hidden stable identity for an existing saved draft.
-  • Test Name + Equipment Set Name = human-readable lookup pair.
-  • Save reuses currentRecordId when one is loaded.
-  • Advanced tools may load/delete by exact Record ID.
-  • Finalized Equipment remains linked to its source Record ID.
-
-MAIN UI FLOW
-  1. Test / Equipment Set
-  2. Stat Basis
-  3. Equipment Weight
-  4. Priority & Negative
-  5. Comparison Viewer
-  6. Finalized Equipment
-  7. Advanced / Debug
-
-CALCULATION FLOW
-  Stat Basis → Equipment Weight → Priority → Negative → Set 5 → Set 6
-
-MAINTENANCE RULE
-  Keep element IDs, state keys, action names, and backend payload fields stable
-  unless the Google Apps Script is updated at the same time.
-
-This CLEAN SOURCE build changes readability/comments only. Functional JavaScript,
-DOM IDs, storage identity, and backend identity are intentionally preserved.
-================================================================================
--->
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Equipment Stat Distribution v 0.8.16.032 GSHEET TEST</title>
-<link rel="stylesheet" href="css/equipment-stats.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equipment Stat Distribution v0.8.16.033</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   CSS VARIABLES & DESIGN SYSTEM
+   ========================================================================== */
+:root {
+  --workspace: 1200px;
+  --font-sans: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Stat Palette - High Vibrancy & Contrast */
+  --hp: #10b981; --hp-glow: rgba(16, 185, 129, 0.25); --hp-bg: rgba(16, 185, 129, 0.12); --hp-border: rgba(16, 185, 129, 0.35);
+  --pa: #ef4444; --pa-glow: rgba(239, 68, 68, 0.25);  --pa-bg: rgba(239, 68, 68, 0.12);  --pa-border: rgba(239, 68, 68, 0.35);
+  --pd: #0ea5e9; --pd-glow: rgba(14, 165, 233, 0.25); --pd-bg: rgba(14, 165, 233, 0.12); --pd-border: rgba(14, 165, 233, 0.35);
+  --ma: #a855f7; --ma-glow: rgba(168, 85, 247, 0.25); --ma-bg: rgba(168, 85, 247, 0.12); --ma-border: rgba(168, 85, 247, 0.35);
+  --md: #6366f1; --md-glow: rgba(99, 102, 241, 0.25); --md-bg: rgba(99, 102, 241, 0.12); --md-border: rgba(99, 102, 241, 0.35);
+  --sp: #f59e0b; --sp-glow: rgba(245, 158, 11, 0.25); --sp-bg: rgba(245, 158, 11, 0.12); --sp-border: rgba(245, 158, 11, 0.35);
+
+  --danger: #f43f5e;
+  --danger-bg: rgba(244, 63, 94, 0.12);
+  --danger-border: rgba(244, 63, 94, 0.3);
+  --good: #10b981;
+  --good-bg: rgba(16, 185, 129, 0.12);
+
+  /* DEFAULT THEME: Modern Game Dev Obsidian / Studio Dark */
+  --bg-page: #0b0f14;
+  --bg-page-gradient: radial-gradient(circle at 50% 0%, #151e29 0%, #0b0f14 65%);
+  --panel: #131922;
+  --panel-alt: #182230;
+  --panel-card: #1c2736;
+  --panel-card-hover: #223042;
+  --panel-head: linear-gradient(180deg, #17212d 0%, #131a24 100%);
+  --ink: #f1f5f9;
+  --ink-secondary: #94a3b8;
+  --ink-muted: #64748b;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --line-subtle: rgba(255, 255, 255, 0.04);
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-glow: rgba(59, 130, 246, 0.28);
+  --accent-ink: #ffffff;
+  --input-bg: #0f151d;
+  --input-border: rgba(255, 255, 255, 0.12);
+  --input-focus-border: #3b82f6;
+  --track-bg: #1e293b;
+  --thumb-color: #38bdf8;
+  --thumb-border: #0b0f14;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 14px 36px rgba(0, 0, 0, 0.45);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(19, 25, 34, 0.85);
+}
+
+/* PARCHMENT THEME: Refined Warm Studio Workbench */
+body[data-theme="parchment"] {
+  --bg-page: #475861;
+  --bg-page-gradient: radial-gradient(circle at 50% 0%, #566a75 0%, #475861 65%);
+  --panel: #f4efe4;
+  --panel-alt: #eae3d5;
+  --panel-card: #fdfbf7;
+  --panel-card-hover: #ffffff;
+  --panel-head: linear-gradient(180deg, #faf7f0 0%, #eee8dc 100%);
+  --ink: #172832;
+  --ink-secondary: #48616f;
+  --ink-muted: #748c9a;
+  --line: rgba(35, 58, 71, 0.18);
+  --line-strong: rgba(35, 58, 71, 0.32);
+  --line-subtle: rgba(35, 58, 71, 0.08);
+  --accent: #2c5366;
+  --accent-hover: #1f3e4e;
+  --accent-glow: rgba(44, 83, 102, 0.22);
+  --accent-ink: #ffffff;
+  --input-bg: #fdfbf7;
+  --input-border: #b8c7ce;
+  --input-focus-border: #2c5366;
+  --track-bg: #d4dde2;
+  --thumb-color: #2c5366;
+  --thumb-border: #f4efe4;
+  --shadow-sm: 0 2px 4px rgba(18, 34, 43, 0.08);
+  --shadow-md: 0 6px 18px rgba(18, 34, 43, 0.14);
+  --shadow-lg: 0 14px 36px rgba(18, 34, 43, 0.22);
+  --glass-border: 1px solid rgba(35, 58, 71, 0.2);
+  --glass-bg: rgba(244, 239, 228, 0.9);
+}
+
+/* ==========================================================================
+   BASE & RESET
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark light;
+}
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-page);
+  background-image: var(--bg-page-gradient);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  touch-action: manipulation;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.wrap {
+  width: min(var(--workspace), calc(100% - 28px));
+  max-width: var(--workspace);
+  margin: 0 auto;
+  padding: 16px 0 36px;
+}
+
+/* ==========================================================================
+   VISIBILITY & WORKSPACE STATE TOGGLES
+   ========================================================================== */
+.hidden { display: none !important; }
+
+/* Focus Mode Panel Hiding */
+.workspace-panel.focus-hidden,
+.focus-hidden {
+  display: none !important;
+}
+
+/* Final Tweak Panel Hiding */
+#panelTuner.final-tweak-hidden,
+.final-tweak-hidden {
+  display: none !important;
+}
+
+/* Comparison Panel Collapse */
+.comparison-panel.collapsed #comparisonBody {
+  display: none !important;
+}
+
+/* Advanced Calculation Tabs Pane Hiding */
+.legacy-pane {
+  display: none !important;
+}
+.legacy-pane.active {
+  display: block !important;
+}
+
+/* Focus Mode Save Cluster Handling */
+body.focus-mode-active #panelTuner .global-finalize-cluster {
+  display: none !important;
+}
+body.focus-mode-active .focus-global-save {
+  display: flex !important;
+}
+body:not(.focus-mode-active) .focus-global-save {
+  display: none !important;
+}
+body:not(.focus-mode-active) #panelTuner .global-finalize-cluster {
+  display: flex !important;
+}
+
+/* ==========================================================================
+   STAT COLOR SYSTEM HELPERS
+   ========================================================================== */
+.hp-bg { background: var(--hp-bg) !important; color: var(--hp) !important; }
+.pa-bg { background: var(--pa-bg) !important; color: var(--pa) !important; }
+.pd-bg { background: var(--pd-bg) !important; color: var(--pd) !important; }
+.ma-bg { background: var(--ma-bg) !important; color: var(--ma) !important; }
+.md-bg { background: var(--md-bg) !important; color: var(--md) !important; }
+.sp-bg { background: var(--sp-bg) !important; color: var(--sp) !important; }
+
+.stat-HP, .hp { --stat-color: var(--hp); }
+.stat-PA, .pa { --stat-color: var(--pa); }
+.stat-PD, .pd { --stat-color: var(--pd); }
+.stat-MA, .ma { --stat-color: var(--ma); }
+.stat-MD, .md { --stat-color: var(--md); }
+.stat-SP, .sp { --stat-color: var(--sp); }
+
+/* ==========================================================================
+   PANELS & CONTAINERS
+   ========================================================================== */
+.panel {
+  background: var(--panel);
+  border: var(--glass-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  margin: 12px 0;
+  position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 16px;
+  background: var(--panel-head);
+  border-bottom: 1px solid var(--line);
+  min-height: 42px;
+}
+.panel-head h2, .panel-head h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-body {
+  padding: 14px 16px;
+}
+
+.muted { color: var(--ink-secondary); font-size: 12px; }
+.small { font-size: 11px; color: var(--ink-muted); }
+.flex { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ==========================================================================
+   BUTTONS & CONTROLS
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--line-strong);
+  background: var(--panel-card);
+  color: var(--ink);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn:hover {
+  background: var(--panel-card-hover);
+  border-color: var(--ink-muted);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.btn:active {
+  transform: translateY(0);
+}
+.btn.primary {
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-hover) 100%);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 2px 10px var(--accent-glow);
+}
+.btn.primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+.btn.danger {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger);
+}
+.btn.danger:hover {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+.btn.ghost {
+  background: transparent;
+  border-color: transparent;
+}
+.btn.ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--line);
+}
+.btn.active {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel-card);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.15s ease;
+}
+.icon-btn:hover {
+  background: var(--panel-card-hover);
+  border-color: var(--ink-muted);
+}
+
+/* ==========================================================================
+   INPUTS & SELECTS
+   ========================================================================== */
+input[type="text"], input[type="number"], select {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  outline: none;
+}
+input[type="text"]:focus, input[type="number"]:focus, select:focus {
+  border-color: var(--input-focus-border);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+select {
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   1. APP HEADER & SYSTEM STATUS
+   ========================================================================== */
+.app-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--panel);
+  border: var(--glass-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 12px;
+}
+.app-title h1 {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  margin: 0;
+  color: var(--ink);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.app-title h1::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+.system-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.status {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.status::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink-muted);
+}
+.status.good { color: var(--good); }
+.status.good::before { background: var(--good); box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+.status.bad { color: var(--danger); }
+.status.bad::before { background: var(--danger); box-shadow: 0 0 8px rgba(244, 63, 94, 0.5); }
+.status.loading { color: var(--accent); }
+.status.loading::before {
+  background: var(--accent);
+  animation: pulseDot 1s infinite alternate;
+}
+@keyframes pulseDot {
+  0% { opacity: 0.3; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+
+.menu-trigger {
+  padding: 7px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--panel-card);
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+.menu-trigger:hover {
+  background: var(--panel-card-hover);
+  border-color: var(--accent);
+}
+
+/* ==========================================================================
+   2. EQUIPMENT SET COMMAND BAR & TOOLS ELEVATION FIX
+   ========================================================================== */
+.record-panel {
+  position: relative !important;
+  z-index: 60 !important;
+  overflow: visible !important;
+}
+.record-panel .record-hero,
+.record-panel .record-commandbar,
+.record-tools-wrap {
+  overflow: visible !important;
+}
+.record-hero {
+  padding: 12px 16px;
+}
+.equipment-set-commandbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+.equipment-set-primary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.equipment-set-label {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+  white-space: nowrap;
+}
+.saved-set-select {
+  min-width: 180px;
+  max-width: 280px;
+  font-weight: 700;
+  background-color: var(--input-bg);
+}
+.record-tools-wrap {
+  position: relative !important;
+  z-index: 70 !important;
+  flex: 0 0 auto;
+}
+.workspace-tools-popover {
+  position: absolute !important;
+  right: 0 !important;
+  top: calc(100% + 8px) !important;
+  z-index: 1000 !important;
+  min-width: 160px !important;
+  padding: 8px !important;
+  display: grid;
+  gap: 6px;
+  border: var(--glass-border) !important;
+  border-radius: 10px !important;
+  background: var(--panel) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: blur(16px) !important;
+  overflow: visible !important;
+}
+.workspace-tools-popover .btn {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+/* ==========================================================================
+   3. LOADED EQUIPMENT STATS & STAT BASIS GRIDS
+   ========================================================================== */
+.stat-basis-head {
+  cursor: pointer;
+  user-select: none;
+}
+.basis-total-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+  background: var(--panel-card);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+}
+.basis-total-inline b {
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+#basisCollapseIcon {
+  font-size: 11px;
+  transition: transform 0.2s ease;
+}
+
+.basis-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.basis-cell {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel-card);
+  overflow: hidden;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+}
+.basis-cell:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+.basis-cell .lab {
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-align: center;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.basis-cell input {
+  width: 100%;
+  border: 0 !important;
+  border-radius: 0 !important;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 15px;
+  padding: 8px 4px;
+  background: transparent !important;
+  color: var(--ink);
+}
+
+/* ==========================================================================
+   4. FOCUS MODE TOOLBAR & DOCK
+   ========================================================================== */
+.focus-mode-toolbar {
+  width: 100%;
+  margin: 0 0 8px;
+}
+.focus-dock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+.focus-dock-btn {
+  position: relative;
+  flex: 0 0 auto;
+  min-width: 76px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel-card);
+  color: var(--ink-secondary);
+  font-size: 11px;
+  font-weight: 800;
+  transition: all 0.15s ease;
+}
+.focus-dock-btn:hover {
+  background: var(--panel-card-hover);
+  color: var(--ink);
+}
+.focus-dock-btn.active {
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-hover) 100%);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+.focus-status-dot {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  right: 5px;
+  top: 5px;
+  border-radius: 50%;
+  background: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+}
+.focus-global-save {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 12px;
+  border-left: 1px solid var(--line);
+  flex: 0 0 auto;
+}
+.tool-save-state {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--good-bg);
+  color: var(--good);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.tool-save-state.dirty {
+  background: var(--danger-bg);
+  color: #fb923c;
+  border-color: rgba(251, 146, 60, 0.3);
+}
+
+/* ==========================================================================
+   5. EQUIPMENT WEIGHT CARDS
+   ========================================================================== */
+.weight-cards {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.weight-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-card);
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+.weight-card:hover {
+  border-color: var(--line-strong);
+  background: var(--panel-card-hover);
+}
+.weight-card.advanced-active {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent-glow) !important;
+}
+.slot-label {
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-secondary);
+}
+.eq-name {
+  width: 100%;
+  font-weight: 700;
+  font-size: 12px;
+}
+.weight-row {
+  display: grid;
+  grid-template-columns: 1fr 32px;
+  gap: 8px;
+  align-items: center;
+}
+.level-num {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 12px;
+  color: var(--ink);
+}
+
+/* Custom Range Sliders */
+.weight-range, .stat-tuner-range, #equipmentBudgetRange {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+.weight-range::-webkit-slider-runnable-track,
+.stat-tuner-range::-webkit-slider-runnable-track,
+#equipmentBudgetRange::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--track-bg);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+}
+.weight-range::-webkit-slider-thumb,
+.stat-tuner-range::-webkit-slider-thumb,
+#equipmentBudgetRange::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--thumb-color);
+  border: 2px solid var(--thumb-border);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  transition: transform 0.1s ease;
+}
+.weight-range::-webkit-slider-thumb:hover,
+.stat-tuner-range::-webkit-slider-thumb:hover,
+#equipmentBudgetRange::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.advanced-weight-inline {
+  display: none;
+  width: 100%;
+  min-height: 24px;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-alt);
+  color: var(--ink-secondary);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+body.advanced-equipment-weight-active .advanced-weight-inline {
+  display: block;
+}
+.advanced-weight-inline:hover, .advanced-weight-inline.active {
+  border-color: var(--accent);
+  color: var(--ink);
+  background: var(--accent-glow);
+}
+.advanced-weight-inline.plus { color: var(--good); }
+.advanced-weight-inline.minus { color: var(--danger); }
+.advanced-weight-inline.zero { color: var(--ink-muted); }
+
+/* Advanced Equipment Weight Box */
+.equipment-budget-advanced {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.advanced-weight-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 10px;
+}
+.advanced-weight-summary > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-card);
+}
+.advanced-weight-summary span {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.advanced-weight-summary strong {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.equipment-budget-stack {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.equipment-budget-active-card,
+.equipment-budget-slider-card,
+.equipment-budget-context-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-card);
+  padding: 12px;
+}
+.equipment-budget-active-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.equipment-budget-active-title strong {
+  font-size: 14px;
+  color: var(--ink);
+}
+.equipment-budget-active-title span {
+  font-size: 10px;
+  color: var(--ink-muted);
+  margin-left: 6px;
+}
+.equipment-budget-active-meta {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--ink-secondary);
+}
+
+.equipment-budget-active-graph {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  align-items: end;
+  height: 220px;
+  padding: 10px 4px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.equipment-budget-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+}
+.equipment-budget-stat-value {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.equipment-budget-stat-plot {
+  width: 100%;
+  height: 160px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: var(--track-bg);
+  border-radius: 4px 4px 0 0;
+  overflow: hidden;
+}
+.equipment-budget-stat-fill {
+  width: 70%;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.15s ease;
+}
+.equipment-budget-stat-label {
+  font-size: 10px;
+  font-weight: 800;
+  margin-top: 4px;
+  color: var(--ink-secondary);
+}
+
+.equipment-budget-slider-inner {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+.equipment-budget-slider-copy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+}
+.equipment-budget-slider-copy strong { font-size: 12px; }
+.equipment-budget-slider-copy span { font-family: var(--font-mono); font-size: 10px; color: var(--accent); }
+
+.advanced-equipment-context {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+.equipment-budget-mini-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-alt);
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.equipment-budget-mini-card:hover {
+  border-color: var(--accent);
+  background: var(--panel-card-hover);
+}
+.equipment-budget-mini-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  margin-bottom: 6px;
+}
+.equipment-budget-mini-head b { font-weight: 800; color: var(--ink); }
+.equipment-budget-mini-graph {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 2px;
+  align-items: end;
+  height: 48px;
+}
+.equipment-budget-mini-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+}
+.equipment-budget-mini-stat span { font-size: 8px; font-family: var(--font-mono); }
+.equipment-budget-mini-track {
+  width: 100%;
+  height: 32px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: var(--track-bg);
+  border-radius: 2px 2px 0 0;
+}
+.equipment-budget-mini-fill { width: 75%; border-radius: 1px 1px 0 0; }
+.equipment-budget-mini-stat small { font-size: 7px; font-weight: 800; color: var(--ink-muted); margin-top: 2px; }
+
+/* ==========================================================================
+   6. PRIORITY & NEGATIVE SYSTEM
+   ========================================================================== */
+.equipment-picker {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.equipment-pick {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel-card);
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+}
+.equipment-pick:hover {
+  background: var(--panel-card-hover);
+  border-color: var(--line-strong);
+}
+.equipment-pick.active {
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-hover) 100%) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+.equipment-pick.active .name, .equipment-pick.active .slot {
+  color: #fff !important;
+}
+.equipment-pick .name {
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  color: var(--ink);
+}
+.equipment-pick .slot {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-top: 2px;
+}
+
+.vertical-priority {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel-card);
+  padding: 12px;
+}
+.vertical-editor-title {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.vertical-editor-title strong {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--ink);
+}
+.vertical-editor-title span {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-top: 2px;
+}
+
+.vertical-stats {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  min-height: 270px;
+}
+.priority-pod {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-alt);
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  transition: all 0.15s ease;
+  position: relative;
+}
+.priority-pod:focus-within {
+  border-color: var(--accent);
+}
+.priority-pod .stat-name {
+  font-size: 11px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+.priority-pod .level-value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--ink);
+  min-height: 22px;
+  line-height: 1;
+}
+
+/* Vertical slider for priority */
+.v-slider-shell {
+  height: 160px;
+  width: 40px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0;
+}
+.v-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute;
+  width: 140px;
+  height: 20px;
+  margin: 0;
+  transform: rotate(-90deg);
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+.v-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--track-bg);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+}
+.v-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--level, var(--thumb-color));
+  border: 2px solid var(--thumb-border);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.neg-wrap {
+  width: 100%;
+  border-top: 1px solid var(--line);
+  padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.neg-chip {
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink-secondary);
+  font-size: 9px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.neg-chip:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.neg-chip.has-value {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger);
+}
+.neg-input {
+  width: 50px !important;
+  padding: 4px !important;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 11px;
+  color: var(--danger);
+}
+
+.priority-scale {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+  margin-top: 10px;
+}
+.scale-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* ==========================================================================
+   7. COMPARISON VIEWER / DISTRIBUTED STATS & TOOLTIP
+   ========================================================================== */
+.comparison-head {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  user-select: none;
+  cursor: pointer;
+}
+.comparison-tuner-slot {
+  grid-column: 1;
+  justify-self: start;
+}
+.comparison-title {
+  grid-column: 2;
+  justify-self: center;
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+.comparison-title:hover {
+  color: var(--accent);
+}
+.comparison-head-actions {
+  grid-column: 3;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tuner-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: var(--panel-card);
+  color: var(--ink-secondary);
+  font-size: 10px;
+  font-weight: 800;
+  transition: all 0.15s ease;
+}
+.tuner-btn.active {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  border-color: #10b981;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+}
+
+/* Hover-Only Tooltip for 'i' */
+.comparison-info-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.comparison-info {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 1px solid var(--line-strong);
+  background: var(--panel-card);
+  color: var(--ink-secondary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 800;
+  font-style: italic;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+.comparison-info:hover {
+  background: var(--panel-card-hover);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.comparison-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  background: var(--panel-card);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  font-style: normal;
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+  z-index: 120;
+}
+.comparison-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 8px;
+  border: 5px solid transparent;
+  border-top-color: var(--panel-card);
+}
+.comparison-info-wrap:hover .comparison-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.comparison-collapse {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: var(--panel-card);
+  color: var(--ink-secondary);
+  font-size: 13px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+.comparison-collapse:hover {
+  background: var(--panel-card-hover);
+  color: var(--ink);
+}
+
+.equip-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.equip-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-card);
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+.equip-card.clickable {
+  cursor: pointer;
+}
+.equip-card.clickable:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.equip-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.equip-sub {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.stat-bars {
+  height: 170px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+  margin-top: 8px;
+  padding-bottom: 4px;
+}
+.stat-col {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  min-width: 0;
+}
+.vals {
+  min-height: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  font-family: var(--font-mono);
+}
+.neg-val {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--danger);
+  line-height: 1;
+}
+.pos-val {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1;
+}
+.stat-track {
+  height: 110px;
+  width: 100%;
+  background: var(--track-bg);
+  border-radius: 3px 3px 0 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+}
+.stat-fill {
+  width: 75%;
+  border-radius: 2px 2px 0 0;
+}
+.stat-lab {
+  font-size: 9px;
+  font-weight: 800;
+  margin-top: 4px;
+  color: var(--ink-secondary);
+}
+.equip-total {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--ink);
+  margin-top: 8px;
+}
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+.summary-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-card);
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.summary-card b {
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.comparison-finalize {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0 4px;
+  border-top: 1px solid var(--line);
+  margin-top: 12px;
+}
+
+/* ==========================================================================
+   8. FINAL BALANCING / TUNER WORKBENCH
+   ========================================================================== */
+.tuner-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.global-finalize-cluster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tuner-finalize-btn {
+  font-weight: 800;
+  min-width: 160px;
+}
+.tuner-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.tuner-points-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-card);
+}
+.tuner-points-summary span {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.tuner-points-summary strong {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--accent);
+}
+
+.tuner-equipment-picker {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.dual-pick {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-card);
+  padding: 8px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dual-pick:hover {
+  background: var(--panel-card-hover);
+  border-color: var(--line-strong);
+}
+.dual-pick.active {
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-hover) 100%) !important;
+  border-color: var(--accent) !important;
+  color: #fff !important;
+}
+.dual-pick.active b, .dual-pick.active span {
+  color: #fff !important;
+}
+.dual-pick b {
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dual-pick span {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.dual-pick i {
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+/* Tuner 3-Column Reference Layout */
+.tuner-reference-layout {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) minmax(310px, 1.4fr) minmax(220px, 1.1fr);
+  gap: 12px;
+  align-items: stretch;
+  width: 100%;
+}
+.tuner-panel-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel-card);
+  padding: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.tuner-art-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.tuner-art-heading {
+  text-align: center;
+  margin-bottom: 8px;
+}
+.tuner-art-heading strong {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--ink);
+}
+.tuner-art-heading span {
+  display: block;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.tuner-art-frame {
+  width: 100%;
+  max-width: 220px;
+  height: 280px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: radial-gradient(circle at 50% 50%, var(--panel-alt) 0%, var(--panel) 100%);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.tuner-art-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 10px;
+}
+.tuner-art-fallback {
+  display: none;
+  position: absolute;
+  inset: 0;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  color: var(--ink-muted);
+  text-align: center;
+}
+.tuner-art-frame.asset-missing .tuner-art-fallback {
+  display: grid;
+}
+
+.tuner-center-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tuner-graph-card {
+  flex: 1 1 auto;
+}
+.tuner-graph-heading {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+}
+.tuner-graph-heading b {
+  font-family: var(--font-mono);
+  color: var(--accent);
+}
+.tuner-main-graph {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  align-items: end;
+  height: 180px;
+}
+.tuner-main-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 4px 2px;
+  transition: all 0.15s ease;
+}
+.tuner-main-stat:hover {
+  background: var(--panel-alt);
+}
+.tuner-main-value {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.tuner-main-track {
+  width: 100%;
+  height: 130px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: var(--track-bg);
+  border-radius: 3px 3px 0 0;
+  overflow: hidden;
+}
+.tuner-main-fill {
+  width: 70%;
+  border-radius: 2px 2px 0 0;
+  transition: height 0.15s ease;
+}
+.tuner-main-label {
+  font-size: 9px;
+  font-weight: 900;
+  margin-top: 4px;
+  color: var(--ink-secondary);
+}
+
+.tuner-selected-stat {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: var(--panel-card);
+}
+.tuner-active-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.tuner-active-top b { font-size: 14px; font-weight: 900; }
+.tuner-active-top span { font-size: 10px; color: var(--ink-muted); }
+.tuner-active-top strong { font-family: var(--font-mono); font-size: 20px; font-weight: 900; color: var(--ink); }
+.tuner-active-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--ink-muted);
+  margin-top: 4px;
+}
+
+.tuner-right-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.tuner-side-stat {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: var(--panel-card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.tuner-side-stat:hover {
+  background: var(--panel-card-hover);
+  border-color: var(--accent);
+  transform: translateX(2px);
+}
+.tuner-side-stat b { font-size: 12px; font-weight: 900; }
+.tuner-side-stat strong { font-family: var(--font-mono); font-size: 14px; font-weight: 800; }
+.tuner-side-stat span { font-family: var(--font-mono); font-size: 10px; font-weight: 800; }
+
+.plus { color: var(--good) !important; }
+.minus { color: var(--danger) !important; }
+.zero { color: var(--ink-muted) !important; }
+
+/* ==========================================================================
+   9. MODALS, POPOVERS & DRAWERS
+   ========================================================================== */
+.compare-popover {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.compare-popover-card {
+  width: min(780px, 96vw);
+  background: var(--panel);
+  border: var(--glass-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  padding: 16px;
+}
+.compare-popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.compare-popover-head strong { font-size: 16px; color: var(--ink); }
+.compare-pop-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.compare-allocation-card, .compare-result-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-card);
+  padding: 12px;
+}
+.popup-section-title {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 10px;
+}
+.popup-priority-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+.popup-priority-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.popup-priority-stat b { font-size: 10px; }
+.popup-priority-num { font-family: var(--font-mono); font-size: 14px; font-weight: 900; }
+.popup-slider { writing-mode: vertical-lr; direction: rtl; width: 22px; height: 120px; }
+.popup-neg { font-size: 8px; font-weight: 800; color: var(--danger); min-height: 12px; }
+.popup-weight { text-align: center; margin-top: 10px; font-size: 11px; }
+
+.popup-result-bars {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  align-items: end;
+  height: 170px;
+}
+.popup-result-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+}
+.popup-result-value { font-family: var(--font-mono); font-size: 11px; font-weight: 800; margin-bottom: 4px; }
+.popup-bar-track { width: 100%; height: 120px; background: var(--track-bg); border-radius: 3px 3px 0 0; display: flex; align-items: flex-end; justify-content: center; }
+.popup-bar-fill { width: 75%; border-radius: 2px 2px 0 0; }
+.popup-result-label { font-size: 9px; font-weight: 800; margin-top: 4px; }
+.popup-total { text-align: center; font-family: var(--font-mono); font-size: 18px; font-weight: 900; margin-top: 10px; }
+
+/* Main Menu & Drawer */
+.main-menu-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  /* Above menu-page overlays; below the drawer. */
+  z-index: 180;
+}
+.main-menu {
+  position: fixed;
+  right: 14px;
+  top: 14px;
+  bottom: 14px;
+  width: min(320px, calc(100vw - 28px));
+  /* Above menu-page overlays so Menu works from every page. */
+  z-index: 190;
+  border: var(--glass-border);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: var(--shadow-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+.main-menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.main-menu-nav {
+  display: grid;
+  gap: 8px;
+  padding: 16px 0;
+}
+.main-menu-nav button {
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-card);
+  color: var(--ink);
+  padding: 12px 14px;
+  font-weight: 800;
+  font-size: 12px;
+  transition: all 0.15s ease;
+}
+.main-menu-nav button:hover {
+  background: var(--panel-card-hover);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  transform: translateX(3px);
+}
+.menu-version-link {
+  margin-top: auto;
+  font-size: 10px;
+  color: var(--ink-muted);
+  text-align: center;
+  cursor: pointer;
+}
+.menu-version-link:hover {
+  color: var(--ink);
+}
+
+/* Menu Page Overlay */
+.menu-page-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 170;
+  background: var(--bg-page);
+  background-image: var(--bg-page-gradient);
+  overflow-y: auto;
+  padding: 16px;
+}
+.menu-page-shell {
+  width: min(var(--workspace), 100%);
+  margin: 0 auto;
+}
+.menu-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  border: var(--glass-border);
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: var(--shadow-md);
+}
+.menu-page-head h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+/* Finalized Equipment Showcase */
+.finalized-list {
+  display: grid;
+  gap: 10px;
+}
+.finalized-set {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-card);
+  padding: 12px;
+}
+.finalized-set-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.finalized-art-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+.final-art-card {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel-alt);
+  padding: 10px;
+}
+.final-art-name {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.final-art-frame {
+  width: 100%;
+  aspect-ratio: 2.4/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, var(--panel-card) 0%, var(--panel) 100%);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+.final-art-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+.final-art-fallback {
+  display: none;
+  position: absolute;
+  inset: 0;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+  color: var(--ink-muted);
+}
+.final-art-frame.asset-missing .final-art-fallback { display: grid; }
+.final-art-stats {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 8px;
+}
+.final-art-stats span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 2px;
+  border-radius: 4px;
+  font-size: 8px;
+}
+.final-art-stats i { font-family: var(--font-mono); font-size: 9px; font-weight: 800; font-style: normal; }
+.final-art-total {
+  text-align: right;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--ink-muted);
+  margin-top: 6px;
+}
+.final-art-total b { font-family: var(--font-mono); color: var(--ink); }
+
+.final-eq-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.2fr) repeat(6, minmax(40px, 0.55fr));
+  gap: 4px;
+  align-items: center;
+  font-size: 10px;
+  margin-top: 4px;
+}
+.final-eq-row > span {
+  padding: 4px 6px;
+  text-align: center;
+  border-radius: 4px;
+  background: var(--panel-alt);
+  font-family: var(--font-mono);
+}
+.final-eq-row .eq {
+  font-weight: 800;
+  text-align: left;
+  font-family: var(--font-sans);
+}
+
+/* Detailed Comparison View */
+.detail-compare-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.detail-vs-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.detail-set-column {
+  display: grid;
+  gap: 10px;
+}
+.detail-set-column > h3 {
+  text-align: center;
+  margin: 0;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--panel-card);
+  font-size: 13px;
+}
+.detail-compare-card {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel-card);
+  padding: 10px;
+}
+.detail-single-bars {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  align-items: end;
+}
+.detail-single-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.detail-set-value { font-family: var(--font-mono); font-size: 9px; font-weight: 800; margin-bottom: 2px; }
+.detail-set-track { width: 100%; height: 90px; background: var(--track-bg); border-radius: 2px 2px 0 0; display: flex; align-items: flex-end; justify-content: center; }
+.detail-set-bar { width: 75%; border-radius: 1px 1px 0 0; }
+.detail-stat-name { font-size: 8px; font-weight: 800; color: var(--ink-secondary); margin-top: 2px; }
+
+/* Maintenance & Advanced Diagnostics Drawer */
+.advanced-drawer {
+  position: fixed;
+  right: 16px;
+  top: 58px;
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100vh - 76px);
+  overflow-y: auto;
+  background: var(--panel);
+  border: var(--glass-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg);
+  z-index: 180;
+}
+.advanced-drawer-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  z-index: 2;
+}
+.advanced-drawer-body { padding: 14px; }
+.advanced-group {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel-card);
+  margin-bottom: 10px;
+}
+.advanced-group > details > summary {
+  cursor: pointer;
+  padding: 10px 14px;
+  font-weight: 800;
+  font-size: 11px;
+}
+.advanced-group-body { padding: 0 14px 14px; }
+.debug-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.debug-grid div {
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px;
+}
+.debug-grid b { display: block; font-size: 8px; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 2px; }
+.debug-grid span { font-family: var(--font-mono); font-size: 10px; color: var(--ink); word-break: break-all; }
+.debug-paths { display: grid; gap: 8px; margin-top: 10px; }
+.debug-paths > div {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 8px;
+  padding: 8px;
+  background: var(--panel-alt);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.debug-paths code { font-family: var(--font-mono); font-size: 10px; color: var(--accent); word-break: break-all; }
+
+/* Theme Settings Radio Cards */
+.theme-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+.theme-option {
+  display: flex !important;
+  gap: 10px;
+  align-items: flex-start;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 12px;
+  background: var(--panel-card);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.theme-option:hover {
+  border-color: var(--accent);
+}
+.theme-option span { display: grid; gap: 2px; }
+.theme-option b { font-size: 12px; }
+.theme-option small { font-size: 10px; color: var(--ink-muted); }
+
+/* Tables & Audit */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+table.result-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 800px;
+  background: var(--panel-card);
+}
+.result-table th, .result-table td {
+  border: 1px solid var(--line);
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 11px;
+}
+.result-table th { background: var(--panel-alt); font-weight: 800; }
+.result-table .name { text-align: left; font-weight: 800; }
+
+.error {
+  margin: 12px 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  white-space: pre-wrap;
+}
+
+/* Footer */
+.footer {
+  margin: 20px 0 40px;
+  color: var(--ink-muted);
+  font-size: 11px;
+  text-align: center;
+}
+.version-history {
+  margin-top: 8px;
+  text-align: left;
+}
+.version-history summary {
+  cursor: pointer;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 990px) {
+  .basis-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .weight-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .equipment-picker { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .vertical-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .equip-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tuner-reference-layout { grid-template-columns: 1fr; }
+  .tuner-art-column { max-width: 320px; margin: 0 auto; }
+}
+@media (max-width: 680px) {
+  .basis-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .weight-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .equipment-picker { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .vertical-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .equip-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .equipment-set-commandbar { flex-direction: column; align-items: stretch; }
+  .equipment-set-primary { flex-wrap: wrap; }
+  .detail-vs-columns { grid-template-columns: 1fr; }
+  .debug-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .debug-paths > div { grid-template-columns: 1fr; }
+  .theme-options { grid-template-columns: 1fr; }
+  .finalized-art-grid { grid-template-columns: 1fr; }
+  .advanced-equipment-context { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+</style>
 </head>
 <body>
 <div class="wrap">
   <!-- ===== APP HEADER / SYSTEM STATUS ===== -->
-<div class="app-head">
-    <div class="app-title"><h1>Equipment Stat Distribution</h1></div>
+  <header class="app-head">
+    <div class="app-title">
+      <h1>Equipment Stat Distribution</h1>
+    </div>
     <div class="system-head">
-      <span id="cloudStatus" class="status compact-status">Google Sheet paused · local UI test</span>
+      <span id="cloudStatus" class="status compact-status">Google Sheet ready</span>
       <button class="menu-trigger" id="mainMenuBtn" type="button" aria-label="Open main menu">☰ <span>Menu</span></button>
     </div>
-  </div>
+  </header>
 
   <!-- ===== 1. TEST / EQUIPMENT SET RECORD CONTROLS ===== -->
-<section class="panel record-panel">
+  <section class="panel record-panel">
     <div class="record-hero">
       <div class="record-commandbar equipment-set-commandbar">
         <div class="equipment-set-primary">
@@ -64,8 +2245,7 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
             <option value="">Select Saved Set…</option>
           </select>
         </div>
-        <!-- Backward-compatible hidden identity fields. They are kept synchronized
-             to one canonical Equipment Set name so existing backend contracts survive. -->
+        <!-- Backward-compatible hidden identity fields -->
         <input id="recordName" type="hidden" value="">
         <input id="equipmentSetName" type="hidden" value="">
         <div class="record-tools-wrap">
@@ -79,6 +2259,18 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
     </div>
   </section>
 
+  <!-- ===== LOADED FINALIZED EQUIPMENT STAT TOTALS ===== -->
+  <section class="panel workspace-panel" id="panelEquipmentStats">
+    <div class="panel-head stat-basis-head">
+      <h2>Equipment Stat</h2>
+      <span class="basis-total-inline">Total <b id="equipmentStatTotalInline">0</b></span>
+    </div>
+    <div class="panel-body">
+      <div id="equipmentStatGrid" class="basis-grid"></div>
+    </div>
+  </section>
+
+  <!-- ===== FOCUS MODE TOOLBAR ===== -->
   <div class="focus-mode-toolbar">
     <div class="focus-dock hidden" id="focusDock">
       <button type="button" class="focus-dock-btn focus-show-all" id="focusShowAllBtn">Show All</button>
@@ -94,17 +2286,19 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
     </div>
   </div>
 
-
+  <!-- ===== 2. STAT BASIS ===== -->
   <section class="panel workspace-panel" id="panelBasis" data-focus-panel="basis">
-    <!-- ===== 2. STAT BASIS ===== -->
-<div class="panel-head stat-basis-head"><h2>Stat Basis</h2><span class="basis-total-inline">Total <b id="basisTotalInline">0</b></span></div>
-    <div class="panel-body">
+    <div class="panel-head stat-basis-head" id="basisCollapseHead" role="button" tabindex="0" aria-expanded="false" aria-controls="basisPanelBody" title="Show Stat Basis">
+      <h2>Stat Basis</h2>
+      <span class="basis-total-inline">Total <b id="basisTotalInline">0</b> <span id="basisCollapseIcon" aria-hidden="true">⌄</span></span>
+    </div>
+    <div class="panel-body hidden" id="basisPanelBody">
       <div id="basisGrid" class="basis-grid"></div>
     </div>
   </section>
 
+  <!-- ===== 3. EQUIPMENT WEIGHT ===== -->
   <section class="panel workspace-panel" id="panelWeight" data-focus-panel="weight">
-    <!-- ===== 3. EQUIPMENT WEIGHT ===== -->
     <div class="panel-head weight-panel-head">
       <h2>Equipment Weight</h2>
       <button class="btn ghost advanced-weight-toggle" id="advancedWeightToggle" type="button" aria-expanded="false">Advanced Equipment Weight</button>
@@ -132,47 +2326,50 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
     </div>
   </section>
 
+  <!-- ===== 4. PRIORITY & NEGATIVE ===== -->
   <section class="panel workspace-panel" id="panelPriority" data-focus-panel="priority">
-    <!-- ===== 4. PRIORITY & NEGATIVE ===== -->
-<div class="panel-head"><h2>Priority & Negative</h2></div>
+    <div class="panel-head"><h2>Priority & Negative</h2></div>
     <div class="panel-body">
       <div id="equipmentPicker" class="equipment-picker"></div>
       <div id="verticalPriority" class="vertical-priority"></div>
       <div class="priority-scale">
-        <span><i class="scale-dot" style="background:#eceff1"></i>low</span>
-        <span><i class="scale-dot" style="background:#f6df73"></i>notice</span>
-        <span><i class="scale-dot" style="background:#ef9b3d"></i>strong</span>
-        <span><i class="scale-dot" style="background:#e24a3f"></i>very high</span>
+        <span><i class="scale-dot" style="background:#64748b"></i>Low (0–3)</span>
+        <span><i class="scale-dot" style="background:#f59e0b"></i>Notice (4–6)</span>
+        <span><i class="scale-dot" style="background:#f97316"></i>Strong (7–8)</span>
+        <span><i class="scale-dot" style="background:#ef4444"></i>Very High (9–10)</span>
       </div>
     </div>
   </section>
 
+  <!-- ===== 5. COMPARISON VIEWER / DISTRIBUTED STATS ===== -->
   <section class="panel comparison-panel workspace-panel" id="comparisonPanel" data-focus-panel="stats">
-    <div class="panel-head">
-      <!-- ===== 5. COMPARISON VIEWER ===== -->
+    <div class="panel-head comparison-head" id="comparisonCollapseHead" title="Toggle Distributed Stats">
       <div class="comparison-tuner-slot">
         <input id="refineToggle" type="checkbox" class="hidden">
-        <button class="tuner-btn" id="tunerBtn" type="button" aria-pressed="false">Tuner</button>
+        <button class="tuner-btn" id="tunerBtn" type="button" aria-pressed="false">Tuner Mode</button>
       </div>
-      <h2 class="comparison-title">Distributed Stats</h2>
+      <h2 class="comparison-title" id="comparisonTitleText" role="button" tabindex="0">Distributed Stats</h2>
       <div class="comparison-head-actions">
-        <button class="comparison-info" id="comparisonInfoBtn" type="button"
-          title="Detailed Comparison is available from the Main Menu."
-          aria-label="Open Detailed Comparison">i</button>
-        <button class="comparison-collapse" id="comparisonCollapseBtn" type="button" aria-expanded="true" title="Collapse Comparison Viewer">⌃</button>
+        <!-- Hover-only Tooltip (Non-clickable) -->
+        <div class="comparison-info-wrap">
+          <span class="comparison-info" id="comparisonInfoBtn" role="tooltip" aria-label="Detailed Comparison is available from the Main Menu.">i</span>
+          <div class="comparison-tooltip">Detailed Comparison is available in the Main Menu</div>
+        </div>
+        <!-- Collapsible Button -->
+        <button class="comparison-collapse" id="comparisonCollapseBtn" type="button" aria-expanded="true" title="Collapse Distributed Stats">⌃</button>
       </div>
     </div>
     <div id="comparisonBody">
       <div id="viewer" class="viewer"></div>
       <div class="comparison-finalize comparison-final-actions">
         <button class="btn final-tweak-toggle" id="finalTweakBtn" type="button" aria-pressed="false">Final Tweak</button>
-        <!-- Kept as an internal compatibility target; the only visible persistent
-             action is Finalize Equipment in Final Balancing / Focus Mode. -->
         <button class="btn primary finalize-main hidden" id="finalizeBtn" type="button">Finalize Distribution</button>
       </div>
     </div>
   </section>
-<section class="panel workspace-panel tuner-focus-panel" id="panelTuner" data-focus-panel="tuner">
+
+  <!-- ===== 6. FINAL BALANCING (TUNER FOCUS PANEL) ===== -->
+  <section class="panel workspace-panel tuner-focus-panel" id="panelTuner" data-focus-panel="tuner">
     <div class="panel-head tuner-panel-head">
       <h2>Final Balancing</h2>
       <div class="global-finalize-cluster">
@@ -190,55 +2387,107 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
       </div>
       <div class="tuner-equipment-picker" id="tunerEquipmentPicker"></div>
       <div id="tunerFocus"></div>
-      <div class="advanced-context-label">Other Equipment</div>
+      <div class="advanced-context-label" style="text-align:center;font-size:10px;font-weight:800;color:var(--ink-muted);text-transform:uppercase;margin:12px 0 6px;">Other Equipment</div>
       <div class="tuner-context-grid" id="tunerContext"></div>
     </div>
   </section>
-  <div class="compare-popover hidden" id="comparePopover"><div class="compare-popover-card" role="dialog" aria-modal="true">
-    <div class="compare-popover-head"><div><strong id="comparePopTitle">Equipment</strong><div class="small" id="comparePopSlot"></div></div><button class="icon-btn" id="comparePopClose" type="button">×</button></div>
-    <div id="comparePopBody"></div></div></div>
+
+  <!-- ===== MODAL / POPOVER ===== -->
+  <div class="compare-popover hidden" id="comparePopover">
+    <div class="compare-popover-card" role="dialog" aria-modal="true">
+      <div class="compare-popover-head">
+        <div>
+          <strong id="comparePopTitle">Equipment</strong>
+          <div class="small" id="comparePopSlot"></div>
+        </div>
+        <button class="icon-btn" id="comparePopClose" type="button">×</button>
+      </div>
+      <div id="comparePopBody"></div>
+    </div>
+  </div>
+
   <!-- ===== 7A. ADVANCED RECORD / DEBUG DRAWER ===== -->
-<section class="advanced-drawer hidden" id="advancedDrawer">
-    <div class="advanced-drawer-head"><div><strong>Maintenance Tools</strong><div class="small">Record recovery, deletion, backend diagnostics, and exact-draft tools.</div></div><button class="icon-btn" id="advancedClose" type="button">×</button></div>
+  <section class="advanced-drawer hidden" id="advancedDrawer">
+    <div class="advanced-drawer-head">
+      <div>
+        <strong style="font-size:14px;">Maintenance Tools</strong>
+        <div class="small">Record recovery, deletion, backend diagnostics, and exact-draft tools.</div>
+      </div>
+      <button class="icon-btn" id="advancedClose" type="button">×</button>
+    </div>
     <div class="advanced-drawer-body">
-      <div class="advanced-group"><details open><summary>Draft Management</summary><div class="advanced-group-body">
-        <div class="advanced-load-row"><select id="draftSelect" class="draft-select"><option value="">Choose saved draft…</option></select><button class="btn" id="loadSelectedBtn">Load Selected Draft</button><button class="btn danger" id="deleteDraftBtn">Delete Test</button></div>
-      </div></details></div>
-      <div class="advanced-group"><details><summary>Record Info & Debug</summary><div class="advanced-group-body">
-        <div class="debug-grid"><div><b>Hidden Record ID</b><span id="dbgRecordId">—</span></div><div><b>Test Name</b><span id="dbgRecordName">—</span></div><div><b>Equipment Set</b><span id="dbgSetName">—</span></div><div><b>Last Saved</b><span id="dbgSavedAt">—</span></div><div><b>Loaded Version</b><span id="dbgVersion">—</span></div></div>
-      </div></details></div>
-      <div class="advanced-group"><details open><summary>System Diagnostics</summary><div class="advanced-group-body">
-        <div class="debug-grid system-debug-grid">
-          <div><b>Frontend Build</b><span id="dbgBuildVersion">—</span></div>
-          <div><b>Backend Contract</b><span id="dbgBackendVersion">—</span></div>
-          <div><b>Page Protocol</b><span id="dbgProtocol">—</span></div>
-          <div><b>Asset Registry</b><span id="dbgAssetStatus">—</span></div>
-          <div><b>Assets Loaded</b><span id="dbgAssetCount">—</span></div>
-          <div><b>Finalized Sets</b><span id="dbgFinalizedCount">—</span></div>
-          <div><b>Focus State</b><span id="dbgFocusState">—</span></div>
-          <div><b>Local Storage</b><span id="dbgStorageState">—</span></div>
-        </div>
-        <div class="debug-paths">
-          <div><b>Page URL / Path</b><code id="dbgPageUrl">—</code></div>
-          <div><b>Google Sheet Endpoint</b><code id="dbgSheetPath">—</code></div>
-          <div><b>Asset Registry Path</b><code id="dbgAssetPath">—</code></div>
-          <div><b>Loaded Asset IDs</b><code id="dbgAssetIds">—</code></div>
-          <div><b>Last Runtime Error</b><code id="dbgLastError">None</code></div>
-        </div>
-        <div class="debug-actions">
-          <button class="btn" id="refreshDebugBtn" type="button">Refresh Debug</button>
-          <button class="btn" id="copyDebugBtn" type="button">Copy Debug Report</button>
-          <span class="small" id="debugCopyStatus"></span>
-        </div>
-      </div></details></div>
-      <div class="advanced-group"><details><summary>Sheet Sync</summary><div class="advanced-group-body small">Use these tools only when troubleshooting saved records or Google Sheet sync.</div></details></div>
+      <div class="advanced-group">
+        <details open>
+          <summary>Draft Management</summary>
+          <div class="advanced-group-body">
+            <div class="flex" style="gap:8px;">
+              <select id="draftSelect" class="draft-select"><option value="">Choose saved draft…</option></select>
+              <button class="btn" id="loadSelectedBtn" type="button">Load Selected Draft</button>
+              <button class="btn danger" id="deleteDraftBtn" type="button">Delete Test</button>
+            </div>
+          </div>
+        </details>
+      </div>
+      <div class="advanced-group">
+        <details>
+          <summary>Record Info & Debug</summary>
+          <div class="advanced-group-body">
+            <div class="debug-grid">
+              <div><b>Hidden Record ID</b><span id="dbgRecordId">—</span></div>
+              <div><b>Test Name</b><span id="dbgRecordName">—</span></div>
+              <div><b>Equipment Set</b><span id="dbgSetName">—</span></div>
+              <div><b>Last Saved</b><span id="dbgSavedAt">—</span></div>
+              <div><b>Loaded Version</b><span id="dbgVersion">—</span></div>
+            </div>
+          </div>
+        </details>
+      </div>
+      <div class="advanced-group">
+        <details open>
+          <summary>System Diagnostics</summary>
+          <div class="advanced-group-body">
+            <div class="debug-grid system-debug-grid">
+              <div><b>Frontend Build</b><span id="dbgBuildVersion">—</span></div>
+              <div><b>Backend Contract</b><span id="dbgBackendVersion">—</span></div>
+              <div><b>Page Protocol</b><span id="dbgProtocol">—</span></div>
+              <div><b>Asset Registry</b><span id="dbgAssetStatus">—</span></div>
+              <div><b>Assets Loaded</b><span id="dbgAssetCount">—</span></div>
+              <div><b>Finalized Sets</b><span id="dbgFinalizedCount">—</span></div>
+              <div><b>Focus State</b><span id="dbgFocusState">—</span></div>
+              <div><b>Local Storage</b><span id="dbgStorageState">—</span></div>
+            </div>
+            <div class="debug-paths">
+              <div><b>Page URL / Path</b><code id="dbgPageUrl">—</code></div>
+              <div><b>Google Sheet Endpoint</b><code id="dbgSheetPath">—</code></div>
+              <div><b>Asset Registry Path</b><code id="dbgAssetPath">—</code></div>
+              <div><b>Loaded Asset IDs</b><code id="dbgAssetIds">—</code></div>
+              <div><b>Last Runtime Error</b><code id="dbgLastError">None</code></div>
+            </div>
+            <div class="flex" style="margin-top:10px;gap:8px;">
+              <button class="btn" id="refreshDebugBtn" type="button">Refresh Debug</button>
+              <button class="btn" id="copyDebugBtn" type="button">Copy Debug Report</button>
+              <span class="small" id="debugCopyStatus"></span>
+            </div>
+          </div>
+        </details>
+      </div>
+      <div class="advanced-group">
+        <details>
+          <summary>Sheet Sync</summary>
+          <div class="advanced-group-body small">Use these tools only when troubleshooting saved records or Google Sheet sync.</div>
+        </details>
+      </div>
     </div>
   </section>
 
+  <!-- ===== MAIN MENU DRAWER ===== -->
   <div class="main-menu-scrim hidden" id="mainMenuScrim"></div>
   <aside class="main-menu hidden" id="mainMenu" aria-label="Main menu">
     <div class="main-menu-head">
-      <div><strong>Main Menu</strong><div class="small">Equipment Stat Distribution</div></div>
+      <div>
+        <strong style="font-size:14px;">Main Menu</strong>
+        <div class="small">Equipment Stat Distribution</div>
+      </div>
       <button class="icon-btn" id="mainMenuClose" type="button" aria-label="Close main menu">×</button>
     </div>
     <nav class="main-menu-nav">
@@ -246,49 +2495,56 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
       <button type="button" data-menu-page="finalized">Finalized Equipment</button>
       <button class="menu-item" id="menuFocusModeBtn" type="button">Focus Mode</button>
       <button type="button" data-menu-page="comparison">Detailed Comparison</button>
-      <button type="button" data-menu-page="advanced">Advanced</button>
+      <button type="button" data-menu-page="advanced">Advanced Calculations</button>
       <button type="button" data-menu-page="settings">Settings</button>
     </nav>
     <button class="menu-version-link" id="advancedToggle" type="button" title="Maintenance tools">v0.8.16</button>
   </aside>
 
+  <!-- ===== MENU PAGE OVERLAY ===== -->
   <div class="menu-page-overlay hidden" id="menuPageOverlay">
     <section class="menu-page-shell">
       <div class="menu-page-head">
-        <button class="btn ghost" id="menuPageBack" type="button">← Menu</button>
         <h2 id="menuPageTitle">Menu</h2>
-        <button class="icon-btn" id="menuPageClose" type="button" aria-label="Close">×</button>
+        <!-- Replaced X / Back with Menu Button -->
+        <button class="menu-trigger" id="menuPageMenuBtn" type="button" aria-label="Open main menu">☰ <span>Menu</span></button>
       </div>
 
+      <!-- Finalized Equipment Page -->
       <div class="menu-page hidden" id="menuPageFinalized">
-        <!-- ===== 6. FINALIZED EQUIPMENT ===== -->
-<section class="panel finalized-panel">
-    <div class="panel-head"><h2>Finalized Equipment</h2><div><span id="finalizedStatus" class="status">No finalized data loaded</span> <button class="refresh-btn icon-only" id="refreshFinalBtn" type="button" title="Refresh information" aria-label="Refresh information"><span>↻</span></button></div></div>
-    <div class="panel-body">
-      <div id="finalizedList" class="finalized-list">
-        <div class="small">Finalize a distribution to build the approved equipment library.</div>
+        <section class="panel finalized-panel">
+          <div class="panel-head">
+            <h2>Finalized Equipment</h2>
+            <div class="flex" style="gap:8px;">
+              <span id="finalizedStatus" class="status">No finalized data loaded</span>
+              <button class="icon-btn" id="refreshFinalBtn" type="button" title="Refresh information" aria-label="Refresh information">↻</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="finalizedList" class="finalized-list">
+              <div class="small">Finalize a distribution to build the approved equipment library.</div>
+            </div>
+          </div>
+        </section>
       </div>
-    </div>
-  </section>
 
-
-
-      </div>
-
+      <!-- Detailed Comparison Page -->
       <div class="menu-page hidden" id="menuPageComparison">
         <section class="panel detailed-comparison-panel">
           <div class="panel-head"><h2>Detailed Comparison</h2></div>
           <div class="panel-body">
             <div class="detail-compare-controls">
-              <label>Set A
+              <label class="flex" style="gap:6px;">
+                <span class="small" style="font-weight:800;">Set A</span>
                 <select id="detailSetA">
                   <option value="set1">Set 1</option><option value="set2" selected>Set 2</option>
                   <option value="set3">Set 3</option><option value="set4">Set 4</option>
                   <option value="set5">Set 5</option><option value="set6">Set 6</option>
                 </select>
               </label>
-              <span class="detail-vs">vs</span>
-              <label>Set B
+              <strong style="font-size:14px;color:var(--accent);">VS</strong>
+              <label class="flex" style="gap:6px;">
+                <span class="small" style="font-weight:800;">Set B</span>
                 <select id="detailSetB">
                   <option value="set1">Set 1</option><option value="set2">Set 2</option>
                   <option value="set3">Set 3</option><option value="set4">Set 4</option>
@@ -296,51 +2552,78 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
                 </select>
               </label>
             </div>
-<div id="detailComparisonOutput"></div>
+            <div id="detailComparisonOutput"></div>
           </div>
         </section>
       </div>
 
+      <!-- Advanced Calculations Page -->
       <div class="menu-page hidden" id="menuPageAdvanced">
-        <!-- ===== 7B. ADVANCED CALCULATION / LEGACY INSPECTION ===== -->
-<details class="panel advanced" id="advanced">
-    <summary>Advanced</summary>
-    <div class="panel-body"><div class="legacy-tabs" id="legacyTabs">
-        <button class="btn active" data-legacy="audit">Rounding Audit</button>
-        <button class="btn" data-legacy="formula">Formula Notes</button>
+        <details class="panel advanced" id="advanced" open>
+          <summary class="panel-head" style="list-style:none;cursor:pointer;"><h2>Advanced Sets & Audits</h2></summary>
+          <div class="panel-body">
+            <div class="flex legacy-tabs" id="legacyTabs" style="margin-bottom:14px;gap:6px;flex-wrap:wrap;">
+              <button class="btn active" data-legacy="audit" type="button">Rounding Audit</button>
+              <button class="btn" data-legacy="formula" type="button">Formula Notes</button>
+              <button class="btn" data-legacy="set1" type="button">Set 1</button>
+              <button class="btn" data-legacy="set2" type="button">Set 2</button>
+              <button class="btn" data-legacy="set3" type="button">Set 3</button>
+              <button class="btn" data-legacy="set4" type="button">Set 4</button>
+              <button class="btn" data-legacy="set5" type="button">Set 5</button>
+              <button class="btn" data-legacy="set6" type="button">Set 6</button>
+            </div>
+            <div id="legacy-set1" class="legacy-pane"><div class="table-wrap"><table id="tableSet1" class="result-table"></table></div></div>
+            <div id="legacy-set2" class="legacy-pane"><div class="table-wrap"><table id="tableSet2" class="result-table"></table></div></div>
+            <div id="legacy-set3" class="legacy-pane"><div class="table-wrap"><table id="tableSet3" class="result-table"></table></div></div>
+            <div id="legacy-set4" class="legacy-pane"><div class="table-wrap"><table id="tableSet4" class="result-table"></table></div></div>
+            <div id="legacy-set5" class="legacy-pane"><div class="table-wrap"><table id="tableSet5" class="result-table"></table></div></div>
+            <div id="legacy-set6" class="legacy-pane"><div class="table-wrap"><table id="tableSet6" class="result-table"></table></div></div>
+            <div id="legacy-audit" class="legacy-pane active"><div class="table-wrap"><table id="auditTable" class="result-table audit-table"></table></div></div>
+            <div id="legacy-formula" class="legacy-pane">
+              <div class="grid2">
+                <div class="summary-card">
+                  <div>
+                    <b style="display:block;margin-bottom:4px;">Set 5 — Base Distribution</b>
+                    <span class="small">Positive pool = Stat Basis + returned negatives. Equipment Weight splits the pool. Priority then splits each equipment budget among its active stats. Negative values are applied after allocation.</span>
+                  </div>
+                </div>
+                <div class="summary-card">
+                  <div>
+                    <b style="display:block;margin-bottom:4px;">Set 6 — Refined Set 5</b>
+                    <span class="small">Keeps Set 5 equipment budgets. Within each equipment, the priority share is blended with a basis-aware anchor, then an extreme single-stat concentration is softly capped before negatives are applied.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
       </div>
-      <div class="legacy-hidden-calculations hidden" aria-hidden="true">
-        <button data-legacy="set1"></button><button data-legacy="set2"></button><button data-legacy="set3"></button>
-        <button data-legacy="set4"></button><button data-legacy="set5"></button><button data-legacy="set6"></button>
-      </div>
-      <div id="legacy-set1" class="legacy-pane"><div class="table-wrap"><table id="tableSet1" class="result-table"></table></div></div>
-      <div id="legacy-set2" class="legacy-pane"><div class="table-wrap"><table id="tableSet2" class="result-table"></table></div></div>
-      <div id="legacy-set3" class="legacy-pane"><div class="table-wrap"><table id="tableSet3" class="result-table"></table></div></div>
-      <div id="legacy-set4" class="legacy-pane"><div class="table-wrap"><table id="tableSet4" class="result-table"></table></div></div>
-      <div id="legacy-set5" class="legacy-pane"><div class="table-wrap"><table id="tableSet5" class="result-table"></table></div></div>
-      <div id="legacy-set6" class="legacy-pane"><div class="table-wrap"><table id="tableSet6" class="result-table"></table></div></div>
-      <div id="legacy-audit" class="legacy-pane active"><div class="table-wrap"><table id="auditTable" class="result-table audit-table"></table></div></div>
-      <div id="legacy-formula" class="legacy-pane">
-        <div class="grid2">
-          <div class="summary-card"><b>Set 5 — Base Distribution</b><span class="small">Positive pool = Stat Basis + returned negatives. Equipment Weight splits the pool. Priority then splits each equipment budget among its active stats. Negative values are applied after allocation.</span></div>
-          <div class="summary-card"><b>Set 6 — Refined Set 5</b><span class="small">Keeps Set 5 equipment budgets. Within each equipment, the priority share is blended with a basis-aware anchor, then an extreme single-stat concentration is softly capped before negatives are applied.</span></div>
-        </div>
-      </div>
-    </div>
-  </details>
 
-
-      </div>
-
+      <!-- Settings Page -->
       <div class="menu-page hidden" id="menuPageSettings">
         <section class="panel settings-panel">
-          <div class="panel-head"><h2>Settings</h2></div>
+          <div class="panel-head"><h2>Settings & Themes</h2></div>
           <div class="panel-body">
             <div class="settings-group">
-              <div><strong>Theme</strong><div class="small">Choose how the workspace looks. Your choice is saved on this device.</div></div>
+              <div>
+                <strong>Theme Selection</strong>
+                <div class="small">Choose your workspace aesthetic. Saved automatically to local preferences.</div>
+              </div>
               <div class="theme-options" id="themeOptions">
-                <label class="theme-option"><input type="radio" name="appTheme" value="default"> <span><b>Default Theme</b><small>Clean neutral interface</small></span></label>
-                <label class="theme-option"><input type="radio" name="appTheme" value="parchment"> <span><b>Parchment Theme</b><small>Drafting workbench with grid-paper texture</small></span></label>
+                <label class="theme-option">
+                  <input type="radio" name="appTheme" value="default">
+                  <span>
+                    <b>Studio Dark (Default)</b>
+                    <small>Sleek game engine obsidian dark mode</small>
+                  </span>
+                </label>
+                <label class="theme-option">
+                  <input type="radio" name="appTheme" value="parchment">
+                  <span>
+                    <b>Parchment Workbench</b>
+                    <small>Tactical blueprint & warm studio workbench</small>
+                  </span>
+                </label>
               </div>
             </div>
           </div>
@@ -351,107 +2634,185 @@ DOM IDs, storage identity, and backend identity are intentionally preserved.
 
   <div id="errorBox" class="error hidden"></div>
 
-  <!-- ===== VERSION / FOOTER ===== -->
-<div class="footer">
-    <div>Equipment Stat Destribution · v0.8.16</div>
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div>Equipment Stat Distribution · v0.8.16.033</div>
     <details class="version-history">
       <summary>Version history</summary>
-      <div style="padding-top:6px;line-height:1.55">
-        <b>v0.8.16.032 GSHEET TEST</b> — Pre-publication integration test build: re-enabled the preserved Google Sheet / Apps Script connection without changing its endpoint. Advanced Equipment Weight .031 layout/colors and Final Balancing remain unchanged. This build is for end-to-end save/load testing before publication.<br>
-        <b>v0.8.16.031 TEST</b> — Advanced Equipment Weight color adjustment: set #fcfaf5 on the active-equipment card, slider card, inactive/compact equipment-card backgrounds, and the Available Points, Baseline, and Assigned summary slots. Layout, graph behavior, sliders, Final Balancing, and dormant Google Sheet state unchanged.<br>
-        <b>v0.8.16.030 TEST</b> — Advanced Equipment Weight color-polish pass only: active graph card, slider card, five-equipment card, and compact equipment cards now inherit the existing panel/ink/line theme variables; plotting areas remain transparent; stat bar colors and all geometry/logic are unchanged. Google Sheet remains dormant for local UI testing.<br>
-        <b>v0.8.16.029 TEST</b> — Hotfix for Advanced Equipment Weight .028: repaired the runtime ReferenceError by restoring baseline/assigned totals to the existing sumObj state calculation; active and compact graphs now render from equipmentBudgetRows so Advanced Weight changes are reflected correctly. Three-card layout, transparent bar plots, enlarged values, shared baseline, slider-only card, five compact graphs, Final Balancing, and dormant Google Sheet state preserved.<br>
-        <b>v0.8.16.028 TEST</b> — Advanced Equipment Weight rebuilt into three explicit cards: active equipment graph, slider-only card, and five compact equipment graphs. Active graph bar background boxes removed; values enlarged and moved above bars; one baseline added under all six bars. Compact graph values enlarged for readability. Final Balancing left unchanged from the approved .023/.027 path. Google Sheet remains dormant for local UI testing.<br>
-        <b>v0.8.16.017 TEST</b> — Local-only: Final Balancing slider rebuilt directly from the working Negative slider structure; Priority, Negative, regular Equipment Weight, and Advanced Equipment Weight remain untouched. Added a dedicated mid-width Final Balancing breakpoint to drop the graph below PNG + Stats before overlap occurs. Google Sheet remains dormant.<br>
-        <b>v0.8.16.012 TEST</b> — Local-only iteration: repaired Advanced Equipment Weight toggle; compacted Saved Set selector; removed duplicate external set-name display; Final Balancing now uses controls-left / tuner-art-middle / graph-right on desktop; mobile keeps art-first vertical flow; active graph underline removed; slider track movement made visually explicit; Focus Mode shows only its dock Finalize Equipment action.<br>
-        <b>v0.8.16.011</b> — Unified Equipment Set workflow: New Set + Saved Set selector, one Finalize Equipment save action, Advanced Weight collapsed inactive equipment with larger active graph, Final Balancing three-column layout, focus-mode finalize action, selected-stat underline removed, and user-facing “Destribution” typo corrected to “Distribution”.<br>
-        <b>v0.8.16.010</b> — Finalized Equipment stability/debug patch: preserves View/Edit state across async artwork rerenders, prevents action-button bubbling, keeps the Finalized Equipment menu header from following scroll, and adds detailed System Diagnostics plus Copy Debug Report under the secret version button.<br>
-        <b>v0.8.16.009</b> — Final Balancing workflow: renamed Tuner to Final Balancing; Distributed Stats now uses Save + Final Tweak actions; Final Balancing stays hidden in Show All until Final Tweak is opened, while Focus Mode can still open Final Balancing directly; existing Finalize Equipment action remains inside Final Balancing.<br>
-        <b>v0.8.16.008</b> — Show All Tuner fix: Tuner now renders fully whenever Focus Mode is off, instead of showing only its header/action shell; leaving Focus Mode immediately restores the full Tuner workspace below Distributed Stats.<br>
-        <b>v0.8.16.007</b> — Focus/Tuner UI patch: restored Show All as the leftmost Focus navigation button while keeping Focus Mode in the Main Menu; moved Finalize Equipment from below the graph to the upper-left Tuner action row; strengthened Priority selected-equipment styling to prevent white-on-white active cards.<br>
-        <b>v0.8.16.006</b> — Workflow/UX patch: Focus Mode toggle moved into Menu; Show All places Tuner after Distributed Stats; added Finalize Equipment inside Tuner above stat controls; fixed selected-equipment active contrast; NEG fields accept direct keyboard entry and automatically convert positive whole numbers to negative values within 0 to -10.<br>
-        <b>v0.8.16.005</b> — Finalize/save contract patch: cloud records now send backend version v0.8.15 while keeping frontend v0.8.16 separately, preventing the new UI version from breaking the unchanged Google Apps Script finalize contract; added clearer finalize diagnostics.<br>
-        <b>v0.8.16.004</b> — Annotated Tuner layout patch: restored the Focus toolbar to its normal document position instead of sticky-follow behavior; moved the active equipment artwork to the left-side workspace; moved Available Points above the graph; pushed and squeezed the six-stat graph into the right-side workspace while retaining its tall bar presentation.<br>
-        <b>v0.8.16.003</b> — Tuner layout patch: moved the standing active-equipment artwork inward, compressed the artwork + graph workbench into the center, and narrowed the six-stat graph while preserving its vertical height.<br>
-        <b>v0.8.16.002</b> — Tuner visual cleanup: removed the visible artwork card while preserving its layout space; removed gray graph-track backgrounds and borders so only the solid stat-colored bars remain; tightened artwork-to-graph spacing and kept a subtle active-stat indicator without recreating card boxes.<br>
-        <b>v0.8.16.001</b> — Tuner artwork patch: active equipment now uses a dedicated standing/vertical tunerArtwork asset beside the live six-stat graph; removed the tiny Tuner thumbnail; HTML now loads the permanent GitHub equipment registry at runtime with a safe built-in fallback. Finalized Equipment continues to use masterArtwork.<br>
-        <b>v0.8.16</b> — Equipment artwork foundation: connected the HTML to the permanent GitHub equipment asset structure; Finalized Equipment now includes landscape artwork showcase cards with safe No Artwork fallbacks and stat summaries; Tuner shows a small active-equipment thumbnail; image support remains optional so equipment without art continues to work normally. Frontend version advances to v0.8.16 while the unchanged Google Sheet backend contract remains v0.8.15.<br>
-        <b>v0.8.15.008</b> — HTML patch: Tuner graph pushed further inward and made taller; Google Sheet health check now retries before reporting failure and distinguishes a browser connection issue from a backend/version problem. Core backend version remains v0.8.15.<br>
-        <b>v0.8.15.007</b> — Tuner graph patch: one number per stat above the graph; positive value shown when present, otherwise negative value, otherwise 0; removed separate NEG line; graph narrowed and made taller.<br>
-        <b>v0.8.15.006</b> — Tuner graph patch: moved negative values above their bars so NEG stays visually attached to the stat instead of sitting below the graph.<br>
-        <b>v0.8.15.005</b> — Tuner graph proportion patch: narrowed and pushed further into the center, with additional vertical height for clearer stat movement.<br>
-        <b>v0.8.15</b> — Tuner polish: one active stat slider, five compact number-only stats, and a fixed six-stat live graph. The current equipment graph is now narrower, centered, and taller to make stat movement easier to read without dominating the workspace.<br>
-        <b>v0.8.14</b> — Focus Mode introduced and tested smooth; workspace dock for Basis, Weight, Priority, Stats, and Tuner; VS-only Detailed Comparison; Tools popup layering corrected; selected equipment in Priority & Negative now has a strong active-state highlight.<br>
-        <b>v0.8.13</b> — publish/mobile polish: Main Menu architecture, workspace Tools menu, Finalized Equipment moved out of the workspace, self-contained Detailed Comparison, simplified Advanced, Settings with modular Default/Parchment themes, collapsible Comparison Viewer, responsive workbench styling, and maintained record/backend identity.<br>
-        <b>v0.8.12</b> — centered workspace and comparison/finalized alignment stabilization.<br>
-        <b>v0.8.11</b> — UI cleanup experiments.<br>
-        <b>v0.8.10</b> — name-pair loading and maintenance record tools.<br>
-        <b>v0.8.01</b> — vertical priority editor and finalized records.<br>
-        <b>v0.8.00</b> — Set 5 and Set 6 workflow.
+      <div style="padding-top:8px;line-height:1.6;max-width:800px;margin:0 auto;">
+        <b>v0.8.16.033 REDESIGN</b> — Modernized UI with game studio obsidian theme, refined typography, hover-only tooltip, overlay menu navigation, and full preservation of Google Sheet contracts and GitHub artwork registry.<br>
+        <b>v0.8.16.033 TEST</b> — Added a read-only Equipment Stat summary directly below Equipment Set, sourced from the matching Finalized Equipment set and totaled across HP, PA, PD, MA, MD, and SP. Stat Basis now starts collapsed and expands from its own header bar.<br>
+        <b>v0.8.16.032 GSHEET TEST</b> — Pre-publication integration test build: re-enabled the preserved Google Sheet / Apps Script connection without changing its endpoint.<br>
+        <b>v0.8.16.011</b> — Unified Equipment Set workflow: New Set + Saved Set selector, one Finalize Equipment save action, and Advanced Weight collapsed inactive equipment with larger active graph.<br>
+        <b>v0.8.16</b> — Connected to permanent GitHub equipment asset structure for live artwork previews.<br>
+        <b>v0.8.00</b> — Core Set 5 and Set 6 calculation distribution engine.
       </div>
     </details>
-  </div>
+  </footer>
 </div>
 
-<script src="js/equipment-utils.js"></script>
-<script src="js/equipment-assets.js"></script>
-<script src="js/equipment-diagnostics.js"></script>
 <script>
-
 "use strict";
 
 /*
 ===============================================================================
-JAVASCRIPT ARCHITECTURE
-
-A. CONSTANTS / STATE
-   slots, stats, color maps, backend URL, local-storage key, VERSION, state
-
-B. CORE HELPERS
-   q(), clamp(), fmt(), esc(), safe(), normalization / access helpers
-
-C. CALCULATION ENGINE
-   Set calculations, budgets, matrices, recalc()
-
-D. UI BUILD / RENDER
-   Stat Basis, Equipment Weight, Priority & Negative, Comparison Viewer
-
-E. LOCAL IDENTITY / STORAGE
-   saveLocal(), load local state, state.currentRecordId
-
-F. GOOGLE SHEETS RECORD LIFECYCLE
-   health check
-   Save               → saveRecord
-   Load by names      → loadByNames
-   Load exact record  → loadRecordById
-   Delete draft       → deleteDraft
-   Finalize           → finalizeRecord
-   Edit finalized     → updateFinalizedNames
-   Delete finalized   → deleteFinalized
-
-G. FINALIZED EQUIPMENT
-   list, view, snapshot, edit/delete controls
-
-H. EVENT BINDING
-   bind()
-
-IMPORTANT:
-   currentRecordId is the stable identity. Do not replace it with visible names.
+JAVASCRIPT ARCHITECTURE & PRESERVED LOGIC
 ===============================================================================
 */
 
 const slots=["Main Hand","Off Hand","Body","Head","Boots","Accessory"];
 const stats=["HP","PA","PD","MA","MD","SP"];
-const statColors={HP:"#43a047",PA:"#e53935",PD:"#64b5f6",MA:"#8e44ad",MD:"#5c6bc0",SP:"#f2c94c"};
+const statColors={HP:"#10b981",PA:"#ef4444",PD:"#0ea5e9",MA:"#a855f7",MD:"#6366f1",SP:"#f59e0b"};
 const statBg={HP:"hp-bg",PA:"pa-bg",PD:"pd-bg",MA:"ma-bg",MD:"md-bg",SP:"sp-bg"};
-// LOCAL UI TEST ONLY — restore after HTML approval.
+
 const SAVED_GOOGLE_SHEET_API="https://script.google.com/macros/s/AKfycby3J_-GaiSv_dyaq0XnIJt-7BX2nI9UKTTt-9nnmZ12nR6tPwcsjKaxmtDLEb1jAZuo/exec";
 const GSHEET_ENABLED=true;
 const GOOGLE_SHEET_API=GSHEET_ENABLED?SAVED_GOOGLE_SHEET_API:"";
 const STORAGE_KEY="equipmentStatDestribution_v0800";
 const VERSION="0.8.16";
-const BUILD_VERSION="0.8.16.032 GSHEET TEST";
+const BUILD_VERSION="0.8.16.033 TEST";
 const BACKEND_VERSION="0.8.15";
+
+const EQUIPMENT_ASSET_REGISTRY_PATH="assets/equipment/equipment-assets.json";
+const EQUIPMENT_ASSET_RAW_BASE="https://raw.githubusercontent.com/Daaaaaaryl/Zher0/main/";
+
+let assetRegistryDebug={
+  status:"fallback",
+  url:"",
+  schemaVersion:"",
+  assetVersion:"",
+  loadedCount:1,
+  lastError:""
+};
+let EQUIPMENT_ASSETS={
+  katana:{
+    id:"katana",
+    displayName:"Katana",
+    slot:"Main Hand",
+    masterArtwork:"assets/equipment/katana/katana_master.png",
+    tunerArtwork:"assets/equipment/katana/katana_tuner.png",
+    icon:null,
+    reference:"assets/equipment/katana/katana_reference.md"
+  }
+};
+
+function normalizeEquipmentId(value){
+  return String(value||"").trim().toLowerCase()
+    .normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^\w]+/g,"-").replace(/^-+|-+$/g,"");
+}
+function assetUrl(path){
+  if(!path)return "";
+  const resolved=/^https?:\/\//i.test(path)
+    ? path
+    : location.protocol==="file:"
+      ? EQUIPMENT_ASSET_RAW_BASE+path
+      : path;
+  const version=assetRegistryDebug.assetVersion;
+  if(!version)return resolved;
+  return `${resolved}${resolved.includes("?")?"&":"?"}v=${encodeURIComponent(version)}`;
+}
+async function loadEquipmentAssetRegistry(){
+  const registryUrl=location.protocol==="file:"
+    ? EQUIPMENT_ASSET_RAW_BASE+EQUIPMENT_ASSET_REGISTRY_PATH
+    : EQUIPMENT_ASSET_REGISTRY_PATH;
+  assetRegistryDebug.status="loading";
+  assetRegistryDebug.url=registryUrl;
+  assetRegistryDebug.lastError="";
+  try{
+    const res=await fetch(registryUrl,{cache:"no-store"});
+    if(!res.ok)throw new Error(`Asset registry ${res.status}`);
+    const data=await res.json();
+    if(!Array.isArray(data?.equipment))throw new Error("Invalid equipment asset registry");
+    const loaded={};
+    data.equipment.forEach(item=>{
+      if(!item?.id)return;
+      loaded[normalizeEquipmentId(item.id)]={...item};
+    });
+    if(Object.keys(loaded).length)EQUIPMENT_ASSETS=loaded;
+    assetRegistryDebug.status="loaded";
+    assetRegistryDebug.schemaVersion=data?.schemaVersion??"";
+    assetRegistryDebug.assetVersion=data?.assetVersion??data?.version??"";
+    assetRegistryDebug.loadedCount=Object.keys(EQUIPMENT_ASSETS).length;
+  }catch(e){
+    assetRegistryDebug.status="fallback";
+    assetRegistryDebug.loadedCount=Object.keys(EQUIPMENT_ASSETS).length;
+    assetRegistryDebug.lastError=String(e?.message||e);
+    console.warn("Equipment asset registry unavailable; using built-in fallback.",e);
+  }finally{
+    if(typeof renderStatTuner==="function" && q("tunerFocus")?.innerHTML){
+      try{renderStatTuner()}catch(e){}
+    }
+    if(typeof renderFinalizedSets==="function" && Array.isArray(finalizedSets) && finalizedSets.length){
+      try{renderFinalizedSets()}catch(e){}
+    }
+    try{updateSystemDiagnostics()}catch(e){}
+  }
+}
+function equipmentAsset(name,slot=""){
+  const id=normalizeEquipmentId(name);
+  if(EQUIPMENT_ASSETS[id])return EQUIPMENT_ASSETS[id];
+  return Object.values(EQUIPMENT_ASSETS).find(x=>
+    normalizeEquipmentId(x.displayName)===id ||
+    (x.slot===slot && normalizeEquipmentId(name)===normalizeEquipmentId(x.displayName))
+  )||null;
+}
+function equipmentArtworkUrl(name,slot=""){
+  const a=equipmentAsset(name,slot);
+  return a?.masterArtwork?assetUrl(a.masterArtwork):"";
+}
+function equipmentTunerArtworkUrl(name,slot=""){
+  const a=equipmentAsset(name,slot);
+  return a?.tunerArtwork?assetUrl(a.tunerArtwork):"";
+}
+function tunerArtworkHTML(slot,name){
+  const url=equipmentTunerArtworkUrl(name,slot);
+  return `<div class="tuner-art-frame ${url?"":"asset-missing"}">
+    ${url?`<img src="${esc(url)}" alt="${esc(name)} Tuner artwork" loading="lazy"
+      onerror="this.closest('.tuner-art-frame').classList.add('asset-missing');this.remove()">`:""}
+    <div class="tuner-art-fallback"><span>Artwork Pending</span><small>${esc(name)}</small></div>
+  </div>`;
+}
+function finalizedArtworkCard(e){
+  const name=e.equipmentName||e.slot||"Equipment";
+  const slot=e.slot||"";
+  const url=equipmentArtworkUrl(name,slot);
+  const statTotal=stats.reduce((sum,st)=>sum+(Number(e[st])||0),0);
+  const art=url
+    ? `<img src="${esc(url)}" alt="${esc(name)} artwork" loading="lazy" onerror="this.closest('.final-art-frame').classList.add('asset-missing');this.remove()">`
+    : "";
+  return `<article class="final-art-card">
+    <div class="final-art-name"><strong>${esc(name)}</strong><span>${esc(slot)}</span></div>
+    <div class="final-art-frame ${url?"":"asset-missing"}">
+      ${art}
+      <div class="final-art-fallback"><span>No Artwork</span><small>Pending equipment asset</small></div>
+    </div>
+    <div class="final-art-stats">
+      ${stats.map(st=>`<span class="${statBg[st]}"><b>${st}</b><i>${fmt(e[st]||0)}</i></span>`).join("")}
+    </div>
+    <div class="final-art-total">Total <b>${fmt(statTotal)}</b></div>
+  </article>`;
+}
+
+let state={
+  recordName:"",equipmentSetName:"",
+  basis:{HP:0,PA:0,PD:0,MA:0,MD:0,SP:0},
+  equipment:{},
+  priority:{},
+  negative:{},
+  viewMode:"full",focusSlot:"Main Hand",refined:false,activePrioritySlot:"Main Hand",finalizeSet:"Set 5"
+};
+let results={set1:[],set2:[],set3:[],set4:[],set5:[],set6:[],equipmentBudgets:{}};
+
+function initState(){
+  slots.forEach(sl=>{
+    state.equipment[sl]={name:"",weight:5};
+    stats.forEach(st=>{
+      state.priority[sl+"|"+st]=0;
+      state.negative[sl+"|"+st]=0;
+    });
+  });
+}
 
 function q(id){return document.getElementById(id)}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
@@ -461,7 +2822,7 @@ function fmt(v){
 }
 function totalBasis(){return stats.reduce((a,s)=>a+(Number(state.basis[s])||0),0)}
 function totalNegative(){return Object.values(state.negative).reduce((a,v)=>a+(Number(v)||0),0)}
-function positiveTarget(){return totalBasis()-totalNegative()} // negative is negative
+function positiveTarget(){return totalBasis()-totalNegative()}
 function p(sl,st){return clamp(Math.round(Number(state.priority[sl+"|"+st])||0),0,10)}
 function neg(sl,st){return clamp(Math.round(Number(state.negative[sl+"|"+st])||0),-10,0)}
 
@@ -512,7 +2873,7 @@ function matrix(rows){
   return m;
 }
 
-/* SET 1: stat budgets, missing stat budget rolls over globally */
+/* SET 1 */
 function calcSet1(){
   const B=state.basis;
   const negByStat=Object.fromEntries(stats.map(st=>[st,slots.reduce((a,sl)=>a+neg(sl,st),0)]));
@@ -535,13 +2896,13 @@ function calcSet1(){
   }
   return applyNegatives(rows);
 }
-/* SET 2: one global priority pool */
+/* SET 2 */
 function calcSet2(){
   const active=slots.flatMap(sl=>stats.filter(st=>p(sl,st)>0).map(st=>({slot:sl,stat:st,weight:p(sl,st)})));
   const alloc=allocateExact(active,positiveTarget()).map(r=>({...r,positive:r.final}));
   return applyNegatives(alloc);
 }
-/* SET 3: 50/50 Set1-positive and Set2-positive blend */
+/* SET 3 */
 function calcSet3(){
   const a=matrix(calcSet1()),b=matrix(calcSet2());
   const items=[];
@@ -552,7 +2913,7 @@ function calcSet3(){
   const alloc=allocateExact(items,positiveTarget()).map(r=>({...r,positive:r.final}));
   return applyNegatives(alloc);
 }
-/* SET 4: priority anchored by stat basis */
+/* SET 4 */
 function calcSet4(){
   const B=state.basis;
   const activeCount=Object.fromEntries(stats.map(st=>[st,Math.max(1,slots.filter(sl=>p(sl,st)>0).length)]));
@@ -562,8 +2923,7 @@ function calcSet4(){
   const alloc=allocateExact(active,positiveTarget()).map(r=>({...r,positive:r.final}));
   return applyNegatives(alloc);
 }
-
-/* SET 5: Equipment Weight -> Equipment Budget -> Stat Priority */
+/* SET 5 */
 function calcSet5(){
   const activeSlots=slots.filter(sl=>ew(sl)>0&&stats.some(st=>p(sl,st)>0));
   const out=[];
@@ -582,13 +2942,7 @@ function calcSet5(){
   results.equipmentBudgets=eqBudgets;
   return applyNegatives(out);
 }
-
-/* Set 6: Set 5 refinement.
-   1) Preserve Set 5 equipment budgets exactly.
-   2) Blend raw priority shares with basis-aware shares (75/25).
-   3) Soft-cap one stat at 60% of the equipment positive budget when >=2 active stats.
-   4) Apply negatives after positive allocation.
-*/
+/* SET 6 */
 function calcSet6(){
   const B=state.basis,totalB=Math.max(1,totalBasis());
   const eqBudgets=results.equipmentBudgets||{};
@@ -619,8 +2973,6 @@ function calcSet6(){
   return applyNegatives(out);
 }
 
-
-/* ---------- CALCULATION / RECALCULATION PIPELINE ---------- */
 function recalc(allLegacy=false){
   try{
     results.set5=calcSet5();
@@ -642,9 +2994,42 @@ function recalc(allLegacy=false){
   }catch(err){showError(err)}
 }
 
-/* UI BUILD */
-
-/* ---------- UI BUILDERS ---------- */
+function matchingFinalizedSet(){
+  const recordId=String(state.currentRecordId||"");
+  const setName=String(state.equipmentSetName||"").trim().toLowerCase();
+  const recordName=String(state.recordName||"").trim().toLowerCase();
+  return finalizedSets.find(x=>recordId && String(x.sourceRecordId||x.recordId||"")===recordId)
+    || finalizedSets.find(x=>setName && String(x.equipmentSetName||"").trim().toLowerCase()===setName
+      && (!recordName || String(x.recordName||"").trim().toLowerCase()===recordName))
+    || null;
+}
+function renderLoadedEquipmentStats(){
+  const grid=q("equipmentStatGrid");
+  if(!grid)return;
+  const finalized=matchingFinalizedSet();
+  const totals=Object.fromEntries(stats.map(st=>[st,0]));
+  if(finalized){
+    (finalized.equipment||[]).forEach(eq=>stats.forEach(st=>{totals[st]+=Number(eq?.[st])||0}));
+  }
+  grid.innerHTML=stats.map(st=>`
+    <div class="basis-cell">
+      <div class="lab ${statBg[st]}">${st}</div>
+      <input type="text" value="${fmt(totals[st])}" readonly aria-label="Finalized ${st} total">
+    </div>`).join("");
+  if(q("equipmentStatTotalInline"))q("equipmentStatTotalInline").textContent=fmt(stats.reduce((sum,st)=>sum+totals[st],0));
+}
+function setBasisCollapsed(collapsed){
+  const body=q("basisPanelBody"),head=q("basisCollapseHead"),icon=q("basisCollapseIcon");
+  if(!body||!head)return;
+  body.classList.toggle("hidden",!!collapsed);
+  head.setAttribute("aria-expanded",String(!collapsed));
+  head.title=collapsed?"Show Stat Basis":"Hide Stat Basis";
+  if(icon)icon.textContent=collapsed?"⌄":"⌃";
+}
+function toggleBasisCollapsed(){
+  const body=q("basisPanelBody");
+  if(body)setBasisCollapsed(!body.classList.contains("hidden"));
+}
 function buildBasis(){
   q("basisGrid").innerHTML=stats.map(st=>`
     <div class="basis-cell">
@@ -678,10 +3063,10 @@ function buildWeights(){
 }
 function levelColor(v){
   v=clamp(Number(v)||0,0,10);
-  if(v<=3)return "#eceff1";
-  if(v<=6)return "#f6df73";
-  if(v<=8)return "#ef9b3d";
-  return "#e24a3f";
+  if(v<=3)return "#64748b";
+  if(v<=6)return "#f59e0b";
+  if(v<=8)return "#f97316";
+  return "#ef4444";
 }
 function buildPriority(){
   const active=slots.includes(state.activePrioritySlot)?state.activePrioritySlot:"Main Hand";
@@ -758,11 +3143,9 @@ function renderWeightBudgets(){
 function safe(s){return s.replace(/[^a-z0-9]/gi,"_")}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 
-/* viewer */
 function currentRows(){return state.refined?results.set6:results.set5}
 function viewerLabel(){return state.refined?"Set 6 · Refined":"Set 5 · Base"}
 
-/* ---------- COMPARISON VIEWER ---------- */
 function renderViewer(){
   const rows=currentRows(),m=matrix(rows);
   document.querySelectorAll("#viewMode button").forEach(b=>b.classList.toggle("active",b.dataset.mode===state.viewMode));
@@ -780,7 +3163,6 @@ function renderViewer(){
 }
 function equipmentCard(sl,row,maxPos,clickable){
   const total=stats.reduce((a,st)=>a+(Number(row[st].final)||0),0);
-  const budget=results.equipmentBudgets?.[sl]||0;
   return `<div class="equip-card ${clickable?"clickable":""}" ${clickable?`data-focus="${sl}"`:""}>
     <div class="equip-title">${esc(eqName(sl))}</div>
     <div class="equip-sub">${sl}</div>
@@ -793,7 +3175,6 @@ function equipmentCard(sl,row,maxPos,clickable){
       </div>`;
     }).join("")}</div>
     <div class="equip-total">${fmt(total)}</div>
-
   </div>`;
 }
 function renderFocus(){
@@ -821,7 +3202,6 @@ function compareLabel(){const v=q("compareTo")?.value||"";return v==="set2"?"Ori
 function openComparePopover(sl){
   const cur=matrix(currentRows())[sl];
   const maxVal=Math.max(1,...stats.map(st=>Math.max(0,Number(cur[st]?.final)||0)));
-  const colors={HP:"#3fa34d",PA:"#e33b36",PD:"#55afe4",MA:"#74329b",MD:"#7f91c8",SP:"#e5ad24"};
   q("comparePopTitle").textContent=eqName(sl);
   q("comparePopSlot").textContent=sl;
   q("comparePopBody").innerHTML=`<div class="compare-pop-grid">
@@ -833,7 +3213,7 @@ function openComparePopover(sl){
         <input class="popup-slider" type="range" min="0" max="10" value="${p(sl,st)}" disabled>
         <div class="popup-neg">${neg(sl,st)?`NEG ${neg(sl,st)}`:""}</div>
       </div>`).join("")}</div>
-      <div class="popup-weight"><span>Equipment Weight</span><strong>${fmt(ew(sl))}</strong></div>
+      <div class="popup-weight"><span>Equipment Weight</span> <strong>${fmt(ew(sl))}</strong></div>
     </div>
     <div class="compare-result-card">
       <div class="popup-section-title">Stat Distribution</div>
@@ -842,34 +3222,28 @@ function openComparePopover(sl){
         const pct=Math.max(0,Math.min(100,(Math.max(0,v)/maxVal)*100));
         return `<div class="popup-result-stat">
           <div class="popup-result-value">${fmt(v)}</div>
-          <div class="popup-bar-track"><div class="popup-bar-fill" style="height:${pct}%;background:${colors[st]}"></div></div>
+          <div class="popup-bar-track"><div class="popup-bar-fill" style="height:${pct}%;background:${statColors[st]}"></div></div>
           <div class="popup-result-label">${st}</div>
         </div>`;
       }).join("")}</div>
       <div class="popup-total">${fmt(stats.reduce((a,st)=>a+(Number(cur[st]?.final)||0),0))}</div>
     </div>
   </div>`;
-  q("comparePopover").classList.remove("hidden")
+  q("comparePopover").classList.remove("hidden");
 }
 function closeComparePopover(){q("comparePopover")?.classList.add("hidden")}
-function renderDifference(){
-  const other=compareRows();if(!other.length)return;
-  const a=matrix(other),b=matrix(currentRows());
-  q("viewer").innerHTML=`<div class="compare-caption">Current ${viewerLabel()} compared with ${compareLabel()}</div><div class="equip-row">${slots.map(sl=>`<div class="equip-card clickable" data-focus="${sl}"><div class="equip-title">${esc(eqName(sl))}</div><div class="equip-sub">${sl}</div><div class="delta-grid compare-deltas">${stats.map(st=>{const d=(b[sl][st].final||0)-(a[sl][st].final||0);return `<div class="delta-card ${statBg[st]}"><div class="small">${st}</div><div class="delta ${d>0?"plus":d<0?"minus":"zero"}">${d>0?"+":""}${fmt(d)}</div></div>`}).join("")}</div></div>`).join("")}</div>`;
-  q("viewer").querySelectorAll("[data-focus]").forEach(el=>el.addEventListener("click",()=>openComparePopover(el.dataset.focus)))
-}
+
 function summaryHTML(rows){
   const totals=Object.fromEntries(slots.map(sl=>[sl,rows.filter(r=>r.slot===sl).reduce((a,r)=>a+(Number(r.final)||0),0)]));
   const largest=slots.reduce((best,sl)=>totals[sl]>(totals[best]||-Infinity)?sl:best,slots[0]);
   const statTotals=Object.fromEntries(stats.map(st=>[st,rows.filter(r=>r.stat===st).reduce((a,r)=>a+(Number(r.final)||0),0)]));
   const concentrated=stats.reduce((best,st)=>statTotals[st]>(statTotals[best]||-Infinity)?st:best,stats[0]);
-  return `<div class="summary-strip summary-two">
+  return `<div class="summary-strip">
     <div class="summary-card"><span class="small">Largest Equipment Share</span><b>${esc(eqName(largest))} · ${fmt(totals[largest])}</b></div>
     <div class="summary-card"><span class="small">Most Concentrated Stat</span><b>${concentrated} · ${fmt(statTotals[concentrated])}</b></div>
   </div>`;
 }
 
-/* advanced */
 function resultTable(rows){
   const m=matrix(rows);
   let h=`<tr><th class="name">Equipment</th>${stats.map(st=>`<th class="${statBg[st]}">${st}</th>`).join("")}<th>Total</th></tr>`;
@@ -892,9 +3266,6 @@ function renderAudit(){
   q("auditTable").innerHTML=h;
 }
 
-/* local */
-
-/* ---------- LOCAL STORAGE / HIDDEN RECORD IDENTITY ---------- */
 function saveLocal(){
   try{
     const rn=q("recordName"), sn=q("equipmentSetName");
@@ -915,7 +3286,6 @@ function loadLocal(){
   }catch(e){}
 }
 
-/* cloud */
 function payload(){
   state.recordName=q("recordName").value.trim();
   state.equipmentSetName=q("equipmentSetName").value.trim();
@@ -941,6 +3311,74 @@ function updateDebug(record=null){
   set("dbgSavedAt",r.savedAt||state.lastSavedAt);
   set("dbgVersion",r.frontendVersion?`${r.frontendVersion} · backend ${r.version||BACKEND_VERSION}`:(r.version||VERSION));
 }
+let lastRuntimeError="";
+function localStorageAvailable(){
+  try{
+    const k="__esd_debug_test__";
+    localStorage.setItem(k,"1");localStorage.removeItem(k);return true;
+  }catch(e){return false}
+}
+function debugReportObject(){
+  return {
+    generatedAt:new Date().toISOString(),
+    frontendVersion:VERSION,
+    buildVersion:BUILD_VERSION,
+    backendContract:BACKEND_VERSION,
+    pageUrl:location.href,
+    protocol:location.protocol,
+    storageKey:STORAGE_KEY,
+    localStorageAvailable:localStorageAvailable(),
+    recordId:state?.currentRecordId||"",
+    recordName:q("recordName")?.value||"",
+    equipmentSetName:q("equipmentSetName")?.value||"",
+    focusModeActive:typeof focusModeActive!=="undefined"?focusModeActive:false,
+    focusPanel:typeof focusPanel!=="undefined"?focusPanel:"",
+    finalTweakOpen:typeof finalTweakOpen!=="undefined"?finalTweakOpen:false,
+    finalizedSetCount:Array.isArray(finalizedSets)?finalizedSets.length:0,
+    sheetEndpoint:GOOGLE_SHEET_API,
+    assetRegistryPath:EQUIPMENT_ASSET_REGISTRY_PATH,
+    assetRegistryResolvedUrl:assetRegistryDebug?.url||"",
+    assetRegistryStatus:assetRegistryDebug?.status||"unknown",
+    assetRegistrySchemaVersion:assetRegistryDebug?.schemaVersion||"",
+    assetRegistryAssetVersion:assetRegistryDebug?.assetVersion||"",
+    assetRegistryLoadedCount:assetRegistryDebug?.loadedCount??Object.keys(EQUIPMENT_ASSETS||{}).length,
+    assetRegistryLastError:assetRegistryDebug?.lastError||"",
+    loadedAssetIds:Object.keys(EQUIPMENT_ASSETS||{}),
+    lastRuntimeError:lastRuntimeError||""
+  };
+}
+function updateSystemDiagnostics(){
+  const set=(id,val)=>{const el=q(id);if(el)el.textContent=(val===undefined||val===null||val==="")?"—":String(val)};
+  const d=debugReportObject();
+  set("dbgBuildVersion",`${d.buildVersion} · core ${d.frontendVersion}`);
+  set("dbgBackendVersion",d.backendContract);
+  set("dbgProtocol",d.protocol);
+  set("dbgAssetStatus",`${d.assetRegistryStatus}${d.assetRegistryAssetVersion?` · v${d.assetRegistryAssetVersion}`:""}`);
+  set("dbgAssetCount",d.assetRegistryLoadedCount);
+  set("dbgFinalizedCount",d.finalizedSetCount);
+  set("dbgFocusState",d.focusModeActive?`Focus: ${d.focusPanel}`:(d.finalTweakOpen?"Show All · Final Tweak open":"Show All"));
+  set("dbgStorageState",d.localStorageAvailable?`Available · ${d.storageKey}`:"Unavailable");
+  set("dbgPageUrl",d.pageUrl);
+  set("dbgSheetPath",d.sheetEndpoint);
+  set("dbgAssetPath",`${d.assetRegistryPath}${d.assetRegistryResolvedUrl?` → ${d.assetRegistryResolvedUrl}`:""}`);
+  set("dbgAssetIds",d.loadedAssetIds.join(", "));
+  set("dbgLastError",d.lastRuntimeError||d.assetRegistryLastError||"None");
+}
+async function copyDebugReport(){
+  const text=JSON.stringify(debugReportObject(),null,2);
+  let ok=false;
+  try{
+    await navigator.clipboard.writeText(text);ok=true;
+  }catch(e){
+    try{
+      const ta=document.createElement("textarea");
+      ta.value=text;ta.style.position="fixed";ta.style.opacity="0";
+      document.body.appendChild(ta);ta.select();ok=document.execCommand("copy");ta.remove();
+    }catch(_){}
+  }
+  const st=q("debugCopyStatus");
+  if(st){st.textContent=ok?"Copied":"Copy failed";setTimeout(()=>{st.textContent=""},1800)}
+}
 function canonicalSetName(record={}){
   return String(record.equipmentSetName||record.recordName||"").trim();
 }
@@ -951,7 +3389,6 @@ function syncCanonicalSetIdentity(name){
   const rn=q("recordName"),sn=q("equipmentSetName");
   if(rn)rn.value=clean;
   if(sn)sn.value=clean;
-  // The saved-set selector itself is the only visible set-name display.
 }
 function renderSavedSetSelect(){
   const el=q("savedSetSelect");if(!el)return;
@@ -986,24 +3423,7 @@ async function refreshDraftList(){
   }catch(e){console.warn("Draft list unavailable",e)}
 }
 
-async function loadByNames(){
-  const recordName=q("recordName").value.trim(),setName=q("equipmentSetName").value.trim();
-  if(!recordName||!setName){cloud("Enter both names to load",false);return}
-  cloudBusy("Loading");
-  try{
-    const data=await fetchJSON(GOOGLE_SHEET_API+"?action=loadByNames&recordName="+encodeURIComponent(recordName)+"&equipmentSetName="+encodeURIComponent(setName)+"&_="+Date.now(),{},25000);
-    if(!data.ok)throw new Error(data.error||"Load failed");
-    applyRecord(data.record);state.currentRecordId=data.record.recordId||"";state.lastSavedAt=data.record.savedAt||"";
-    saveLocal();updateDebug(data.record);await refreshDraftList();cloud("Loaded",true);
-  }catch(e){const msg=String(e.message||e);cloud(msg.includes("No record match")?"No record match":msg.includes("Multiple records")?"Multiple records match":"Load failed",false);if(!msg.includes("No record match")&&!msg.includes("Multiple records"))showError(msg)}
-}
 function toggleAdvanced(force){const el=q("advancedDrawer");if(!el)return;const show=typeof force==="boolean"?force:el.classList.contains("hidden");el.classList.toggle("hidden",!show);if(show){refreshDraftList();updateDebug();updateSystemDiagnostics()}}
-function openInspect(sl){
-  q("inspectTitle").textContent=eqName(sl);q("inspectSlot").textContent=sl+" · "+viewerLabel();
-  q("inspectBody").innerHTML=`<div class="inspect-grid"><div class="inspect-weight"><div class="small">Equipment Weight</div><div class="big">${fmt(Number(state.equipment?.[sl]?.weight??0))}</div><div class="small">Current allocation weight</div></div><div class="inspect-priority"><strong>Priority & Negative</strong><div class="inspect-stat-grid">${stats.map(st=>`<div class="inspect-stat ${statBg[st]}"><b>${st}</b><div>Priority ${p(sl,st)}</div><div>Neg ${neg(sl,st)}</div></div>`).join("")}</div></div></div>`;
-  q("inspectBackdrop").classList.remove("hidden")
-}
-function closeInspect(){q("inspectBackdrop")?.classList.add("hidden")}
 
 async function loadSelectedDraft(){
   if(!GSHEET_ENABLED){cloud("Google Sheet paused · local UI test",null);return}
@@ -1041,13 +3461,6 @@ async function deleteCurrentDraft(){
     cloud("Test deleted",true);
   }catch(e){cloud("Delete failed",false);showError(e.message||e)}
 }
-function newTestIdentity(){
-  state.currentRecordId="";
-  state.lastSavedAt="";
-  saveLocal();renderDraftSelect();updateDebug();
-  cloud("New test ready",true);
-}
-
 
 function hasMeaningfulWorkspaceData(){
   return totalBasis()>0 || slots.some(sl=>
@@ -1088,8 +3501,6 @@ async function loadSelectedEquipmentSet(){
     applyRecord(data.record);
     state.currentRecordId=id;
     state.lastSavedAt=data.record.savedAt||"";
-    // New UI has one identity. Existing old records are normalized to their
-    // Equipment Set display name on the next Finalize Equipment.
     syncCanonicalSetIdentity(canonicalSetName(data.record));
     equipmentBudgetState.signature="";
     statTunerState.signature="";
@@ -1099,6 +3510,7 @@ async function loadSelectedEquipmentSet(){
     cloud("Loaded: "+(canonicalSetName(data.record)||"Equipment Set"),true);
   }catch(e){cloud("Load failed",false);showError(e.message||e)}
 }
+
 let globalSaveDirty=false;
 function setGlobalSaveState(dirty){
   globalSaveDirty=!!dirty;
@@ -1113,7 +3525,6 @@ function markGlobalDirty(){
   setGlobalSaveState(true);
 }
 
-/* ---------- GOOGLE SHEET: SAVE / LOAD ---------- */
 async function saveCloud(){
   if(!GSHEET_ENABLED){cloud("Google Sheet paused · local UI test",null);return false}
   if(!q("recordName").value.trim()){cloud("Enter Test Name",false);q("recordName").focus();return}
@@ -1140,22 +3551,6 @@ async function saveCloud(){
     return false;
   }
 }
-async function loadCloud(){
-  if(!GSHEET_ENABLED){cloud("Google Sheet paused · local UI test",null);return false}
-  cloudBusy("Loading");
-  try{
-    const data=await fetchJSON(GOOGLE_SHEET_API+"?action=loadLatestRecord&_="+Date.now(),{},25000);
-    if(!data.ok)throw new Error(data.error||"Load failed");
-    applyRecord(data.record);
-    state.currentRecordId=data.record.recordId||state.currentRecordId||"";
-    state.lastSavedAt=data.record.savedAt||"";
-    saveLocal();updateDebug(data.record);await refreshDraftList();
-    cloud("Loaded: "+(data.record.equipmentSetName||data.record.recordName||"Draft"),true);
-  }catch(e){
-    cloud("Load failed",false);
-    showError(e.name==="AbortError"?"Google Sheet load timed out.":e.message||e);
-  }
-}
 function applyRecord(r){
   if(!r)return;
   state.currentRecordId=r.recordId||state.currentRecordId||"";
@@ -1164,7 +3559,7 @@ function applyRecord(r){
   state.equipment={...state.equipment,...(r.equipment||{})};
   state.priority={...state.priority,...(r.priority||{})};
   state.negative={...state.negative,...(r.negative||{})};
-  buildAll();recalc(true);
+  buildAll();recalc(true);renderLoadedEquipmentStats();
 }
 function cloud(msg,good=null){
   const el=q("cloudStatus"); if(!el)return;
@@ -1191,10 +3586,9 @@ function shortDate(value){
   return d.toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"});
 }
 
-
 async function checkSheetStatus(){
   if(!GSHEET_ENABLED){cloud("Google Sheet paused · local UI test",null);return}
-  cloudBusy("Google Sheet Checking");
+  cloudBusy("Checking Sheet");
   let lastError=null;
   for(let attempt=1;attempt<=3;attempt++){
     try{
@@ -1213,7 +3607,7 @@ async function checkSheetStatus(){
     }catch(e){
       lastError=e;
       if(attempt<3){
-        cloudBusy("Google Sheet Retrying");
+        cloudBusy("Retrying Sheet");
         await new Promise(resolve=>setTimeout(resolve,700*attempt));
       }
     }
@@ -1223,9 +3617,7 @@ async function checkSheetStatus(){
 }
 
 let finalizedSets=[];
-function selectedFinalRows(){return state.refined?results.set6:results.set5}
 
-/* ---------- GOOGLE SHEET: FINALIZATION ---------- */
 async function finalizeCloud(){
   if(!GSHEET_ENABLED){cloud("Google Sheet paused · local UI test",null);return false}
   if(!q("recordName").value.trim()){cloud("Enter Test Name",false);return}
@@ -1245,14 +3637,6 @@ async function finalizeCloud(){
     return true;
   }catch(e){
     cloud("Finalize failed",false);
-    console.error("Finalize failed",{
-      error:e,
-      frontendVersion:VERSION,
-      backendVersion:BACKEND_VERSION,
-      recordId:state.currentRecordId||"",
-      recordName:q("recordName")?.value||"",
-      equipmentSetName:q("equipmentSetName")?.value||""
-    });
     showError(e.name==="AbortError"?"Finalizing timed out.":e.message||e);
     return false;
   }
@@ -1261,8 +3645,6 @@ async function finalizeEquipmentSet(){
   const name=String(q("equipmentSetName")?.value||state.equipmentSetName||"").trim();
   if(!name){cloud("Create or load an Equipment Set first",false);return}
   syncCanonicalSetIdentity(name);
-  // Collapse the old three-save model into one user action while retaining
-  // the existing persistence mechanisms for backward compatibility.
   saveEquipmentBudget();
   saveStatTuner();
   const saved=await saveCloud();
@@ -1287,6 +3669,7 @@ async function loadFinalizedSets(silent=false){
     if(!data.ok)throw new Error(data.error||"Load failed");
     finalizedSets=data.sets||[];
     renderFinalizedSets();
+    renderLoadedEquipmentStats();
     if(st){
       st.textContent=finalizedSets.length?`${finalizedSets.length} finalized set${finalizedSets.length===1?"":"s"}`:"No finalized sets";
       st.className="status good";
@@ -1298,7 +3681,6 @@ async function loadFinalizedSets(silent=false){
   }
 }
 
-/* ---------- FINALIZED EQUIPMENT UI ---------- */
 function renderFinalizedSets(){
   const list=q("finalizedList");
   const openCards=new Set(
@@ -1317,31 +3699,28 @@ function renderFinalizedSets(){
       <div class="finalized-set-head">
         <div class="set-summary">
           <strong class="set-name">${esc(x.equipmentSetName||"Unnamed Set")}</strong>
-          <span class="set-tag">${esc(x.selectedSet||"")}</span>
-          <div class="meta">${esc(x.recordName||"")}${x.finalizedAt?` · <span class="date-detail">${esc(shortDate(x.finalizedAt))}</span>`:""}</div>
+          <span class="basis-total-inline" style="margin-left:8px;">${esc(x.selectedSet||"")}</span>
+          <div class="meta small">${esc(x.recordName||"")}${x.finalizedAt?` · <span class="date-detail">${esc(shortDate(x.finalizedAt))}</span>`:""}</div>
         </div>
-        <div class="head-actions">
+        <div class="head-actions flex" style="gap:6px;">
           <button class="btn" type="button" data-toggle-final="${i}">View</button>
           <button class="btn" type="button" data-edit-final="${i}">Edit</button>
           <button class="btn danger" type="button" data-delete-final="${i}">Delete</button>
         </div>
       </div>
-      <div class="finalized-edit">
-        <div class="finalized-edit-grid">
-          <label>Test Name<input type="text" data-edit-record="${i}" value="${esc(x.recordName||"")}"></label>
-          <label>Equipment Set Name<input type="text" data-edit-set="${i}" value="${esc(x.equipmentSetName||"")}"></label>
+      <div class="finalized-edit" style="display:${editingCards.has(String(i))?"block":"none"};margin-top:10px;padding-top:10px;border-top:1px solid var(--line);">
+        <div class="flex" style="gap:8px;align-items:flex-end;">
+          <label class="flex" style="flex-direction:column;gap:4px;font-size:10px;font-weight:700;">Test Name<input type="text" data-edit-record="${i}" value="${esc(x.recordName||"")}"></label>
+          <label class="flex" style="flex-direction:column;gap:4px;font-size:10px;font-weight:700;">Equipment Set Name<input type="text" data-edit-set="${i}" value="${esc(x.equipmentSetName||"")}"></label>
           <button class="btn primary" type="button" data-save-final-edit="${i}">Update</button>
           <button class="btn" type="button" data-cancel-final-edit="${i}">Cancel</button>
         </div>
       </div>
-      <details class="final-advanced"><summary>Advanced snapshot</summary>
-        ${(x.snapshot?.equipment||[]).map(s=>`<div class="snapshot-slot"><div><b>${esc(s.equipmentName||s.slot||"")}</b> <span class="small">· Weight ${fmt(s.weight||0)}</span></div><div class="snapshot-row"><span>Priority</span>${stats.map(st=>`<span>${st} ${fmt(s.priority?.[st]||0)}</span>`).join("")}</div><div class="snapshot-row"><span>Negative</span>${stats.map(st=>`<span>${st} ${fmt(s.negative?.[st]||0)}</span>`).join("")}</div></div>`).join("")}
-      </details>
-      <div class="finalized-equipment">
+      <div class="finalized-equipment" style="display:${openCards.has(String(i))?"block":"none"};margin-top:10px;">
         <div class="finalized-art-grid">
           ${(x.equipment||[]).map(e=>finalizedArtworkCard(e)).join("")}
         </div>
-        <div class="final-stat-matrix-title">Stat Matrix</div>
+        <div class="small" style="font-weight:800;text-transform:uppercase;color:var(--ink-muted);margin:10px 0 4px;">Stat Matrix</div>
         <div class="final-eq-row"><span class="eq">Equipment</span>${stats.map(st=>`<span class="${statBg[st]}"><b>${st}</b></span>`).join("")}</div>
         ${(x.equipment||[]).map(e=>`<div class="final-eq-row">
           <span class="eq">${esc(e.equipmentName||e.slot||"")}</span>
@@ -1350,34 +3729,40 @@ function renderFinalizedSets(){
       </div>
     </div>`).join("");
 
-  openCards.forEach(i=>list.querySelector(`[data-final-card="${i}"]`)?.classList.add("open"));
-  editingCards.forEach(i=>list.querySelector(`[data-final-card="${i}"]`)?.classList.add("editing"));
   list.querySelectorAll("[data-toggle-final]").forEach(btn=>{
     const card=list.querySelector(`[data-final-card="${btn.dataset.toggleFinal}"]`);
-    if(card?.classList.contains("open"))btn.textContent="Hide";
+    if(openCards.has(String(btn.dataset.toggleFinal)))btn.textContent="Hide";
   });
 
   list.querySelectorAll("[data-toggle-final]").forEach(btn=>btn.addEventListener("click",e=>{
     e.stopPropagation();
     const card=list.querySelector(`[data-final-card="${btn.dataset.toggleFinal}"]`);
-    card.classList.toggle("open");
-    btn.textContent=card.classList.contains("open")?"Hide":"View";
+    const eqDiv=card.querySelector(".finalized-equipment");
+    const isShowing=eqDiv.style.display==="block";
+    eqDiv.style.display=isShowing?"none":"block";
+    card.classList.toggle("open",!isShowing);
+    btn.textContent=isShowing?"View":"Hide";
     updateSystemDiagnostics();
   }));
   list.querySelectorAll("[data-edit-final]").forEach(btn=>btn.addEventListener("click",e=>{
     e.stopPropagation();
     const card=list.querySelector(`[data-final-card="${btn.dataset.editFinal}"]`);
-    list.querySelectorAll(".finalized-set.editing").forEach(x=>{if(x!==card)x.classList.remove("editing")});
+    const editDiv=card.querySelector(".finalized-edit");
+    editDiv.style.display="block";
     card.classList.add("editing");
   }));
   list.querySelectorAll("[data-cancel-final-edit]").forEach(btn=>btn.addEventListener("click",e=>{
     e.stopPropagation();
-    list.querySelector(`[data-final-card="${btn.dataset.cancelFinalEdit}"]`).classList.remove("editing");
+    const card=list.querySelector(`[data-final-card="${btn.dataset.cancelFinalEdit}"]`);
+    const editDiv=card.querySelector(".finalized-edit");
+    editDiv.style.display="none";
+    card.classList.remove("editing");
   }));
   list.querySelectorAll("[data-save-final-edit]").forEach(btn=>btn.addEventListener("click",e=>{e.stopPropagation();saveFinalizedEdit(Number(btn.dataset.saveFinalEdit))}));
   list.querySelectorAll("[data-delete-final]").forEach(btn=>btn.addEventListener("click",e=>{e.stopPropagation();deleteFinalizedSet(Number(btn.dataset.deleteFinal))}));
   updateSystemDiagnostics();
 }
+
 async function deleteFinalizedSet(index){
   const item=finalizedSets[index];if(!item)return;
   if(!confirm(`Delete finalized "${item.equipmentSetName||"Unnamed Set"}"?\n\nThe working draft will be kept.`))return;
@@ -1416,20 +3801,13 @@ async function saveFinalizedEdit(index){
     showError(e.name==="AbortError"?"Finalized update timed out.":e.message||e);
   }
 }
-function updateFinalizeChoice(){
-  if(!q("finalizeChoice"))return;
-  q("finalizeChoice").querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.finalize===state.finalizeSet));
-}
 
-/* events */
 let timer=null;
 function scheduleRecalc(){clearTimeout(timer);timer=setTimeout(()=>recalc(false),60)}
 
-
-/* ---------- v0.8.13 GIT RELEASE: MENU / THEMES / DETAILED COMPARISON ---------- */
 const UI_PREFS_KEY="equipmentStatDestribution_ui_v0813";
 const THEME_REGISTRY={
-  default:{label:"Default Theme"},
+  default:{label:"Studio Dark Theme"},
   parchment:{label:"Parchment Theme"}
 };
 function loadUIPrefs(){
@@ -1441,56 +3819,100 @@ function saveUIPrefs(patch){
   return next;
 }
 function applyTheme(name){
-  const theme=THEME_REGISTRY[name]?name:"parchment";
+  const theme=THEME_REGISTRY[name]?name:"default";
   document.body.dataset.theme=theme;
   document.querySelectorAll('input[name="appTheme"]').forEach(r=>r.checked=r.value===theme);
   saveUIPrefs({theme});
 }
+
+function updateMenuVisibility(currentPage=null){
+  q("mainMenu")?.querySelectorAll("[data-menu-page]").forEach(btn=>{
+    const page=btn.dataset.menuPage;
+    if(currentPage && page===currentPage && page!=="workspace"){
+      btn.style.display="none";
+    }else{
+      btn.style.display="";
+    }
+  });
+}
+
 function openMainMenu(){
-  q("mainMenu").classList.remove("hidden");q("mainMenuScrim").classList.remove("hidden");
+  const currentOverlayPage=q("menuPageOverlay")?.classList.contains("hidden")
+    ? null
+    : (q("menuPageOverlay")?.dataset?.page||null);
+  updateMenuVisibility(currentOverlayPage);
+  q("mainMenu")?.classList.remove("hidden");
+  q("mainMenuScrim")?.classList.remove("hidden");
 }
 function closeMainMenu(){
-  q("mainMenu").classList.add("hidden");q("mainMenuScrim").classList.add("hidden");
+  q("mainMenu")?.classList.add("hidden");
+  q("mainMenuScrim")?.classList.add("hidden");
 }
 const MENU_PAGES={
   finalized:{id:"menuPageFinalized",title:"Finalized Equipment"},
   comparison:{id:"menuPageComparison",title:"Detailed Comparison"},
-  advanced:{id:"menuPageAdvanced",title:"Advanced"},
+  advanced:{id:"menuPageAdvanced",title:"Advanced Calculations"},
   settings:{id:"menuPageSettings",title:"Settings"}
 };
 function openMenuPage(name){
-  if(name==="workspace"){closeMainMenu();closeMenuPage();return}
-  const cfg=MENU_PAGES[name];if(!cfg)return;
+  if(name==="workspace"){
+    closeMainMenu();
+    closeMenuPage();
+    return;
+  }
+  const cfg=MENU_PAGES[name];
+  if(!cfg)return;
   closeMainMenu();
   Object.values(MENU_PAGES).forEach(x=>q(x.id)?.classList.add("hidden"));
   q(cfg.id)?.classList.remove("hidden");
   q("menuPageTitle").textContent=cfg.title;
-  q("menuPageOverlay").dataset.page=name;
-  q("menuPageOverlay").classList.remove("hidden");
+  const overlay=q("menuPageOverlay");
+  if(overlay){
+    overlay.dataset.page=name;
+    overlay.classList.remove("hidden");
+  }
+  updateMenuVisibility(name);
+
   if(name==="finalized")loadFinalizedSets(true);
   if(name==="comparison")renderDetailedComparison();
+  if(name==="advanced")recalc(true);
 }
-function closeMenuPage(){const o=q("menuPageOverlay");if(!o)return;o.classList.add("hidden");delete o.dataset.page}
+function closeMenuPage(){
+  const o=q("menuPageOverlay");
+  if(!o)return;
+  o.classList.add("hidden");
+  delete o.dataset.page;
+  updateMenuVisibility(null);
+}
 function toggleWorkspaceTools(force){
   const p=q("workspaceToolsPopover"),b=q("workspaceToolsBtn");if(!p||!b)return;
   const show=typeof force==="boolean"?force:p.classList.contains("hidden");
   p.classList.toggle("hidden",!show);b.setAttribute("aria-expanded",String(show));
 }
+
 function setComparisonCollapsed(collapsed,save=true){
-  q("comparisonPanel")?.classList.toggle("collapsed",collapsed);
+  const panel=q("comparisonPanel");
+  if(panel)panel.classList.toggle("collapsed",!!collapsed);
   const b=q("comparisonCollapseBtn");
-  if(b){b.setAttribute("aria-expanded",String(!collapsed));b.title=collapsed?"Expand Comparison Viewer":"Collapse Comparison Viewer"}
-  if(save)saveUIPrefs({comparisonCollapsed:collapsed});
+  if(b){
+    b.setAttribute("aria-expanded",String(!collapsed));
+    b.title=collapsed?"Expand Distributed Stats":"Collapse Distributed Stats";
+    b.textContent=collapsed?"⌄":"⌃";
+  }
+  if(save)saveUIPrefs({comparisonCollapsed:!!collapsed});
 }
+
+function toggleComparisonCollapsed(){
+  const panel=q("comparisonPanel");
+  if(!panel)return;
+  setComparisonCollapsed(!panel.classList.contains("collapsed"));
+}
+
 function rowsForSetKey(key){
   return key==="set1"?results.set1:key==="set2"?results.set2:key==="set3"?results.set3:key==="set4"?results.set4:key==="set5"?results.set5:key==="set6"?results.set6:[];
 }
 function prettySetKey(key){return ({set1:"Set 1",set2:"Set 2",set3:"Set 3",set4:"Set 4",set5:"Set 5",set6:"Set 6"})[key]||key}
-function detailStatTotals(rows){
-  const out=Object.fromEntries(stats.map(st=>[st,0]));
-  rows.forEach(r=>{if(out[r.stat]!==undefined)out[r.stat]+=Number(r.final)||0});
-  return out;
-}
+
 function renderDetailedComparison(){
   const aKey=q("detailSetA")?.value||"set2",bKey=q("detailSetB")?.value||"set5";
   const aRows=rowsForSetKey(aKey),bRows=rowsForSetKey(bKey),out=q("detailComparisonOutput");
@@ -1499,21 +3921,11 @@ function renderDetailedComparison(){
   const aM=matrix(aRows),bM=matrix(bRows);
   const vals=slots.flatMap(sl=>stats.flatMap(st=>[Math.max(0,aM[sl][st].final||0),Math.max(0,bM[sl][st].final||0)]));
   const maxVal=Math.max(1,...vals);
-  const bars=(m,sl)=>`<div class="detail-single-bars">${stats.map(st=>{const v=Math.max(0,m[sl][st].final||0),pct=v/maxVal*100;return `<div class="detail-single-stat"><div class="detail-set-value">${fmt(v)}</div><div class="detail-set-track"><div class="detail-set-bar stat-${st.toLowerCase()}" style="height:${Math.max(v?7:0,pct)}%"></div></div><div class="detail-stat-name">${st}</div></div>`}).join("")}</div>`;
-  const equipment=(m,sl)=>`<div class="detail-compare-card"><div class="detail-eq-head"><div><b>${esc(eqName(sl))}</b><div class="small">${sl}</div></div></div>${bars(m,sl)}</div>`;
+  const bars=(m,sl)=>`<div class="detail-single-bars">${stats.map(st=>{const v=Math.max(0,m[sl][st].final||0),pct=v/maxVal*100;return `<div class="detail-single-stat"><div class="detail-set-value">${fmt(v)}</div><div class="detail-set-track"><div class="detail-set-bar stat-${st.toLowerCase()}" style="height:${Math.max(v?7:0,pct)}%;background:${statColors[st]}"></div></div><div class="detail-stat-name">${st}</div></div>`}).join("")}</div>`;
+  const equipment=(m,sl)=>`<div class="detail-compare-card"><div class="flex" style="justify-content:space-between;margin-bottom:6px;"><div><b>${esc(eqName(sl))}</b> <span class="small">${sl}</span></div></div>${bars(m,sl)}</div>`;
   out.innerHTML=`<div class="detail-vs-columns"><section class="detail-set-column"><h3>${prettySetKey(aKey)}</h3>${slots.map(sl=>equipment(aM,sl)).join("")}</section><section class="detail-set-column"><h3>${prettySetKey(bKey)}</h3>${slots.map(sl=>equipment(bM,sl)).join("")}</section></div>`;
 }
 
-
-/* ---------- v0.8.15 DUAL TUNING SYSTEM ----------
-   Advanced Equipment Weight:
-     adjusts one equipment's whole positive budget.
-   Tuner:
-     adjusts individual Equipment × Stat positive points.
-   Both conserve the original positive set budget.
-   Existing Negative values remain unchanged.
-   Save is explicit for each tool; edits are locally staged until saved.
-*/
 const EQ_BUDGET_SAVE_KEY="equipmentStatDestribution_eqBudget_v0815";
 const STAT_TUNER_SAVE_KEY="equipmentStatDestribution_statTuner_v0815";
 
@@ -1577,7 +3989,6 @@ function ensureEquipmentBudgetState(){
   equipmentBudgetState.saved=saved?.saved?{...saved.saved}:{...base};
   equipmentBudgetState.draft={...equipmentBudgetState.saved};
   if(saved?.activeSlot&&slots.includes(saved.activeSlot))equipmentBudgetState.activeSlot=saved.activeSlot;
-  // Never allow saved data to create points.
   if(sumObj(equipmentBudgetState.draft)>sumObj(base)){
     equipmentBudgetState.saved={...base};
     equipmentBudgetState.draft={...base};
@@ -1648,12 +4059,8 @@ function setTunerStat(sl,st,next){
   const current=Number(statTunerState.draft[k])||0;
   const available=statTunerAvailable();
   const requested=Math.max(0,Math.round(Number(next)||0));
-
-  // The active stat may always move downward.
-  // It may move upward only by the amount currently available.
   const maxAllowed=current+available;
   const clamped=requested>current ? Math.min(requested,maxAllowed) : requested;
-
   statTunerState.draft[k]=clamped;
   statTunerState.dirty=Object.keys(statTunerState.draft).some(
     x=>(statTunerState.draft[x]||0)!==(statTunerState.saved[x]||0)
@@ -1688,13 +4095,6 @@ function resetStatTuner(){
   renderStatTuner();updateDualStatus();
 }
 
-function miniBars(m,sl,maxPos,klass="dual-mini-bars"){
-  return `<div class="${klass}">${stats.map(st=>{
-    const r=m[sl][st],p=Math.max(0,Number(r.positive)||0),f=Number(r.final)||0;
-    return `<div class="dual-stat"><div class="dual-stat-value">${f?fmt(f):""}</div><div class="dual-stat-track"><div class="dual-stat-fill" style="height:${maxPos?p/maxPos*100:0}%;background:${statColors[st]}"></div></div><div class="dual-stat-label">${st}</div></div>`;
-  }).join("")}</div>`;
-}
-
 function renderEquipmentBudgetAdvanced(){
   ensureEquipmentBudgetState();
   const sl=slots.includes(equipmentBudgetState.activeSlot)?equipmentBudgetState.activeSlot:"Main Hand";
@@ -1715,10 +4115,8 @@ function renderEquipmentBudgetAdvanced(){
   q("equipmentBudgetSaveState").classList.toggle("dirty",equipmentBudgetState.dirty);
   if(equipmentBudgetState.dirty)markGlobalDirty();
 
-  // No detached picker in this layout.
   q("equipmentBudgetPicker").innerHTML="";
 
-  // Build the active graph using the equipment stat matrix.
   const rows=equipmentBudgetRows(),m=matrix(rows);
   const maxPos=Math.max(1,...rows.map(r=>Math.max(0,Number(r.positive)||0)));
 
@@ -1729,8 +4127,8 @@ function renderEquipmentBudgetAdvanced(){
         <span>${sl}</span>
       </div>
       <div class="equipment-budget-active-meta">
-        <span>Computed ${fmt(base)}</span>
-        <b>→</b>
+        <span>Base ${fmt(base)}</span>
+        <span style="color:var(--accent);margin:0 4px;">→</span>
         <span>Tuned ${fmt(current)}</span>
       </div>
     </div>
@@ -1752,7 +4150,6 @@ function renderEquipmentBudgetAdvanced(){
     </div>
   </div>`;
 
-  // Slider gets its own separate card underneath the active graph.
   q("equipmentBudgetSliderCard").innerHTML=`<div class="equipment-budget-slider-inner">
     <div class="equipment-budget-slider-copy">
       <strong>${esc(eqName(sl))}</strong>
@@ -1761,12 +4158,11 @@ function renderEquipmentBudgetAdvanced(){
     <input id="equipmentBudgetRange" type="range" min="0" max="${maxAllowed}" step="1" value="${current}">
   </div>`;
 
-  // Five compact equipment graphs live together in their own card.
   q("equipmentBudgetContext").innerHTML=slots.filter(x=>x!==sl).map(x=>{
     const dx=eqBudgetDelta(x);
     return `<button class="equipment-budget-mini-card" data-eqbudget-context="${x}" type="button">
       <div class="equipment-budget-mini-head">
-        <span><b>${esc(eqName(x))}</b><small>${x}</small></span>
+        <span><b>${esc(eqName(x))}</b></span>
         <i class="${dx>0?"plus":dx<0?"minus":"zero"}">${dx===0?"BASE":`${dx>0?"+":""}${fmt(dx)}`}</i>
       </div>
       <div class="equipment-budget-mini-graph">
@@ -1795,7 +4191,6 @@ function renderEquipmentBudgetAdvanced(){
     };
   });
 
-  // Keep BASE/delta directly under each Equipment Weight card.
   slots.forEach(x=>{
     const dx=eqBudgetDelta(x);
     const chip=q("advancedWeightInline_"+safe(x));
@@ -1832,66 +4227,56 @@ function renderStatTuner(){
   const k=dualKey(sl,activeStat),base=statTunerState.baseline[k]||0,draft=statTunerState.draft[k]||0;
   const d=statCellDelta(sl,activeStat),available=statTunerAvailable(),maxAllowed=draft+available,neg=negativeAt(baseM,sl,activeStat);
 
-  q("tunerFocus").innerHTML=`<div class="dual-focus-card tuner-graph-focus">
-    <div class="tuner-visual-workbench tuner-reference-layout">
+  q("tunerFocus").innerHTML=`<div class="tuner-reference-layout">
+    <div class="tuner-art-column tuner-panel-card">
+      <div class="tuner-art-heading"><strong>${esc(eqName(sl))}</strong><span>${sl}</span></div>
+      ${tunerArtworkHTML(sl,eqName(sl))}
+    </div>
 
-      <div class="tuner-art-column tuner-panel-card">
-        <div class="tuner-art-heading"><strong>${esc(eqName(sl))}</strong><span>${sl}</span></div>
-        ${tunerArtworkHTML(sl,eqName(sl))}
-      </div>
-
-      <div class="tuner-center-column">
-        <div class="tuner-graph-card tuner-panel-card">
-          <div class="tuner-graph-heading"><span>Available <b>${fmt(available)}</b></span></div>
-          <div class="tuner-main-graph">${stats.map(st=>{
-            const r=m[sl][st],v=Math.max(0,Number(r.positive)||0),n=negativeAt(baseM,sl,st),pct=maxPos?v/maxPos*100:0;
-            const shown=v>0?v:(n<0?n:0);
-            return `<button type="button" class="tuner-main-stat ${st===activeStat?"active":""}" data-select-stat="${st}">
-              <div class="tuner-main-value ${shown<0?"minus":""}">${fmt(shown)}</div>
-              <div class="tuner-main-track"><div class="tuner-main-fill" style="height:${pct}%;background:${statColors[st]}"></div></div>
-              <div class="tuner-main-label">${st}</div>
-            </button>`;
-          }).join("")}</div>
-        </div>
-
-        <div class="tuner-selected-stat ${statBg[activeStat]}">
-          <div class="tuner-active-top">
-            <div><b>${activeStat}</b><span>Base ${fmt(base)}${neg<0?` · NEG ${fmt(neg)}`:""}</span></div>
-            <strong>${fmt(draft)}</strong>
-          </div>
-          <input class="stat-tuner-range" id="activeStatRange" data-stat="${activeStat}" type="range" min="0" max="${maxAllowed}" step="1" value="${draft}">
-          <div class="tuner-active-bottom">
-            <span>${available<=0?"No points available":`${fmt(available)} Points available`}</span>
-            <span class="${d>0?"plus":d<0?"minus":"zero"}">${d===0?"BASE":d<0?`Returned ${fmt(-d)}`:`Received ${fmt(d)}`}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="tuner-right-stats">
-        ${stats.filter(st=>st!==activeStat).map(st=>{
-          const sk=dualKey(sl,st),v=statTunerState.draft[sk]||0,sd=statCellDelta(sl,st);
-          return `<button type="button" class="tuner-side-stat ${statBg[st]}" data-select-stat="${st}">
-            <b>${st}</b><strong>${fmt(v)}</strong>
-            <span class="${sd>0?"plus":sd<0?"minus":"zero"}">${sd===0?"BASE":`${sd>0?"+":""}${fmt(sd)}`}</span>
+    <div class="tuner-center-column">
+      <div class="tuner-graph-card tuner-panel-card">
+        <div class="tuner-graph-heading"><span>Available Points: <b>${fmt(available)}</b></span></div>
+        <div class="tuner-main-graph">${stats.map(st=>{
+          const r=m[sl][st],v=Math.max(0,Number(r.positive)||0),n=negativeAt(baseM,sl,st),pct=maxPos?v/maxPos*100:0;
+          const shown=v>0?v:(n<0?n:0);
+          return `<button type="button" class="tuner-main-stat ${st===activeStat?"active":""}" data-select-stat="${st}">
+            <div class="tuner-main-value ${shown<0?"minus":""}">${fmt(shown)}</div>
+            <div class="tuner-main-track"><div class="tuner-main-fill" style="height:${pct}%;background:${statColors[st]}"></div></div>
+            <div class="tuner-main-label">${st}</div>
           </button>`;
-        }).join("")}
+        }).join("")}</div>
       </div>
 
+      <div class="tuner-selected-stat ${statBg[activeStat]}">
+        <div class="tuner-active-top">
+          <div><b>${activeStat}</b> <span class="small">Base ${fmt(base)}${neg<0?` · NEG ${fmt(neg)}`:""}</span></div>
+          <strong>${fmt(draft)}</strong>
+        </div>
+        <input class="stat-tuner-range" id="activeStatRange" data-stat="${activeStat}" type="range" min="0" max="${maxAllowed}" step="1" value="${draft}">
+        <div class="tuner-active-bottom">
+          <span>${available<=0?"No points available":`${fmt(available)} Available`}</span>
+          <span class="${d>0?"plus":d<0?"minus":"zero"}">${d===0?"BASE":d<0?`Returned ${fmt(-d)}`:`Received ${fmt(d)}`}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tuner-right-stats">
+      ${stats.filter(st=>st!==activeStat).map(st=>{
+        const sk=dualKey(sl,st),v=statTunerState.draft[sk]||0,sd=statCellDelta(sl,st);
+        return `<button type="button" class="tuner-side-stat ${statBg[st]}" data-select-stat="${st}">
+          <b>${st}</b>
+          <strong>${fmt(v)}</strong>
+          <span class="${sd>0?"plus":sd<0?"minus":"zero"}">${sd===0?"BASE":`${sd>0?"+":""}${fmt(sd)}`}</span>
+        </button>`;
+      }).join("")}
     </div>
   </div>`;
 
-  q("tunerContext").innerHTML=slots.filter(x=>x!==sl).map(x=>{
-    const dx=statEquipmentDelta(x);
-    return `<button class="dual-context-card" data-tuner-context="${x}"><div class="dual-context-head"><div><b>${esc(eqName(x))}</b><span>${x}</span></div><i class="${dx>0?"plus":dx<0?"minus":"zero"}">${dx===0?"BASE":`${dx>0?"+":""}${fmt(dx)}`}</i></div>${miniBars(m,x,maxPos)}</button>`;
-  }).join("");
-
   q("tunerEquipmentPicker").querySelectorAll("[data-tuner-slot]").forEach(b=>b.onclick=()=>{statTunerState.activeSlot=b.dataset.tunerSlot;renderStatTuner()});
-  q("tunerContext").querySelectorAll("[data-tuner-context]").forEach(b=>b.onclick=()=>{statTunerState.activeSlot=b.dataset.tunerContext;renderStatTuner()});
   q("tunerFocus").querySelectorAll("[data-select-stat]").forEach(b=>b.onclick=()=>{statTunerState.activeStat=b.dataset.selectStat;renderStatTuner()});
   const activeRange=q("activeStatRange");
   if(activeRange)activeRange.oninput=e=>setTunerStat(sl,e.target.dataset.stat,e.target.value);
 }
-
 
 function toggleEquipmentBudgetAdvanced(force){
   equipmentBudgetState.open=typeof force==="boolean"
@@ -1951,10 +4336,16 @@ function setFocusPanel(name){
     if(focusModeActive)el.classList.toggle("focus-hidden",key!==focusPanel);
     else el.classList.remove("focus-hidden");
   });
+  const eqStats=q("panelEquipmentStats");
+  if(eqStats){
+    if(focusModeActive)eqStats.classList.add("focus-hidden");
+    else eqStats.classList.remove("focus-hidden");
+  }
   q("panelTuner")?.classList.toggle("final-tweak-hidden",!focusModeActive&&!finalTweakOpen);
   q("focusDock")?.querySelectorAll("[data-focus-target]").forEach(btn=>btn.classList.toggle("active",btn.dataset.focusTarget===focusPanel));
   saveUIPrefs({focusPanel});
 }
+
 function setFocusMode(active){
   focusModeActive=!!active;
   document.body.classList.toggle("focus-mode-active",focusModeActive);
@@ -1971,13 +4362,11 @@ function setFocusMode(active){
   saveUIPrefs({focusModeActive});
 }
 
-
 function bind(){
   document.addEventListener("input",e=>{
     const el=e.target;
     if(el && (el.matches?.("input,select,textarea")))markGlobalDirty();
   });
-
 
   document.addEventListener("change",e=>{
     const el=e.target;
@@ -1997,7 +4386,7 @@ function bind(){
   q("tunerFinalizeBtn")?.addEventListener("click",finalizeEquipmentSet);
   q("focusFinalizeBtn")?.addEventListener("click",finalizeEquipmentSet);
   const uiPrefs=loadUIPrefs();
-  applyTheme(uiPrefs.theme||"parchment");
+  applyTheme(uiPrefs.theme||"default");
   q("advancedWeightToggle").onclick=()=>toggleEquipmentBudgetAdvanced();
   q("resetEquipmentBudgetBtn").onclick=()=>{resetEquipmentBudget();markGlobalDirty()};
   q("resetTunerBtn").onclick=()=>{resetStatTuner();markGlobalDirty()};
@@ -2013,19 +4402,29 @@ function bind(){
   q("mainMenuClose").onclick=closeMainMenu;
   q("mainMenuScrim").onclick=closeMainMenu;
   q("mainMenu").querySelectorAll("[data-menu-page]").forEach(b=>b.onclick=()=>openMenuPage(b.dataset.menuPage));
-  q("menuPageBack").onclick=()=>{closeMenuPage();openMainMenu()};
-  q("menuPageClose").onclick=closeMenuPage;
+  q("menuPageMenuBtn")?.addEventListener("click",openMainMenu);
   q("workspaceToolsBtn").onclick=e=>{e.stopPropagation();toggleWorkspaceTools()};
   document.addEventListener("click",e=>{if(!q("workspaceToolsPopover")?.contains(e.target)&&e.target!==q("workspaceToolsBtn"))toggleWorkspaceTools(false)});
-  q("comparisonCollapseBtn").onclick=()=>setComparisonCollapsed(!q("comparisonPanel").classList.contains("collapsed"));
+  
+  // Robust Distributed Stats Collapse bindings
+  q("comparisonCollapseBtn")?.addEventListener("click",e=>{
+    e.stopPropagation();
+    toggleComparisonCollapsed();
+  });
+  q("comparisonTitleText")?.addEventListener("click",e=>{
+    e.stopPropagation();
+    toggleComparisonCollapsed();
+  });
+  q("comparisonCollapseHead")?.addEventListener("click",e=>{
+    if(e.target.closest("#tunerBtn")||e.target.closest(".comparison-info-wrap")||e.target.closest("#comparisonCollapseBtn"))return;
+    toggleComparisonCollapsed();
+  });
   setComparisonCollapsed(uiPrefs.comparisonCollapsed!==undefined?!!uiPrefs.comparisonCollapsed:(window.innerWidth<=760),false);
+
   q("detailSetA").onchange=renderDetailedComparison;q("detailSetB").onchange=renderDetailedComparison;
   q("themeOptions").querySelectorAll('input[name="appTheme"]').forEach(r=>r.onchange=()=>applyTheme(r.value));
   syncCanonicalSetIdentity(state.equipmentSetName||state.recordName||"");
   q("newSetBtn")?.addEventListener("click",createNewEquipmentSet);
-  q("savedSetSelect")?.addEventListener("change",()=>{
-    // Keep selection visible only inside the compact selector.
-  });
   q("loadSelectedSetBtn")?.addEventListener("click",loadSelectedEquipmentSet);
   q("resetBtn").onclick=()=>{if(confirm("Reset the current Equipment Set workspace?")){localStorage.removeItem(STORAGE_KEY);state={currentRecordId:"",lastSavedAt:"",recordName:"",equipmentSetName:"",basis:{HP:0,PA:0,PD:0,MA:0,MD:0,SP:0},equipment:{},priority:{},negative:{},viewMode:"full",focusSlot:"Main Hand",refined:false,activePrioritySlot:"Main Hand",finalizeSet:"Set 5"};initState();syncCanonicalSetIdentity("");buildAll();recalc(true);markGlobalDirty()}};
   q("finalTweakBtn")?.addEventListener("click",()=>setFinalTweakOpen(!finalTweakOpen));
@@ -2036,6 +4435,9 @@ function bind(){
   };
   q("advancedClose").onclick=()=>toggleAdvanced(false);
   q("refreshDebugBtn")?.addEventListener("click",()=>{updateDebug();updateSystemDiagnostics()});
+  q("basisCollapseHead")?.addEventListener("click",toggleBasisCollapsed);
+  q("basisCollapseHead")?.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggleBasisCollapsed();}});
+  setBasisCollapsed(true);
   q("copyDebugBtn")?.addEventListener("click",copyDebugReport);
   if(q("loadSelectedBtn"))q("loadSelectedBtn").onclick=loadSelectedDraft;
   if(q("deleteDraftBtn"))q("deleteDraftBtn").onclick=deleteCurrentDraft;
@@ -2051,20 +4453,19 @@ function bind(){
     q("refineToggle").checked=!q("refineToggle").checked;
     q("refineToggle").dispatchEvent(new Event("change",{bubbles:true}));
   };
-  q("comparisonInfoBtn").onclick=()=>openMenuPage("comparison");
   q("comparePopClose").onclick=closeComparePopover;
   q("comparePopover").addEventListener("click",e=>{if(e.target===q("comparePopover"))closeComparePopover()});
   if(q("viewMode"))q("viewMode").querySelectorAll("button").forEach(b=>b.onclick=()=>{state.viewMode=b.dataset.mode;renderViewer();saveLocal()});
+  
   if(q("legacyTabs"))q("legacyTabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{
     q("legacyTabs").querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===b));
     document.querySelectorAll(".legacy-pane").forEach(x=>x.classList.remove("active"));
-    q("legacy-"+b.dataset.legacy).classList.add("active");
+    const target=q("legacy-"+b.dataset.legacy);
+    if(target)target.classList.add("active");
   });
 }
-function buildAll(){buildBasis();buildWeights();buildPriority();bindInputsOnly();q("recordName").value=state.recordName||"";q("equipmentSetName").value=state.equipmentSetName||"";}
-function bindInputsOnly(){
-  // build functions already bind generated input events
-}
+function buildAll(){buildBasis();buildWeights();buildPriority();bindInputsOnly();q("recordName").value=state.recordName||"";q("equipmentSetName").value=state.equipmentSetName||"";renderLoadedEquipmentStats();}
+function bindInputsOnly(){}
 function showError(err){
   const msg=err?.stack||String(err);
   lastRuntimeError=msg;
@@ -2078,7 +4479,6 @@ window.addEventListener("unhandledrejection",e=>showError(e.reason||"Unhandled p
 document.addEventListener("DOMContentLoaded",()=>{
   initState();loadLocal();if(!state.activePrioritySlot)state.activePrioritySlot="Main Hand";if(!state.finalizeSet)state.finalizeSet="Set 5";buildAll();bind();recalc(true);checkSheetStatus();loadFinalizedSets();loadEquipmentAssetRegistry();
 });
-
 </script>
 </body>
 </html>

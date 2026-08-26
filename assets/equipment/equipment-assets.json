@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "assetVersion": "2026-08-20.2",
+  "assetVersion": "2026-08-26.1",
   "missingAssetPolicy": {
     "value": null,
     "meaning": "Asset is pending or unavailable; consumers must render a neutral no-art state."
@@ -167,6 +167,78 @@
       "tunerArtwork": "assets/equipment/knights_belt/knights_belt_tuner.png",
       "icon": null,
       "reference": "assets/equipment/knights_belt/knights_belt_reference.md"
+    },
+    {
+      "id": "kaginawa",
+      "displayName": "Kaginawa",
+      "slot": "Main Hand",
+      "masterArtwork": "assets/equipment/kaginawa/kaginawa_master.png",
+      "tunerArtwork": "assets/equipment/kaginawa/kaginawa_tuner.png",
+      "icon": null,
+      "reference": "assets/equipment/kaginawa/kaginawa_reference.md"
+    },
+    {
+      "id": "kunai",
+      "displayName": "Kunai",
+      "slot": "Main Hand",
+      "masterArtwork": "assets/equipment/kunai/kunai_master.png",
+      "tunerArtwork": "assets/equipment/kunai/kunai_tuner.png",
+      "icon": null,
+      "reference": "assets/equipment/kunai/kunai_reference.md"
+    },
+    {
+      "id": "bo_shuriken",
+      "displayName": "Bō-shuriken",
+      "slot": "Off Hand",
+      "masterArtwork": "assets/equipment/bo_shuriken/bo_shuriken_master.png",
+      "tunerArtwork": "assets/equipment/bo_shuriken/bo_shuriken_tuner.png",
+      "icon": null,
+      "reference": "assets/equipment/bo_shuriken/bo_shuriken_reference.md"
+    },
+    {
+      "id": "hira_shuriken",
+      "displayName": "Hira-shuriken",
+      "slot": "Off Hand",
+      "masterArtwork": "assets/equipment/hira_shuriken/hira_shuriken_master.png",
+      "tunerArtwork": "assets/equipment/hira_shuriken/hira_shuriken_tuner.png",
+      "icon": null,
+      "reference": "assets/equipment/hira_shuriken/hira_shuriken_reference.md"
+    },
+    {
+      "id": "shinobi_zukin",
+      "displayName": "Shinobi Zukin",
+      "slot": "Head",
+      "masterArtwork": "assets/equipment/shinobi_zukin/shinobi_zukin_master.png",
+      "tunerArtwork": "assets/equipment/shinobi_zukin/shinobi_zukin_tuner.png",
+      "icon": null,
+      "reference": "assets/equipment/shinobi_zukin/shinobi_zukin_reference.md"
+    },
+    {
+      "id": "keikogi",
+      "displayName": "Keikogi",
+      "slot": "Body",
+      "masterArtwork": "assets/equipment/keikogi/keikogi_master.png",
+      "tunerArtwork": "assets/equipment/keikogi/keikogi_tuner.png",
+      "icon": null,
+      "reference": "assets/equipment/keikogi/keikogi_reference.md"
+    },
+    {
+      "id": "jikatabi",
+      "displayName": "Jikatabi",
+      "slot": "Boots",
+      "masterArtwork": "assets/equipment/jikatabi/jikatabi_master.png",
+      "tunerArtwork": "assets/equipment/jikatabi/jikatabi_tuner.png",
+      "icon": null,
+      "reference": "assets/equipment/jikatabi/jikatabi_reference.md"
+    },
+    {
+      "id": "reinforced_obi",
+      "displayName": "Reinforced Obi",
+      "slot": "Accessory",
+      "masterArtwork": "assets/equipment/reinforced_obi/reinforced_obi_master.png",
+      "tunerArtwork": "assets/equipment/reinforced_obi/reinforced_obi_tuner.png",
+      "icon": null,
+      "reference": "assets/equipment/reinforced_obi/reinforced_obi_reference.md"
     }
   ]
 }
